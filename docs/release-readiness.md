@@ -1,7 +1,7 @@
 # Release Readiness
 
-Status: Published public reference repository with a doc-only verification
-surface.
+Status: Current repository surface includes documentation, an installable
+`$consult` skill package, public eval fixtures, and a deterministic verifier.
 
 ## Purpose
 
@@ -11,10 +11,15 @@ out of scope.
 
 ## Current Scope
 
-The current public release includes:
+The current repository surface includes:
 
 - `README.md`
 - `TRACKER.md`
+- `skills/consult/SKILL.md`
+- `skills/consult/agents/openai.yaml`
+- `evals/consult/consult-public-happy-path.yaml`
+- `evals/consult/consult-public-nonlocal-route-forbidden.yaml`
+- `evals/consult/consult-public-must-counter-review.yaml`
 - `docs/consult-protocol.md`
 - `docs/human-checkpoints.md`
 - `docs/verification-and-safety.md`
@@ -24,16 +29,19 @@ The current public release includes:
 - `scripts/verify-public-safety.ps1`
 - `LICENSE`
 
-This repository is intentionally doc-first. It does not currently include
-application source code, test suites, or CI automation.
+This repository is intentionally documentation-first plus a lightweight skill
+package. It does not currently include application source code, CI automation,
+or a broader framework/runtime distribution surface.
 
 ## Current Release Claim
 
 The current release claim is narrow and explicit:
 
 - the public repository contains a reusable decision-gate pattern for agentic
-  workflows;
-- the documentation surface is internally consistent and verifier-backed;
+  workflows plus an installable or directly reusable `$consult` skill
+  artifact;
+- the documentation and skill surface are internally consistent and
+  verifier-backed, and the public eval fixtures are structurally validated;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
@@ -42,12 +50,17 @@ system.
 
 ## Verified Evidence
 
-- the deterministic public-safety verifier passes for the current doc-only
-  surface;
-- required public files and directories are present;
+- the deterministic public-safety verifier passes for the current public
+  doc-plus-skill surface;
+- required public files, directories, skill files, and eval fixtures are
+  present;
+- the public eval fixtures expose golden, misuse, and trajectory scenarios and
+  pass the repository's structural fixture checks;
+- the skill remains explicit-use only and the public config keeps implicit
+  invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
 - relative markdown links resolve;
-- `src/` and `tests/` remain absent on the current doc-only surface;
+- `src/` and `tests/` remain absent on the current doc-plus-skill surface;
 - `LICENSE` and `docs/provenance.md` are present and aligned with the current
   repository state.
 
@@ -56,10 +69,11 @@ system.
 These are intentionally outside the current release scope:
 
 - CI setup;
-- executable product scaffolding;
+- executable product scaffolding beyond the current skill package;
 - a package or framework distribution surface;
 - deployment automation;
-- any claim that a doc-only verifier proves production safety.
+- any claim that this deterministic verifier proves production safety or
+  universal runtime correctness.
 
 ## Interpretation Rule
 

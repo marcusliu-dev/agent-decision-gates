@@ -11,6 +11,9 @@ or a high cost of acting on a bad assumption. Typical triggers include:
 - risky judgment calls that need an explicit challenge pass;
 - stage-boundary decisions in a larger workflow.
 
+This repository also ships an installable `$consult` skill package at
+[`skills/consult/`](../skills/consult/) for runtimes that support local skills.
+
 ## Core Flow
 
 The base flow is:
@@ -39,6 +42,11 @@ In the reference workflow here, the preferred route is independent spawned
 agents on `gpt-5.5` with `xhigh` reasoning when that combination is available.
 If it is unavailable, record what actually ran and treat that as a bounded
 evidence limitation rather than pretending the stronger route happened.
+
+The installed `$consult` skill in this repository keeps that same preference:
+independent Step 1 and Step 2 spawned lanes should use `gpt-5.5` with `xhigh`
+reasoning when your runtime supports that route, and should record actual
+fallback runtime values when it does not.
 
 ## What Good Output Looks Like
 
@@ -69,6 +77,9 @@ Consult is not:
 - a reason to skip verification;
 - a workaround for missing grants;
 - a way to turn a local draft into a release claim.
+
+Installing the skill is not the same as authorizing publication, legal-risk
+acceptance, destructive actions, or other human-only decisions.
 
 ## Common Failure Modes
 

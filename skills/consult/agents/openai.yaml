@@ -1,0 +1,7 @@
+interface:
+  display_name: "Consult"
+  short_description: "Independent challenge gate for risky decisions"
+  default_prompt: "Use $consult to review a high-stakes decision with a primary pass and an independent challenge pass before acting."
+
+policy:
+  allow_implicit_invocation: false

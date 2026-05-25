@@ -16,6 +16,10 @@ high-risk decisions.
 - destructive overwrite, merge, or deletion decisions;
 - any request that expands a previously granted surface.
 
+These stay human-only even when a repository ships a reusable consult skill.
+The skill can improve the quality of a decision. It does not inherit ownership
+of publication, risk acceptance, or grant expansion.
+
 ## Stage-Specific Grants
 
 Good checkpoint practice uses exact, stage-specific grants rather than vague
@@ -44,3 +48,11 @@ useful distinction between:
 - stop when a required field is missing;
 - reopen a checkpoint if a new decision or extra surface appears;
 - refuse to treat a prior grant as permission for a broader stage.
+
+If you are publishing or updating a skill package, the checkpoint should also
+state:
+
+- the exact installable path being changed;
+- which supporting docs or verifier files may move with it;
+- whether the current license remains unchanged; and
+- which verification route must pass before any push or broader release claim.

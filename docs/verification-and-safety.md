@@ -5,10 +5,10 @@
 Do not make a readiness or completion claim without fresh evidence that matches
 the scope of the claim.
 
-This repository is doc-first, so its main verifier is deterministic. A passing
-doc-only verifier plus fresh readback can prove the integrity of the current
-documentation surface. It does not, by itself, prove broader operational
-safety, deployment safety, or product correctness outside that surface.
+This repository's main verifier is deterministic. A passing verifier plus
+fresh readback can prove the integrity of the current documentation, skill, and
+public eval surface. It does not, by itself, prove broader operational safety,
+deployment safety, or product correctness outside that surface.
 
 ## Match Evidence To Scope
 
@@ -17,6 +17,7 @@ Use the narrowest verification surface that truly proves the current stage:
 - real tests for executable behavior when code exists;
 - readback of created or updated files;
 - structure checks;
+- skill-config and explicit-invocation policy checks;
 - denylist or placeholder scans;
 - path and route checks;
 - cross-file consistency checks;
@@ -39,11 +40,14 @@ broader state than the tracker and current verifier evidence support.
   requires.
 - The verifier in this repository checks:
   - required public files and directories exist;
+  - the installable skill package and public eval fixtures exist;
+  - the skill remains explicit-use only;
+  - core consult invariants appear in the public skill text;
   - blocked markers and blocked private leakage terms do not appear;
   - relative markdown links resolve;
   - no file claims a broader state than `TRACKER.md`;
-  - the doc-only repository remains free of unexpected executable scaffolding
-    such as `src/` and `tests/`.
+  - the repository remains free of unexpected executable scaffolding such as
+    `src/` and `tests/`.
 - Broader verification belongs to the broader surface. If you add code, CI, or
   deployment behavior, add real tests for those surfaces instead of pretending
   the doc-only verifier covers them.
@@ -74,9 +78,9 @@ authorized, stop and re-checkpoint before writing it.
 ## Current Repository Surface
 
 The live verifier in this repository is intentionally limited to the current
-doc-only public reference surface. It is useful because it is honest about
-what it can and cannot prove.
+public reference, skill-package, and eval-fixture surface. It is useful
+because it is honest about what it can and cannot prove.
 
-It can support integrity claims about the current documentation tree. It does
-not replace broader verification for code, CI, deployment, infrastructure, or
-high-risk external actions.
+It can support integrity claims about the current public repository surface. It
+does not replace broader verification for code, CI, deployment,
+infrastructure, or high-risk external actions.

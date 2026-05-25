@@ -7,6 +7,16 @@ $ErrorActionPreference = 'Stop'
 $requiredPaths = @(
     'README.md',
     'TRACKER.md',
+    'skills',
+    'skills/consult',
+    'skills/consult/SKILL.md',
+    'skills/consult/agents',
+    'skills/consult/agents/openai.yaml',
+    'evals',
+    'evals/consult',
+    'evals/consult/consult-public-happy-path.yaml',
+    'evals/consult/consult-public-nonlocal-route-forbidden.yaml',
+    'evals/consult/consult-public-must-counter-review.yaml',
     'docs/consult-protocol.md',
     'docs/human-checkpoints.md',
     'docs/verification-and-safety.md',
@@ -31,14 +41,15 @@ $blockedMarkers = @(
     'REDACT_BEFORE_RELEASE'
 )
 
-$blockedLeakageTerms = @(
-    'X:\ARD',
-    'X:\ARD_backup',
-    'X:\ARD_rebuild_prep_20260520',
-    '.agents',
-    'third_party',
-    'vendored',
-    'agent-migration'
+$blockedLeakagePatterns = @(
+    @{
+        Label = 'absolute_windows_path'
+        Pattern = '(?i)\b[A-Z]:\\[^\r\n`"]+'
+    },
+    @{
+        Label = 'absolute_windows_path_forwardslash'
+        Pattern = '(?i)\b[A-Z]:/[^\r\n`"]+'
+    }
 )
 
 $ceilingOrder = @{
@@ -47,6 +58,7 @@ $ceilingOrder = @{
     'public_safety_checks_passed' = 3
     'release_packet_ready_for_human_decision' = 4
     'public_github_repo_published_and_verified' = 5
+    'public_consult_skill_package_present_and_verifier_backed' = 6
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -91,7 +103,7 @@ foreach ($relativePath in $requiredPaths) {
 foreach ($relativePath in $forbiddenPaths) {
     $fullPath = Join-Path $RepoRoot $relativePath
     if (Test-Path -LiteralPath $fullPath) {
-        $failures.Add("Forbidden path present for current doc-only surface: $relativePath")
+        $failures.Add("Forbidden path present for current public surface: $relativePath")
     }
 }
 
@@ -99,7 +111,7 @@ $selfPath = (Resolve-Path -LiteralPath $PSCommandPath).Path
 
 $textFiles = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File |
     Where-Object {
-        $_.Extension -in '.md', '.ps1', '.txt' -and
+        $_.Extension -in '.md', '.ps1', '.txt', '.yaml' -and
         (Resolve-Path -LiteralPath $_.FullName).Path -ne $selfPath
     }
 
@@ -113,9 +125,9 @@ foreach ($file in $textFiles) {
         }
     }
 
-    foreach ($term in $blockedLeakageTerms) {
-        if ($content -like "*$term*") {
-            $failures.Add("Blocked leakage term '$term' found in $relativeFile")
+    foreach ($leakagePattern in $blockedLeakagePatterns) {
+        if ([regex]::IsMatch($content, $leakagePattern.Pattern)) {
+            $failures.Add("Blocked leakage pattern '$($leakagePattern.Label)' found in $relativeFile")
         }
     }
 
@@ -149,6 +161,78 @@ foreach ($file in $textFiles) {
                 }
             }
         }
+    }
+}
+
+$selfContent = Get-Content -LiteralPath $selfPath -Raw
+foreach ($leakagePattern in $blockedLeakagePatterns) {
+    if ([regex]::IsMatch($selfContent, $leakagePattern.Pattern)) {
+        $failures.Add("Blocked leakage pattern '$($leakagePattern.Label)' found in scripts/verify-public-safety.ps1")
+    }
+}
+
+$skillPath = Join-Path $RepoRoot 'skills\consult\SKILL.md'
+if (Test-Path -LiteralPath $skillPath) {
+    $skillContent = Get-Content -LiteralPath $skillPath -Raw
+    $skillChecks = @(
+        'Use `$consult` only when explicitly invoked',
+        'model `gpt-5.5`',
+        'reasoning effort `xhigh`',
+        'Do not route local repository material to non-local AI systems',
+        'Run local Step 1.',
+        'Run local Step 2.',
+        'Parent adjudicates.'
+    )
+
+    foreach ($check in $skillChecks) {
+        if (-not $skillContent.Contains($check)) {
+            $failures.Add("Missing consult-skill invariant '$check' in skills/consult/SKILL.md")
+        }
+    }
+}
+
+$skillConfigPath = Join-Path $RepoRoot 'skills\consult\agents\openai.yaml'
+if (Test-Path -LiteralPath $skillConfigPath) {
+    $skillConfig = Get-Content -LiteralPath $skillConfigPath -Raw
+    if ($skillConfig -notmatch 'allow_implicit_invocation:\s*false') {
+        $failures.Add("skills/consult/agents/openai.yaml must disable implicit invocation.")
+    }
+    if ($skillConfig -notlike '*$consult*') {
+        $failures.Add("skills/consult/agents/openai.yaml must mention `$consult` in the default prompt.")
+    }
+}
+
+$evalExpectations = @(
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
+        Type = 'golden'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-nonlocal-route-forbidden.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-must-counter-review.yaml'
+        Type = 'trajectory'
+    }
+)
+
+foreach ($evalExpectation in $evalExpectations) {
+    if (-not (Test-Path -LiteralPath $evalExpectation.Path)) {
+        continue
+    }
+
+    $evalContent = Get-Content -LiteralPath $evalExpectation.Path -Raw
+    $relativeEval = Get-RelativePath -BasePath $RepoRoot -FullPath $evalExpectation.Path
+
+    if ($evalContent -notmatch 'skill:\s*consult') {
+        $failures.Add("$relativeEval must target skill 'consult'.")
+    }
+    if ($evalContent -notmatch ('type:\s*' + [regex]::Escape($evalExpectation.Type))) {
+        $failures.Add("$relativeEval must declare type '$($evalExpectation.Type)'.")
+    }
+    if ($evalContent -notlike '*$consult*') {
+        $failures.Add("$relativeEval must use explicit `$consult` invocation in its prompt.")
     }
 }
 

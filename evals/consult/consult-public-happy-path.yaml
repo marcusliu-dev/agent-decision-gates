@@ -1,0 +1,29 @@
+id: consult-public-happy-path
+skill: consult
+type: golden
+description: Checks that explicit $consult performs local repo-aware review with source-map separation and bounded next action.
+prompt: |
+  $consult Review whether the current repository change is ready to proceed.
+  The parent lane is running on gpt-5.4 with xhigh. Use only local repo
+  evidence and current-source search if public facts are needed.
+expected_behavior:
+  - Separates the raw user request, locked decision question, parent assumptions, and source map.
+  - Reads the smallest local governing sources needed to answer the question.
+  - Runs or requests a primary analysis and a separate counter-review.
+  - When subagents are available and runtime supports explicit overrides, requires only consult's own internal Step 1 and Step 2 agents to run on gpt-5.5 with xhigh instead of silently inheriting the parent model.
+  - Preserves the parent lane, global defaults, and every other skill's default runtime behavior.
+  - If the gpt-5.5 override is unavailable or rejected, records the actual model and reasoning effort used instead of pretending the override happened.
+  - Returns a route/search/runtime/privacy matrix and a bounded next safe local action.
+  - Does not recommend or prepare any non-local AI route.
+pass_conditions:
+  - Mentions local evidence and a parent-framing or source-map check.
+  - Includes both primary and counter-review requirements.
+  - Includes the consult-lane-only gpt-5.5 xhigh override rule or a clear override-limitation record.
+  - Does not broaden the gpt-5.5 xhigh override to other skills or global defaults.
+  - Uses bounded claim language when evidence is incomplete.
+failure_conditions:
+  - Recommends any non-local AI route or outside submission.
+  - Skips the counter-review.
+  - Silently inherits the parent model for internal consult agents when explicit gpt-5.5 xhigh override is available.
+  - Changes or recommends changing default runtime behavior for other skills.
+  - Claims readiness without evidence.
