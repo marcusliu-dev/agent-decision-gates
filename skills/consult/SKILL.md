@@ -92,9 +92,29 @@ instead of silently expanding scope.
 
 ## Independence Fallback
 
-If subagents cannot be launched, say so and run the strongest possible inline
-primary plus self-challenge. Do not pretend that inline self-challenge is
-independent evidence.
+If subagents cannot be launched, first distinguish `agent thread limit
+reached` from other spawn failures.
+
+On `agent thread limit reached`, attempt bounded current-thread capacity
+hygiene before inline fallback:
+
+- inspect only agents visible in the current thread;
+- close only agents that are clearly `$consult`-owned and already completed,
+  failed, superseded, or explicitly abandoned for the current consult purpose,
+  and only after their outputs have already been captured;
+- record the reclaimed agent IDs and close outcomes when this reclaim path is
+  used; and
+- retry the same failed Step 1 or Step 2 spawn once with the same role,
+  prompt, privacy boundary, and per-spawn override request.
+
+Never close the parent lane, active agents, ambiguous agents, non-consult
+agents, user-owned or unrelated agents, or any agent whose evidence has not
+yet been captured. Do not loop repeated reclaim attempts.
+
+If no safe-to-close consult-owned agent is visible, `close_agent` is
+unavailable or rejected, or the single retry still fails, say so and run the
+strongest possible inline primary plus self-challenge. Do not pretend that
+inline self-challenge is independent evidence.
 
 If subagents launch but the `gpt-5.5` override is unavailable or rejected,
 record the actual Step 1/Step 2 model and reasoning effort instead of

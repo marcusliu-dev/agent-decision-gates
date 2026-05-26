@@ -20,6 +20,7 @@ The current repository surface includes:
 - `evals/consult/consult-public-happy-path.yaml`
 - `evals/consult/consult-public-nonlocal-route-forbidden.yaml`
 - `evals/consult/consult-public-must-counter-review.yaml`
+- `evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml`
 - `docs/consult-protocol.md`
 - `docs/human-checkpoints.md`
 - `docs/verification-and-safety.md`

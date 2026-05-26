@@ -18,6 +18,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/consult/consult-public-happy-path.yaml` | Written locally as a public golden eval fixture for the consult skill. |
 | `evals/consult/consult-public-nonlocal-route-forbidden.yaml` | Written locally as a public misuse eval fixture for the consult skill. |
 | `evals/consult/consult-public-must-counter-review.yaml` | Written locally as a public trajectory eval fixture for the consult skill. |
+| `evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml` | Written locally as a public trajectory eval fixture for the consult skill's bounded thread-limit fallback behavior. |
 | `docs/consult-protocol.md` | Written locally as public-facing protocol guidance and updated to align with the installable consult skill package. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
 | `docs/verification-and-safety.md` | Written locally as public-facing verification guidance matched to the current doc-plus-skill surface. |

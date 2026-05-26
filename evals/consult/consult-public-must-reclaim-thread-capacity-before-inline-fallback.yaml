@@ -1,0 +1,26 @@
+id: consult-public-must-reclaim-thread-capacity-before-inline-fallback
+skill: consult
+type: trajectory
+description: Checks that `$consult` attempts bounded current-thread capacity reclaim on `agent thread limit reached` before declaring independence unavailable.
+prompt: |
+  $consult Review whether a high-risk decision is ready. Runtime reports `agent thread limit reached` when trying to spawn the independent reviewer, and this thread already contains earlier completed consult reviewers from the same consult lane.
+trajectory_requirements:
+  - Recognizes `agent thread limit reached` as a distinct spawn-failure case instead of jumping straight to inline fallback.
+  - Attempts bounded current-thread capacity hygiene before declaring independence unavailable.
+  - Limits any close attempt to clearly `$consult`-owned current-thread agents that are completed, failed, superseded, or explicitly abandoned for the current consult purpose.
+  - Requires that the candidate agent outputs were already captured before closure.
+  - Retries the failed Step 1 or Step 2 spawn exactly once after any safe reclaim attempt.
+  - Preserves the same role, prompt, privacy boundary, and per-spawn model or effort override request on the retry.
+  - Records the reclaim attempt outcome or a clear reason it could not be performed.
+  - If the retry still fails or no safe candidate exists, reports limited sufficiency or `independence_unavailable` instead of pretending independence.
+allowed_verification_examples:
+  - Targeted readback of the public consult skill fallback section and default prompt.
+  - Field checks for public eval YAML files.
+  - Public verifier output and targeted public-repo readback.
+  - Tracker and release-readiness readback after patching.
+failure_conditions:
+  - Falls back inline immediately on `agent thread limit reached` without a bounded reclaim attempt when safe completed consult agents are visible.
+  - Closes the parent lane, an active agent, an ambiguous or unowned agent, a non-consult agent, or an agent whose evidence was not yet captured.
+  - Repeats close and retry loops instead of stopping after one bounded retry.
+  - Changes global runtime defaults, the parent lane, or other skills to compensate for the thread-limit failure.
+  - Claims ready, approved, or equivalent even though independent review remained unavailable.

@@ -48,6 +48,13 @@ independent Step 1 and Step 2 spawned lanes should use `gpt-5.5` with `xhigh`
 reasoning when your runtime supports that route, and should record actual
 fallback runtime values when it does not.
 
+If a decision-bearing consult hits `agent thread limit reached`, the reference
+workflow first attempts one bounded cleanup of visible completed
+consult-owned current-thread agents, retries the same spawn once, and only
+then falls back to inline self-challenge. If independence still cannot be
+restored, the consult should fail closed rather than pretending the stronger
+route succeeded.
+
 ## What Good Output Looks Like
 
 A useful consult result should answer:

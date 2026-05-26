@@ -17,6 +17,7 @@ $requiredPaths = @(
     'evals/consult/consult-public-happy-path.yaml',
     'evals/consult/consult-public-nonlocal-route-forbidden.yaml',
     'evals/consult/consult-public-must-counter-review.yaml',
+    'evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml',
     'docs/consult-protocol.md',
     'docs/human-checkpoints.md',
     'docs/verification-and-safety.md',
@@ -181,7 +182,9 @@ if (Test-Path -LiteralPath $skillPath) {
         'Do not route local repository material to non-local AI systems',
         'Run local Step 1.',
         'Run local Step 2.',
-        'Parent adjudicates.'
+        'Parent adjudicates.',
+        'agent thread limit reached',
+        'retry the same failed Step 1 or Step 2 spawn once'
     )
 
     foreach ($check in $skillChecks) {
@@ -200,6 +203,9 @@ if (Test-Path -LiteralPath $skillConfigPath) {
     if ($skillConfig -notlike '*$consult*') {
         $failures.Add("skills/consult/agents/openai.yaml must mention `$consult` in the default prompt.")
     }
+    if ($skillConfig -notmatch 'agent thread\s+limit\s+reached') {
+        $failures.Add("skills/consult/agents/openai.yaml must mention the thread-limit fallback guidance.")
+    }
 }
 
 $evalExpectations = @(
@@ -213,6 +219,10 @@ $evalExpectations = @(
     },
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-must-counter-review.yaml'
+        Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml'
         Type = 'trajectory'
     }
 )
