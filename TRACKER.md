@@ -1,7 +1,8 @@
 # Agent Decision Gates Tracker
 
-Status: Current repository surface includes docs plus a reusable `$consult`
-skill package for evidence-first decision gates in AI-agent workflows.
+Status: Current repository surface includes docs, a design-pattern report, and
+a reusable `$consult` skill package for evidence-first decision gates in
+AI-agent workflows.
 
 ## Current Claim Ceiling
 
@@ -10,13 +11,16 @@ skill package for evidence-first decision gates in AI-agent workflows.
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
 repository surface contains a reusable skill package under `skills/consult/`,
-that public eval fixtures exist under `evals/consult/`, that the deterministic
-public-surface integrity verifier passes for the current repository surface, and that the
-materials in this repository are aligned with that surface. The eval claim is
-bounded to fixture presence plus structural validation, not full runtime
-execution. No broader claim is made for package-manager distribution,
-executable framework behavior beyond the current skill package, CI coverage,
-deployment safety, empirical effectiveness, or production runtime guarantees.
+that public eval fixtures exist under `evals/consult/`, that a design-pattern
+report exists under `docs/deep-dive-report.md`, that the deterministic
+public-surface integrity verifier passes for the current repository surface,
+and that the materials in this repository are aligned with that surface. The
+eval claim is bounded to fixture presence plus structural validation, not full
+runtime execution. The report claim is bounded to design-pattern explanation,
+not empirical proof or paper readiness. No broader claim is made for
+package-manager distribution, executable framework behavior beyond the current
+skill package, CI coverage, deployment safety, empirical effectiveness, or
+production runtime guarantees.
 
 ## Publication Snapshot
 
@@ -52,6 +56,7 @@ deployment safety, empirical effectiveness, or production runtime guarantees.
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
+- `docs/deep-dive-report.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -85,6 +90,7 @@ deployment safety, empirical effectiveness, or production runtime guarantees.
   present;
 - adoption docs for glossary, runtime-neutral protocol, Codex adapter notes,
   threat model, and role boundaries are present;
+- the design-pattern report is present and claim-bounded;
 - the public eval fixtures are structurally validated as golden, misuse, and
   trajectory artifacts;
 - the deterministic eval fixture scorer passes for the current fixture surface;

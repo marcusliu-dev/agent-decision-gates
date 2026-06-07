@@ -48,6 +48,8 @@ This repo packages a simple alternative:
 - a [roles and permissions matrix](docs/roles-and-permissions.md);
 - [eval evidence guidance](docs/eval-evidence.md) and a deterministic fixture
   scorer in [`scripts/score-eval-fixtures.ps1`](scripts/score-eval-fixtures.ps1);
+- a design-pattern [deep-dive report](docs/deep-dive-report.md) on claim
+  ceilings for agentic workflows;
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -122,6 +124,8 @@ requires independent review.
   adapting the pattern to higher-risk workflows.
 - Use [docs/eval-evidence.md](docs/eval-evidence.md) if you want to inspect
   the public fixture evidence surface.
+- Read [docs/deep-dive-report.md](docs/deep-dive-report.md) for the
+  design-pattern rationale and research-evidence boundary.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a
@@ -140,8 +144,9 @@ requires independent review.
 ## Project Status
 
 This is a published public repository with a reusable `$consult` skill package,
-public eval fixtures, documentation, and one deterministic public-surface
-integrity verifier under `MIT`. The current ceiling is no higher than
+public eval fixtures, documentation, a design-pattern report, and one
+deterministic public-surface integrity verifier under `MIT`. The current
+ceiling is no higher than
 `public_consult_skill_package_present_and_verifier_backed`. This verifier does
 not prove production safety, empirical effectiveness, or universal runtime
 correctness. The repository intentionally does not ship CI, deployment

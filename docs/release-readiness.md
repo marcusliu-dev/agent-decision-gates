@@ -2,8 +2,9 @@
 
 <!-- claim_ceiling: public_consult_skill_package_present_and_verifier_backed -->
 
-Status: Current repository surface includes documentation, an installable
-`$consult` skill package, public eval fixtures, and a deterministic verifier.
+Status: Current repository surface includes documentation, a design-pattern
+report, an installable `$consult` skill package, public eval fixtures, and a
+deterministic verifier.
 
 ## Purpose
 
@@ -37,6 +38,7 @@ The current repository surface includes:
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
+- `docs/deep-dive-report.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -62,7 +64,8 @@ The current release claim is narrow and explicit:
   workflows plus an installable or directly reusable `$consult` skill
   artifact;
 - the documentation and skill surface are internally consistent and
-  verifier-backed, and the public eval fixtures are structurally validated;
+  verifier-backed, the design-pattern report is present, and the public eval
+  fixtures are structurally validated;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
@@ -80,6 +83,8 @@ system.
   present;
 - adoption docs for glossary, runtime-neutral protocol, Codex adapter notes,
   threat model, and role boundaries are present;
+- the design-pattern report states its non-empirical boundary and does not
+  claim paper readiness;
 - the public eval fixtures expose golden, misuse, and trajectory scenarios and
   pass the repository's structural fixture checks;
 - the deterministic eval fixture scorer passes for the current fixture surface;

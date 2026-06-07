@@ -32,6 +32,7 @@ $requiredPaths = @(
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
+    'docs/deep-dive-report.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -403,6 +404,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\release-readiness.md'
             Label = 'docs/release-readiness.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\deep-dive-report.md'
+            Label = 'docs/deep-dive-report.md'
         }
     )
 

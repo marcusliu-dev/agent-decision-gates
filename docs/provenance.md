@@ -33,6 +33,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/consult-protocol.md` | Written locally as public-facing protocol guidance and updated to align with the installable consult skill package. |
 | `docs/core-protocol.md` | Written locally as runtime-neutral protocol guidance for adopters outside the original Codex environment. |
 | `docs/codex-adapter.md` | Written locally to isolate Codex-specific adapter behavior from the runtime-neutral pattern. |
+| `docs/deep-dive-report.md` | Written locally as a public design-pattern report explaining claim ceilings, decision gates, verification boundaries, and the empirical paper path. |
 | `docs/eval-evidence.md` | Written locally to describe the deterministic fixture scorer and its evidence boundary. |
 | `docs/glossary.md` | Written locally to define public terms such as claim ceiling, parent framing, and human checkpoint. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
