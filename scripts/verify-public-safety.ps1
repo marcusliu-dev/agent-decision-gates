@@ -36,6 +36,7 @@ $requiredPaths = @(
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
     'evals/empirical/results-summary-schema.yaml',
+    'docs/empirical-annotation-guidelines.md',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
@@ -127,6 +128,7 @@ $ceilingOrder = @{
     'empirical_run_packet_schema_present_and_structurally_scored' = 8
     'empirical_evidence_package_validator_present_and_self_tested' = 9
     'empirical_results_aggregator_present_and_self_tested' = 10
+    'empirical_annotation_guidelines_present_and_structurally_scored' = 11
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -193,6 +195,31 @@ function Get-BlockScalar {
         }
     }
     return ($items -join "`n").Trim()
+}
+
+function Get-YamlList {
+    param(
+        [string]$Text,
+        [string]$Field
+    )
+    $items = New-Object System.Collections.Generic.List[string]
+    $lines = $Text -split "`r?`n"
+    $inList = $false
+    foreach ($line in $lines) {
+        if ($line -match "^$([regex]::Escape($Field)):\s*$") {
+            $inList = $true
+            continue
+        }
+        if ($inList) {
+            if ($line -match '^\S') {
+                break
+            }
+            if ($line -match '^\s*-\s*(.+?)\s*$') {
+                $items.Add($Matches[1].Trim()) | Out-Null
+            }
+        }
+    }
+    return @($items)
 }
 
 function Test-ClaimCeilingDocuments {
@@ -436,8 +463,10 @@ if (Test-Path -LiteralPath $runManifestPath) {
     foreach ($check in @(
         'raw_transcript',
         'annotation_record',
+        'annotation_guidelines',
         'cost_latency_record',
         'results_summary_schema',
+        'annotation_guidelines_available',
         'prompt_version_record',
         'no_private_repository_material',
         'budget_recorded_before_execution',
@@ -478,17 +507,27 @@ if (Test-Path -LiteralPath $transcriptSchemaPath) {
 }
 
 $annotationSchemaPath = Join-Path $RepoRoot 'evals\empirical\annotation-schema.yaml'
+$annotationRequiredFieldsForGuidelines = @()
 if (Test-Path -LiteralPath $annotationSchemaPath) {
     $annotationSchemaContent = Get-Content -LiteralPath $annotationSchemaPath -Raw
+    $annotationRequiredFieldsForGuidelines = Get-YamlList -Text $annotationSchemaContent -Field 'required_fields'
     if ($annotationSchemaContent -notmatch 'claim_boundary:\s*annotation_schema_only_no_labels') {
         $failures.Add('Annotation schema must declare annotation_schema_only_no_labels claim boundary.')
     }
     foreach ($check in @(
         'annotation_id',
         'run_id',
+        'annotation_guideline_version',
         'false_readiness_label',
         'overclaim_label',
         'objective_narrowing_label',
+        'human_checkpoint_recall_label',
+        'unnecessary_stop_label',
+        'nonlocal_route_violation_label',
+        'stale_source_reliance_label',
+        'counter_review_catch_label',
+        'adjudication_override_quality_label',
+        'final_claim_supported_label',
         'rationale_transcript_spans',
         'human_primary_labels',
         'llm_judge_labels_if_used',
@@ -513,6 +552,7 @@ if (Test-Path -LiteralPath $evidencePackageSchemaPath) {
         'cost-latency',
         'every_transcript_has_annotation',
         'every_transcript_has_cost_latency_record',
+        'every_annotation_records_guideline_version',
         'annotation_rationales_include_transcript_spans',
         'crossed_cost_latency_join',
         'no_model_api_eval_execution',
@@ -559,6 +599,8 @@ if (Test-Path -LiteralPath $evidencePackageScorerPath) {
         'invalid labels',
         'invalid spans',
         'malformed costs',
+        'missing or wrong guideline versions',
+        'annotation-guidelines-v0.1.0',
         'crossed cost joins',
         'incomplete nested schema fields',
         'does not match transcript run_id',
@@ -566,6 +608,38 @@ if (Test-Path -LiteralPath $evidencePackageScorerPath) {
     )) {
         if (-not $evidencePackageScorerContent.Contains($check)) {
             $failures.Add("Missing evidence-package scorer invariant '$check'.")
+        }
+    }
+}
+
+$annotationGuidelinesPath = Join-Path $RepoRoot 'docs\empirical-annotation-guidelines.md'
+if (Test-Path -LiteralPath $annotationGuidelinesPath) {
+    $annotationGuidelinesContent = Get-Content -LiteralPath $annotationGuidelinesPath -Raw
+    foreach ($check in @(
+        'annotation-guidelines-v0.1.0',
+        'false_readiness_label',
+        'overclaim_label',
+        'objective_narrowing_label',
+        'human_checkpoint_recall_label',
+        'unnecessary_stop_label',
+        'nonlocal_route_violation_label',
+        'stale_source_reliance_label',
+        'counter_review_catch_label',
+        'adjudication_override_quality_label',
+        'final_claim_supported_label',
+        'Transcript Span Rules',
+        'Agreement Route',
+        'Current Nonclaims',
+        'does not include real labels',
+        'model/API results'
+    )) {
+        if (-not $annotationGuidelinesContent.Contains($check)) {
+            $failures.Add("Missing empirical annotation-guidelines boundary '$check' in docs/empirical-annotation-guidelines.md")
+        }
+    }
+    foreach ($labelField in @($annotationRequiredFieldsForGuidelines | Where-Object { $_ -like '*_label' })) {
+        if (-not $annotationGuidelinesContent.Contains($labelField)) {
+            $failures.Add("docs/empirical-annotation-guidelines.md is missing schema-required label rubric '$labelField'.")
         }
     }
 }
@@ -752,6 +826,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-results-analysis.md'
             Label = 'docs/empirical-results-analysis.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-annotation-guidelines.md'
+            Label = 'docs/empirical-annotation-guidelines.md'
         }
     )
 

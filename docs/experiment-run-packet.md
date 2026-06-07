@@ -26,6 +26,8 @@ The current structural run packet contains:
   run transcript shape;
 - [`annotation-schema.yaml`](../evals/empirical/annotation-schema.yaml) for
   human and judge labels;
+- [`empirical-annotation-guidelines.md`](empirical-annotation-guidelines.md) for
+  the future label rubric and agreement route;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`score-empirical-run-packet.ps1`](../scripts/score-empirical-run-packet.ps1)
@@ -44,10 +46,11 @@ Before running model/API evals, freeze:
 4. repeat count and randomization strategy;
 5. transcript schema;
 6. annotation schema;
-7. cost/latency log fields;
-8. scorer version;
-9. redaction and synthetic-fixture boundary;
-10. budget and stop conditions.
+7. annotation guideline version;
+8. cost/latency log fields;
+9. scorer version;
+10. redaction and synthetic-fixture boundary;
+11. budget and stop conditions.
 
 Any change after the freeze creates a new experiment version.
 
@@ -59,6 +62,7 @@ Every future executed run should produce:
 - one cost/latency record;
 - one model/runtime metadata record;
 - at least one label record;
+- the annotation guideline version used for each label record;
 - links from label rationale fields to transcript spans;
 - a run id that joins transcript, labels, cost, and metadata.
 
@@ -73,6 +77,7 @@ Stop before execution if:
 - task prompts or condition prompts are not frozen;
 - budget is not recorded;
 - transcript fields are missing;
+- annotation guideline version is missing;
 - annotation labels cannot cite transcript spans;
 - the route would imply paper readiness before measured results exist;
 - any artifact asks for result fields before runs are complete.

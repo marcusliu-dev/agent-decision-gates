@@ -24,6 +24,7 @@ planned_repeats_per_task_condition: 3
 required_artifacts:
   - raw_transcript
   - annotation_record
+  - annotation_guidelines
   - model_runtime_record
   - cost_latency_record
   - prompt_version_record
@@ -36,6 +37,7 @@ schemas:
   annotation_schema: evals/empirical/annotation-schema.yaml
   evidence_package_schema: evals/empirical/evidence-package-schema.yaml
   results_summary_schema: evals/empirical/results-summary-schema.yaml
+  annotation_guidelines: docs/empirical-annotation-guidelines.md
 
 stop_gates:
   - no_private_repository_material
@@ -44,6 +46,7 @@ stop_gates:
   - budget_recorded_before_execution
   - transcript_schema_available
   - annotation_schema_available
+  - annotation_guidelines_available
   - no_paper_readiness_claim_before_results
   - no_model_result_fields_in_planning_manifest
 

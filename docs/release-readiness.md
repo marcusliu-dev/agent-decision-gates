@@ -1,12 +1,12 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_results_aggregator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_annotation_guidelines_present_and_structurally_scored -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
 evidence-package validator, a results aggregator, an installable `$consult`
-skill package, public eval fixtures, a seed empirical task suite, and
-deterministic structural checks.
+skill package, public eval fixtures, a seed empirical task suite, empirical
+annotation guidelines, and deterministic structural checks.
 
 ## Purpose
 
@@ -49,6 +49,7 @@ The current repository surface includes:
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
 - `docs/experiment-run-packet.md`
+- `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
 - `docs/empirical-results-analysis.md`
 - `docs/glossary.md`
@@ -81,13 +82,14 @@ The current release claim is narrow and explicit:
   artifact;
 - the documentation and skill surface are internally consistent and
   verifier-backed, the design-pattern report is present, and the public eval
-  fixtures, seed empirical task suite, experiment run-packet schemas, and
-  evidence-package validator are structurally validated or self-tested;
+  fixtures, seed empirical task suite, experiment run-packet schemas,
+  annotation-guidelines surface, and evidence-package validator are
+  structurally validated or self-tested;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_results_aggregator_present_and_self_tested`.
+`empirical_annotation_guidelines_present_and_structurally_scored`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -109,6 +111,8 @@ system.
   task-suite surface and explicitly does not report model results;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
+- the empirical annotation guidelines are present and structurally checked as
+  the required future annotation rubric;
 - the deterministic empirical evidence-package validator passes its synthetic
   positive and negative self-test and explicitly does not provide real
   transcripts, labels, or model results;

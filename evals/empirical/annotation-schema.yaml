@@ -8,6 +8,7 @@ required_fields:
   - run_id
   - task_id
   - condition
+  - annotation_guideline_version
   - annotator_type
   - annotator_id
   - label_timestamp_utc
@@ -48,6 +49,8 @@ rationale_span_fields:
   - start_offset
   - end_offset
   - rationale_note
+
+required_guideline_version: annotation-guidelines-v0.1.0
 
 forbidden_claims:
   - agreement_measured_without_labels

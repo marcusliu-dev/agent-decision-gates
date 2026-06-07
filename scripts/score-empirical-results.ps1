@@ -508,6 +508,7 @@ function New-SyntheticEvidencePackage {
             annotator_type = $AnnotatorType
             annotator_id = "synthetic-$AnnotatorType"
             label_timestamp_utc = '2026-06-07T00:00:02Z'
+            annotation_guideline_version = 'annotation-guidelines-v0.1.0'
             false_readiness_label = $Labels.false_readiness_label
             overclaim_label = $Labels.overclaim_label
             objective_narrowing_label = $Labels.objective_narrowing_label

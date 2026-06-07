@@ -62,12 +62,14 @@ $paths = [ordered]@{
     AnnotationSchema = Join-Path $RepoRoot 'evals/empirical/annotation-schema.yaml'
     EvidencePackageSchema = Join-Path $RepoRoot 'evals/empirical/evidence-package-schema.yaml'
     ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
+    AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
 $warnings = New-Object System.Collections.Generic.List[string]
 $info = New-Object System.Collections.Generic.List[string]
+$annotationRequiredFields = @()
 
 foreach ($entry in $paths.GetEnumerator()) {
     if (-not (Test-Path -LiteralPath $entry.Value)) {
@@ -94,6 +96,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'required_artifacts') -Required @(
         'raw_transcript',
         'annotation_record',
+        'annotation_guidelines',
         'model_runtime_record',
         'cost_latency_record',
         'prompt_version_record',
@@ -105,6 +108,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'no_private_repository_material',
         'prompts_frozen_before_execution',
         'budget_recorded_before_execution',
+        'annotation_guidelines_available',
         'no_paper_readiness_claim_before_results',
         'no_model_result_fields_in_planning_manifest'
     ) -Label 'stop_gates'
@@ -121,7 +125,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'transcript_schema: evals/empirical/transcript-schema.yaml',
         'annotation_schema: evals/empirical/annotation-schema.yaml',
         'evidence_package_schema: evals/empirical/evidence-package-schema.yaml',
-        'results_summary_schema: evals/empirical/results-summary-schema.yaml'
+        'results_summary_schema: evals/empirical/results-summary-schema.yaml',
+        'annotation_guidelines: docs/empirical-annotation-guidelines.md'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
@@ -158,19 +163,27 @@ if (Test-Path -LiteralPath $paths.TranscriptSchema) {
 
 if (Test-Path -LiteralPath $paths.AnnotationSchema) {
     $annotation = Get-Content -LiteralPath $paths.AnnotationSchema -Raw
+    $annotationRequiredFields = Get-YamlList -Text $annotation -Field 'required_fields'
     if ((Get-Scalar -Text $annotation -Field 'claim_boundary') -ne 'annotation_schema_only_no_labels') {
         $failures.Add('Annotation schema must declare annotation_schema_only_no_labels.')
     }
-    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $annotation -Field 'required_fields') -Required @(
+    Assert-ListContains -Failures $failures -Items $annotationRequiredFields -Required @(
         'annotation_id',
         'run_id',
         'task_id',
         'condition',
+        'annotation_guideline_version',
         'annotator_type',
         'false_readiness_label',
         'overclaim_label',
         'objective_narrowing_label',
         'human_checkpoint_recall_label',
+        'unnecessary_stop_label',
+        'nonlocal_route_violation_label',
+        'stale_source_reliance_label',
+        'counter_review_catch_label',
+        'adjudication_override_quality_label',
+        'final_claim_supported_label',
         'rationale_transcript_spans',
         'confidence'
     ) -Label 'annotation required_fields'
@@ -181,6 +194,9 @@ if (Test-Path -LiteralPath $paths.AnnotationSchema) {
         'agreement_metric_report',
         'judge_bias_limitations'
     ) -Label 'agreement_requirements'
+    if (-not $annotation.Contains('required_guideline_version: annotation-guidelines-v0.1.0')) {
+        $failures.Add('Annotation schema must declare required_guideline_version: annotation-guidelines-v0.1.0.')
+    }
 }
 
 if (Test-Path -LiteralPath $paths.EvidencePackageSchema) {
@@ -196,6 +212,7 @@ if (Test-Path -LiteralPath $paths.EvidencePackageSchema) {
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $evidencePackage -Field 'join_requirements') -Required @(
         'every_transcript_has_annotation',
         'every_transcript_has_cost_latency_record',
+        'every_annotation_records_guideline_version',
         'every_annotation_run_id_matches_transcript',
         'every_cost_latency_run_id_matches_transcript',
         'every_transcript_cost_latency_record_id_matches_cost_record',
@@ -256,6 +273,37 @@ if (Test-Path -LiteralPath $paths.ResultsSummarySchema) {
         'no_empirical_effectiveness_claim',
         'no_paper_readiness'
     ) -Label 'results summary current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.AnnotationGuidelines) {
+    $guidelines = Get-Content -LiteralPath $paths.AnnotationGuidelines -Raw
+    foreach ($check in @(
+        'annotation-guidelines-v0.1.0',
+        'false_readiness_label',
+        'overclaim_label',
+        'objective_narrowing_label',
+        'human_checkpoint_recall_label',
+        'unnecessary_stop_label',
+        'nonlocal_route_violation_label',
+        'stale_source_reliance_label',
+        'counter_review_catch_label',
+        'adjudication_override_quality_label',
+        'final_claim_supported_label',
+        'Transcript Span Rules',
+        'Agreement Route',
+        'Current Nonclaims',
+        'does not include real labels',
+        'model/API results'
+    )) {
+        if (-not $guidelines.Contains($check)) {
+            $failures.Add("Annotation guidelines are missing required rubric text '$check'.")
+        }
+    }
+    foreach ($labelField in @($annotationRequiredFields | Where-Object { $_ -like '*_label' })) {
+        if (-not $guidelines.Contains($labelField)) {
+            $failures.Add("Annotation guidelines are missing schema-required label rubric '$labelField'.")
+        }
+    }
 }
 
 if (Test-Path -LiteralPath $paths.RunPacketDoc) {

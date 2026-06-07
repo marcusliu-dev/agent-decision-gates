@@ -37,6 +37,7 @@ required_annotation_fields:
   - run_id
   - task_id
   - condition
+  - annotation_guideline_version
   - annotator_type
   - annotator_id
   - label_timestamp_utc
@@ -66,6 +67,7 @@ required_cost_latency_fields:
 join_requirements:
   - every_transcript_has_annotation
   - every_transcript_has_cost_latency_record
+  - every_annotation_records_guideline_version
   - every_annotation_run_id_matches_transcript
   - every_cost_latency_run_id_matches_transcript
   - every_transcript_cost_latency_record_id_matches_cost_record
@@ -86,6 +88,8 @@ validator_self_test:
     - missing_nested_transcript_message_field
     - missing_nested_tool_call_field
     - invalid_annotation_metadata
+    - missing_annotation_guideline_version
+    - wrong_annotation_guideline_version
 
 forbidden_public_package_contents:
   - private_repository_material

@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_results_aggregator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_annotation_guidelines_present_and_structurally_scored -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -58,6 +58,8 @@ This repo packages a simple alternative:
   annotation schemas under [`evals/empirical/`](evals/empirical/), and a
   structural run-packet scorer in
   [`scripts/score-empirical-run-packet.ps1`](scripts/score-empirical-run-packet.ps1);
+- [empirical annotation guidelines](docs/empirical-annotation-guidelines.md)
+  for future human, LLM-judge, and rule-based labels;
 - an [empirical evidence-package guide](docs/empirical-evidence-package.md),
   evidence-package schema, and a synthetic self-test validator in
   [`scripts/score-empirical-evidence-package.ps1`](scripts/score-empirical-evidence-package.ps1);
@@ -144,6 +146,8 @@ requires independent review.
   for the future paper experiment design and current no-results boundary.
 - Read [docs/experiment-run-packet.md](docs/experiment-run-packet.md) for the
   frozen-artifact contract required before any future model/API eval run.
+- Read [docs/empirical-annotation-guidelines.md](docs/empirical-annotation-guidelines.md)
+  for the future annotation rubric and agreement route.
 - Read [docs/empirical-evidence-package.md](docs/empirical-evidence-package.md)
   for the post-run package completeness checks required before result analysis.
 - Read [docs/empirical-results-analysis.md](docs/empirical-results-analysis.md)
@@ -168,9 +172,9 @@ requires independent review.
 This is a published public repository with a reusable `$consult` skill package,
 public eval fixtures, documentation, a design-pattern report, an empirical
 evaluation plan, experiment run-packet schemas, an evidence-package validator,
-a results aggregator, and deterministic structural scorers under `MIT`. The
-current ceiling is no higher than
-`empirical_results_aggregator_present_and_self_tested`. The
+a results aggregator, empirical annotation guidelines, and deterministic
+structural scorers under `MIT`. The current ceiling is no higher than
+`empirical_annotation_guidelines_present_and_structurally_scored`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 aggregate metrics, or universal runtime correctness. The

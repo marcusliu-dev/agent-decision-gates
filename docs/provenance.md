@@ -42,6 +42,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/deep-dive-report.md` | Written locally as a public design-pattern report explaining claim ceilings, decision gates, verification boundaries, and the empirical paper path. |
 | `docs/empirical-evaluation-plan.md` | Written locally as a public experiment-design plan for future empirical paper work, with explicit no-results and no-paper-readiness boundaries. |
 | `docs/experiment-run-packet.md` | Written locally as a public run-packet specification for freezing future experiment artifacts before model/API eval execution. |
+| `docs/empirical-annotation-guidelines.md` | Written locally as public annotation rubric guidance for future human, LLM-judge, and rule-based labels, with no real labels or agreement results. |
 | `docs/empirical-evidence-package.md` | Written locally as a public evidence-package validation guide for future post-run completeness checks, with no executed experiment evidence. |
 | `docs/empirical-results-analysis.md` | Written locally as a public results-analysis guide for future metric aggregation after evidence-package validation, with no real experiment results. |
 | `docs/eval-evidence.md` | Written locally to describe the deterministic fixture scorer and its evidence boundary. |

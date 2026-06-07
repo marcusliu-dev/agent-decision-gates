@@ -28,14 +28,16 @@ A future evidence package should be a directory with:
 - `transcripts/`: JSON transcript records matching
   [`transcript-schema.yaml`](../evals/empirical/transcript-schema.yaml);
 - `annotations/`: JSON annotation records matching
-  [`annotation-schema.yaml`](../evals/empirical/annotation-schema.yaml);
+  [`annotation-schema.yaml`](../evals/empirical/annotation-schema.yaml) and the
+  current [`empirical annotation guidelines`](empirical-annotation-guidelines.md);
 - `cost-latency/`: JSON cost and latency records with the fields listed in
   [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml).
 
 Each transcript must join to at least one annotation by `run_id`, and to one
 cost/latency record by both `run_id` and `cost_latency_record_id`. Annotation
-rationales must cite transcript spans. A package missing these links is not
-ready for metric computation.
+rationales must cite transcript spans, and every annotation must record
+`annotation_guideline_version`. A package missing these links is not ready for
+metric computation.
 
 ## Validator
 
@@ -49,9 +51,10 @@ That command creates a temporary synthetic package, validates a positive case,
 validates that deliberately broken cases fail, and removes the temporary files.
 The negative cases include missing annotation joins, empty required ids,
 credential-like JSON keys, invalid labels, invalid transcript spans, malformed
-cost records, crossed cost/latency joins, invalid annotation metadata, and
-missing nested transcript/tool-call fields. The self-test proves only that the
-validator catches these basic structure and join failures on synthetic data.
+cost records, missing annotation guideline versions, crossed cost/latency joins,
+wrong annotation guideline versions, invalid annotation metadata, and missing
+nested transcript/tool-call fields. The self-test proves only that the validator
+catches these basic structure and join failures on synthetic data.
 
 For a future real package, run:
 
@@ -80,6 +83,8 @@ Stop before result computation if:
 - any transcript lacks a cost/latency record;
 - any annotation references a missing run;
 - any cost/latency record references a missing run;
+- any annotation lacks `annotation_guideline_version` or uses the wrong
+  guideline version;
 - annotation rationales do not cite transcript spans;
 - transcript message, tool-call, annotation, or cost fields are missing or
   malformed in the basic schema fields used by the validator;

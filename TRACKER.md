@@ -3,13 +3,13 @@
 Status: Current repository surface includes docs, a design-pattern report, an
 empirical evaluation plan, a seed empirical task suite, experiment run-packet
 schemas, an evidence-package validation route, a results aggregation route,
-structural scorers, and a
+annotation guidelines, structural scorers, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_results_aggregator_present_and_self_tested`
+`empirical_annotation_guidelines_present_and_structurally_scored`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -18,17 +18,20 @@ that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, evidence-package schema, evidence-package validation guide,
-results-summary schema, and results-analysis guide exist under `docs/` and
-`evals/empirical/`, that deterministic structural scorers pass for the current
-fixture, task-suite, run-packet, evidence-package validator, and results
-aggregator surfaces, that the deterministic public-surface integrity verifier
+results-summary schema, results-analysis guide, and annotation guidelines exist
+under `docs/` and `evals/empirical/`, that deterministic structural scorers
+pass for the current fixture, task-suite, run-packet, evidence-package
+validator, results aggregator, and annotation-guidelines surfaces, that the
+deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
 bounded to fixture/task-suite presence plus structural validation, not full
 runtime execution. The report, empirical-plan, and run-packet claims are bounded
 to design-pattern and experiment-design explanation; the evidence-package
 validator and results-aggregator claims are bounded to synthetic self-test
-behavior, not empirical proof or paper readiness. No broader claim is made for
+behavior, and the annotation-guidelines claim is bounded to rubric presence plus
+structural scorer coverage, not empirical proof or paper readiness. No broader
+claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
 CI coverage, deployment safety, empirical effectiveness, or production runtime
@@ -77,6 +80,7 @@ guarantees.
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
 - `docs/experiment-run-packet.md`
+- `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
 - `docs/empirical-results-analysis.md`
 - `docs/glossary.md`
@@ -125,6 +129,8 @@ guarantees.
   surface;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
+- the empirical annotation guidelines are present and structurally checked as
+  the required future label rubric;
 - the empirical evidence-package validator self-test passes on synthetic
   positive and negative packages;
 - the empirical results aggregator self-test passes on a synthetic evidence

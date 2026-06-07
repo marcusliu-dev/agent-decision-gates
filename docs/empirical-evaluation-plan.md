@@ -100,7 +100,8 @@ A paper-ready evidence package should include:
 - raw transcripts;
 - redacted or synthetic repository fixtures;
 - scorer source;
-- annotation guidelines;
+- annotation guidelines, using
+  [`docs/empirical-annotation-guidelines.md`](empirical-annotation-guidelines.md);
 - human and LLM-judge label files;
 - cost/latency logs;
 - aggregate results with confidence intervals;
@@ -121,9 +122,10 @@ Before any model/API eval run:
 2. Freeze the condition prompts.
 3. Confirm the scoring schema.
 4. Confirm the privacy and redaction boundary.
-5. Record the model/API budget.
-6. Run a small dry run with transcripts.
-7. Review the dry run for prompt leakage, false result claims, and annotation
+5. Freeze the annotation guideline version.
+6. Record the model/API budget.
+7. Run a small dry run with transcripts.
+8. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
 
 Before any paper-readiness or submission claim:

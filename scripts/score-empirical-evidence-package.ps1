@@ -304,6 +304,7 @@ function Invoke-PackageValidation {
         'run_id',
         'task_id',
         'condition',
+        'annotation_guideline_version',
         'annotator_type',
         'annotator_id',
         'label_timestamp_utc',
@@ -374,6 +375,8 @@ function Invoke-PackageValidation {
         'rule_based_scorer'
     )
 
+    $requiredAnnotationGuidelineVersion = 'annotation-guidelines-v0.1.0'
+
     $transcripts = Read-JsonRecords -Failures $failures -Directory (Join-Path $Root 'transcripts') -Label 'transcript'
     $annotations = Read-JsonRecords -Failures $failures -Directory (Join-Path $Root 'annotations') -Label 'annotation'
     $costRecords = Read-JsonRecords -Failures $failures -Directory (Join-Path $Root 'cost-latency') -Label 'cost-latency'
@@ -443,6 +446,11 @@ function Invoke-PackageValidation {
         $annotatorType = Get-PropertyValue -Record $annotation -Name 'annotator_type'
         if ($null -ne $annotatorType -and ($allowedAnnotatorTypes -notcontains [string]$annotatorType)) {
             $failures.Add("$label has invalid annotator_type '$annotatorType'.")
+        }
+
+        $guidelineVersion = Get-PropertyValue -Record $annotation -Name 'annotation_guideline_version'
+        if ($null -ne $guidelineVersion -and [string]$guidelineVersion -ne $requiredAnnotationGuidelineVersion) {
+            $failures.Add("$label has annotation_guideline_version '$guidelineVersion'; expected '$requiredAnnotationGuidelineVersion'.")
         }
 
         Add-JsonNumberFailures -Failures $failures -Label $label -Field 'confidence' -Value (Get-PropertyValue -Record $annotation -Name 'confidence') -Minimum 0 -Maximum 1
@@ -658,6 +666,7 @@ function New-SyntheticEvidencePackage {
         annotator_type = 'rule_based_scorer'
         annotator_id = 'validator-self-test'
         label_timestamp_utc = '2026-06-07T00:00:02Z'
+        annotation_guideline_version = 'annotation-guidelines-v0.1.0'
         false_readiness_label = 'pass'
         overclaim_label = 'pass'
         objective_narrowing_label = 'pass'
@@ -811,6 +820,22 @@ function Invoke-SelfTest {
         Write-JsonFile -Path $badAnnotationPath -Value $badAnnotation
         Add-NegativeCaseResult -Name 'bad_annotation_metadata' -Result (Invoke-PackageValidation -Root $badAnnotationRoot) -ExpectedFailureText 'invalid annotator_type'
 
+        $missingGuidelineRoot = Join-Path $tempBase 'negative-missing-guideline-version'
+        New-SyntheticEvidencePackage -Root $missingGuidelineRoot
+        $missingGuidelinePath = Join-Path $missingGuidelineRoot 'annotations/synthetic-annotation-001.json'
+        $missingGuideline = Get-Content -LiteralPath $missingGuidelinePath -Raw | ConvertFrom-Json
+        $missingGuideline.PSObject.Properties.Remove('annotation_guideline_version')
+        Write-JsonFile -Path $missingGuidelinePath -Value $missingGuideline
+        Add-NegativeCaseResult -Name 'missing_guideline_version' -Result (Invoke-PackageValidation -Root $missingGuidelineRoot) -ExpectedFailureText "missing required field 'annotation_guideline_version'"
+
+        $wrongGuidelineRoot = Join-Path $tempBase 'negative-wrong-guideline-version'
+        New-SyntheticEvidencePackage -Root $wrongGuidelineRoot
+        $wrongGuidelinePath = Join-Path $wrongGuidelineRoot 'annotations/synthetic-annotation-001.json'
+        $wrongGuideline = Get-Content -LiteralPath $wrongGuidelinePath -Raw | ConvertFrom-Json
+        $wrongGuideline.annotation_guideline_version = 'annotation-guidelines-v9.9.9'
+        Write-JsonFile -Path $wrongGuidelinePath -Value $wrongGuideline
+        Add-NegativeCaseResult -Name 'wrong_guideline_version' -Result (Invoke-PackageValidation -Root $wrongGuidelineRoot) -ExpectedFailureText "expected 'annotation-guidelines-v0.1.0'"
+
         $crossedCostRoot = Join-Path $tempBase 'negative-crossed-cost'
         New-SyntheticEvidencePackage -Root $crossedCostRoot
         $runOneTranscriptPath = Join-Path $crossedCostRoot 'transcripts/synthetic-run-001.json'
@@ -837,7 +862,7 @@ function Invoke-SelfTest {
 
         $info.Add('Validated synthetic positive package.')
         $info.Add('Rejected synthetic package with missing annotation join.')
-        $info.Add('Rejected synthetic packages with empty ids, credential keys, invalid labels, invalid spans, malformed costs, crossed cost joins, and incomplete nested schema fields.')
+        $info.Add('Rejected synthetic packages with empty ids, credential keys, invalid labels, invalid spans, malformed costs, missing or wrong guideline versions, crossed cost joins, and incomplete nested schema fields.')
         $summary['self_test_positive_status'] = $positiveResult.status
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
