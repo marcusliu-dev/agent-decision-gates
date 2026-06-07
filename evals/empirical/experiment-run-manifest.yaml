@@ -50,6 +50,7 @@ stop_gates:
   - annotation_schema_available
   - annotation_guidelines_available
   - agreement_checker_available
+  - dry_run_package_builder_available
   - no_paper_readiness_claim_before_results
   - no_model_result_fields_in_planning_manifest
 

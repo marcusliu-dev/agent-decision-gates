@@ -149,14 +149,15 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package.ps1 -SelfTest
 ```
 
 These scorers verify only the shape of the public task-suite seed and run
 packet plus the evidence-package validator's and results aggregator's synthetic
-self-tests and the agreement checker's synthetic self-test. They do not execute
-model/API evals, score real completed transcripts, report real aggregate
-metrics, measure real human/LLM-judge agreement, or prove empirical
-effectiveness.
+self-tests, the agreement checker's synthetic self-test, and the dry-run package builder
+synthetic self-test. They do not execute model/API evals,
+score real completed transcripts, report real aggregate metrics, measure real
+human/LLM-judge agreement, or prove empirical effectiveness.
 
 ## Current Nonclaims
 

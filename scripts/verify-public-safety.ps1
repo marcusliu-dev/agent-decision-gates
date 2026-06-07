@@ -47,6 +47,7 @@ $requiredPaths = @(
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
     'docs/empirical-agreement-checks.md',
+    'docs/empirical-dry-run-package.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -64,6 +65,7 @@ $requiredPaths = @(
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
     'scripts/score-empirical-agreement.ps1',
+    'scripts/build-empirical-dry-run-package.ps1',
     'LICENSE'
 )
 
@@ -133,6 +135,7 @@ $ceilingOrder = @{
     'empirical_results_aggregator_present_and_self_tested' = 10
     'empirical_annotation_guidelines_present_and_structurally_scored' = 11
     'empirical_agreement_checker_present_and_self_tested' = 12
+    'empirical_dry_run_package_builder_present_and_self_tested' = 13
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -392,7 +395,10 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'false readiness rate',
         'human/LLM-judge agreement',
         'cost/latency',
-        'score-empirical-evidence-package.ps1 -SelfTest'
+        'score-empirical-evidence-package.ps1 -SelfTest',
+        'score-empirical-agreement.ps1 -SelfTest',
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'dry-run package builder'
     )) {
         if (-not $empiricalPlanContent.Contains($check)) {
             $failures.Add("Missing empirical-plan boundary '$check' in docs/empirical-evaluation-plan.md")
@@ -452,7 +458,10 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
         'score-empirical-evidence-package.ps1 -SelfTest',
-        'score-empirical-agreement.ps1 -SelfTest'
+        'score-empirical-agreement.ps1 -SelfTest',
+        'dry_run_package_builder_available',
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'synthetic dry-run package builder self-test'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
             $failures.Add("Missing experiment-run-packet boundary '$check' in docs/experiment-run-packet.md")
@@ -476,6 +485,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'agreement_summary_schema',
         'annotation_guidelines_available',
         'agreement_checker_available',
+        'dry_run_package_builder_available',
         'prompt_version_record',
         'no_private_repository_material',
         'budget_recorded_before_execution',
@@ -786,6 +796,45 @@ if (Test-Path -LiteralPath $empiricalAgreementScorerPath) {
     }
 }
 
+$empiricalDryRunDocPath = Join-Path $RepoRoot 'docs\empirical-dry-run-package.md'
+if (Test-Path -LiteralPath $empiricalDryRunDocPath) {
+    $empiricalDryRunDocContent = Get-Content -LiteralPath $empiricalDryRunDocPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'RunValidators',
+        'Current Nonclaims',
+        'no real transcripts',
+        'no empirical effectiveness claim',
+        'synthetic evidence package'
+    )) {
+        if (-not $empiricalDryRunDocContent.Contains($check)) {
+            $failures.Add("Missing empirical dry-run package boundary '$check' in docs/empirical-dry-run-package.md")
+        }
+    }
+}
+
+$empiricalDryRunBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-dry-run-package.ps1'
+if (Test-Path -LiteralPath $empiricalDryRunBuilderPath) {
+    $empiricalDryRunBuilderContent = Get-Content -LiteralPath $empiricalDryRunBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical dry-run package builder',
+        'score-empirical-evidence-package.ps1',
+        'score-empirical-results.ps1',
+        'score-empirical-agreement.ps1',
+        'RequireHumanLlmPairs',
+        'MinimumAgreementRate',
+        'OutputRoot already exists and is not empty',
+        'contains non-generated file',
+        'no_model_api_eval_execution',
+        'Generated synthetic dry-run evidence package'
+    )) {
+        if (-not $empiricalDryRunBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical dry-run package builder invariant '$check'.")
+        }
+    }
+}
+
 $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
@@ -910,6 +959,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-agreement-checks.md'
             Label = 'docs/empirical-agreement-checks.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-dry-run-package.md'
+            Label = 'docs/empirical-dry-run-package.md'
         }
     )
 

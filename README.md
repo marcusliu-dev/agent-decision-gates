@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_agreement_checker_present_and_self_tested -->
+<!-- claim_ceiling: empirical_dry_run_package_builder_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -69,6 +69,11 @@ This repo packages a simple alternative:
 - an [empirical agreement-checks guide](docs/empirical-agreement-checks.md),
   agreement-summary schema, and a synthetic self-test checker in
   [`scripts/score-empirical-agreement.ps1`](scripts/score-empirical-agreement.ps1);
+- a [synthetic empirical dry-run package guide](docs/empirical-dry-run-package.md)
+  and builder in
+  [`scripts/build-empirical-dry-run-package.ps1`](scripts/build-empirical-dry-run-package.ps1)
+  for exercising the package validator, results aggregator, and agreement
+  checker without model/API eval execution;
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -158,6 +163,8 @@ requires independent review.
 - Read [docs/empirical-agreement-checks.md](docs/empirical-agreement-checks.md)
   for the future human-vs-LLM-judge agreement route that remains synthetic-only
   today.
+- Read [docs/empirical-dry-run-package.md](docs/empirical-dry-run-package.md)
+  for the synthetic end-to-end package route that remains non-empirical today.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a
@@ -178,14 +185,14 @@ requires independent review.
 This is a published public repository with a reusable `$consult` skill package,
 public eval fixtures, documentation, a design-pattern report, an empirical
 evaluation plan, experiment run-packet schemas, an evidence-package validator,
-a results aggregator, empirical annotation guidelines, an agreement checker,
-and deterministic structural scorers under `MIT`. The current ceiling is no
-higher than
-`empirical_agreement_checker_present_and_self_tested`. The
+a results aggregator, empirical annotation guidelines, an agreement checker, a
+synthetic dry-run package builder, and deterministic structural scorers under
+`MIT`. The current ceiling is no higher than
+`empirical_dry_run_package_builder_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
-correctness. The
+correctness. The dry-run package is synthetic evidence-shape exercise only. The
 repository intentionally does not ship CI, deployment automation, application
 source scaffolding, model/API eval results, or a broader framework/runtime
 product surface.

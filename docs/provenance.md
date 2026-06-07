@@ -47,6 +47,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/empirical-evidence-package.md` | Written locally as a public evidence-package validation guide for future post-run completeness checks, with no executed experiment evidence. |
 | `docs/empirical-results-analysis.md` | Written locally as a public results-analysis guide for future metric aggregation after evidence-package validation, with no real experiment results. |
 | `docs/empirical-agreement-checks.md` | Written locally as a public agreement-checks guide for future human-vs-LLM-judge comparisons, with no real agreement or judge-validity claim. |
+| `docs/empirical-dry-run-package.md` | Written locally as a public synthetic dry-run package guide for exercising validators without model/API eval execution or real results. |
 | `docs/eval-evidence.md` | Written locally to describe the deterministic fixture scorer and its evidence boundary. |
 | `docs/glossary.md` | Written locally to define public terms such as claim ceiling, parent framing, and human checkpoint. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
@@ -61,6 +62,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `scripts/score-empirical-evidence-package.ps1` | Written locally as a dependency-free deterministic validator and synthetic self-test route for future empirical evidence packages. |
 | `scripts/score-empirical-results.ps1` | Written locally as a dependency-free deterministic results aggregator and synthetic self-test route for future validated empirical evidence packages. |
 | `scripts/score-empirical-agreement.ps1` | Written locally as a dependency-free deterministic human-vs-LLM-judge agreement checker and synthetic self-test route for future validated empirical evidence packages. |
+| `scripts/build-empirical-dry-run-package.ps1` | Written locally as a dependency-free deterministic synthetic dry-run package builder that exercises existing empirical validators without model/API calls. |
 | `TRACKER.md` | Written locally as the bounded outside-repo stage ledger for this repository. |
 | `docs/release-readiness.md` | Written locally as the release-state record for this repository. |
 | `docs/provenance.md` | Written locally as the provenance record for this repository. |

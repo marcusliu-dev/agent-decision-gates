@@ -32,6 +32,9 @@ The current structural run packet contains:
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
   for future human-vs-LLM-judge agreement summaries;
+- [`empirical-dry-run-package.md`](empirical-dry-run-package.md) and
+  [`build-empirical-dry-run-package.ps1`](../scripts/build-empirical-dry-run-package.ps1)
+  for a synthetic end-to-end package exercise before any real model/API run;
 - [`score-empirical-run-packet.ps1`](../scripts/score-empirical-run-packet.ps1)
   for deterministic structural checks.
 
@@ -80,6 +83,7 @@ Stop before execution if:
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
+- the dry_run_package_builder_available stop gate is not satisfied;
 - annotation labels cannot cite transcript spans;
 - the route would imply paper readiness before measured results exist;
 - any artifact asks for result fields before runs are complete.
@@ -92,12 +96,13 @@ Run:
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package.ps1 -SelfTest
 ```
 
 Those commands check only the packet structure, evidence-package validator
-self-test, and agreement-checker self-test. They do not run models, call APIs,
-score real completed transcripts, measure real agreement, or prove empirical
-effectiveness.
+self-test, agreement-checker self-test, and the synthetic dry-run package builder self-test.
+They do not run models, call APIs, score real completed transcripts,
+measure real agreement, or prove empirical effectiveness.
 
 ## Current Nonclaims
 

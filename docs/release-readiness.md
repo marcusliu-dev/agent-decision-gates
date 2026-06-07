@@ -1,13 +1,13 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_agreement_checker_present_and_self_tested -->
+<!-- claim_ceiling: empirical_dry_run_package_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
 evidence-package validator, a results aggregator, an installable `$consult`
 skill package, public eval fixtures, a seed empirical task suite, empirical
 annotation guidelines, an agreement checker, and deterministic structural
-checks.
+checks, plus a synthetic dry-run evidence-package builder.
 
 ## Purpose
 
@@ -55,6 +55,7 @@ The current repository surface includes:
 - `docs/empirical-evidence-package.md`
 - `docs/empirical-results-analysis.md`
 - `docs/empirical-agreement-checks.md`
+- `docs/empirical-dry-run-package.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -71,6 +72,7 @@ The current repository surface includes:
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
 - `scripts/score-empirical-agreement.ps1`
+- `scripts/build-empirical-dry-run-package.ps1`
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
@@ -89,12 +91,13 @@ The current release claim is narrow and explicit:
   fixtures, seed empirical task suite, experiment run-packet schemas,
   annotation-guidelines surface, and evidence-package validator are
   structurally validated or self-tested, and the agreement-check route is
-  synthetic-self-tested;
+  synthetic-self-tested, with a synthetic dry-run package builder self-tested
+  against the validator chain;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_agreement_checker_present_and_self_tested`.
+`empirical_dry_run_package_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -126,6 +129,10 @@ system.
 - the deterministic empirical agreement checker passes its synthetic self-test
   and explicitly does not provide real human/LLM-judge agreement or judge
   validity evidence;
+- the deterministic empirical dry-run package builder passes its self-test by
+  generating a synthetic two-run evidence package, validating it through the
+  evidence-package, results, and agreement scorers, and rejecting unsafe
+  output-directory overwrite cases;
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
@@ -148,7 +155,8 @@ These are intentionally outside the current release scope:
   empirical effectiveness, paper readiness, or universal runtime correctness;
 - model/API eval execution, transcript/label production, real aggregate metrics,
   human/LLM-judge agreement measurement, judge-validity evidence, or result
-  publication.
+  publication;
+- any claim that the synthetic dry-run package is a real experiment output.
 
 ## Interpretation Rule
 

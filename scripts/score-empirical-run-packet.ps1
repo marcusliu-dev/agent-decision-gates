@@ -64,7 +64,10 @@ $paths = [ordered]@{
     ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
     AgreementSummarySchema = Join-Path $RepoRoot 'evals/empirical/agreement-summary-schema.yaml'
     AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
+    EmpiricalPlan = Join-Path $RepoRoot 'docs/empirical-evaluation-plan.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
+    DryRunDoc = Join-Path $RepoRoot 'docs/empirical-dry-run-package.md'
+    DryRunBuilder = Join-Path $RepoRoot 'scripts/build-empirical-dry-run-package.ps1'
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -112,6 +115,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
         'agreement_checker_available',
+        'dry_run_package_builder_available',
         'no_paper_readiness_claim_before_results',
         'no_model_result_fields_in_planning_manifest'
     ) -Label 'stop_gates'
@@ -352,10 +356,66 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'report results',
         'claim paper readiness',
         'No private repository material',
-        'score-empirical-run-packet.ps1'
+        'score-empirical-run-packet.ps1',
+        'dry_run_package_builder_available',
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'synthetic dry-run package builder self-test'
     )) {
         if (-not $doc.Contains($check)) {
             $failures.Add("Experiment run packet doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
+    $plan = Get-Content -LiteralPath $paths.EmpiricalPlan -Raw
+    foreach ($check in @(
+        'score-empirical-task-suite.ps1',
+        'score-empirical-run-packet.ps1',
+        'score-empirical-evidence-package.ps1 -SelfTest',
+        'score-empirical-results.ps1 -SelfTest',
+        'score-empirical-agreement.ps1 -SelfTest',
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'dry-run package builder',
+        'They do not execute model/API evals'
+    )) {
+        if (-not $plan.Contains($check)) {
+            $failures.Add("Empirical evaluation plan is missing verification sync text '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.DryRunDoc) {
+    $doc = Get-Content -LiteralPath $paths.DryRunDoc -Raw
+    foreach ($check in @(
+        'build-empirical-dry-run-package.ps1 -SelfTest',
+        'RunValidators',
+        'does not execute model/API evals',
+        'Current Nonclaims',
+        'no real transcripts',
+        'no empirical effectiveness claim'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical dry-run package doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.DryRunBuilder) {
+    $builder = Get-Content -LiteralPath $paths.DryRunBuilder -Raw
+    foreach ($check in @(
+        'Empirical dry-run package builder',
+        'score-empirical-evidence-package.ps1',
+        'score-empirical-results.ps1',
+        'score-empirical-agreement.ps1',
+        'RequireHumanLlmPairs',
+        'MinimumAgreementRate',
+        'OutputRoot already exists and is not empty',
+        'contains non-generated file',
+        'no_model_api_eval_execution'
+    )) {
+        if (-not $builder.Contains($check)) {
+            $failures.Add("Empirical dry-run package builder is missing invariant '$check'.")
         }
     }
 }
