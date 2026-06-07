@@ -36,6 +36,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/empirical/annotation-schema.yaml` | Written locally as a public annotation schema for future human or judge labels, with no labels. |
 | `evals/empirical/evidence-package-schema.yaml` | Written locally as a public evidence-package schema for future experiment outputs, with no transcripts, labels, or results. |
 | `evals/empirical/results-summary-schema.yaml` | Written locally as a public results-summary schema for future post-package aggregation, with no real aggregate metrics and no raw local package path requirement. |
+| `evals/empirical/agreement-summary-schema.yaml` | Written locally as a public agreement-summary schema for future human-vs-LLM-judge agreement checks, with no real labels or agreement results. |
 | `docs/consult-protocol.md` | Written locally as public-facing protocol guidance and updated to align with the installable consult skill package. |
 | `docs/core-protocol.md` | Written locally as runtime-neutral protocol guidance for adopters outside the original Codex environment. |
 | `docs/codex-adapter.md` | Written locally to isolate Codex-specific adapter behavior from the runtime-neutral pattern. |
@@ -45,6 +46,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/empirical-annotation-guidelines.md` | Written locally as public annotation rubric guidance for future human, LLM-judge, and rule-based labels, with no real labels or agreement results. |
 | `docs/empirical-evidence-package.md` | Written locally as a public evidence-package validation guide for future post-run completeness checks, with no executed experiment evidence. |
 | `docs/empirical-results-analysis.md` | Written locally as a public results-analysis guide for future metric aggregation after evidence-package validation, with no real experiment results. |
+| `docs/empirical-agreement-checks.md` | Written locally as a public agreement-checks guide for future human-vs-LLM-judge comparisons, with no real agreement or judge-validity claim. |
 | `docs/eval-evidence.md` | Written locally to describe the deterministic fixture scorer and its evidence boundary. |
 | `docs/glossary.md` | Written locally to define public terms such as claim ceiling, parent framing, and human checkpoint. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
@@ -58,6 +60,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `scripts/score-empirical-run-packet.ps1` | Written locally as a dependency-free deterministic structural scorer for the public empirical run packet. |
 | `scripts/score-empirical-evidence-package.ps1` | Written locally as a dependency-free deterministic validator and synthetic self-test route for future empirical evidence packages. |
 | `scripts/score-empirical-results.ps1` | Written locally as a dependency-free deterministic results aggregator and synthetic self-test route for future validated empirical evidence packages. |
+| `scripts/score-empirical-agreement.ps1` | Written locally as a dependency-free deterministic human-vs-LLM-judge agreement checker and synthetic self-test route for future validated empirical evidence packages. |
 | `TRACKER.md` | Written locally as the bounded outside-repo stage ledger for this repository. |
 | `docs/release-readiness.md` | Written locally as the release-state record for this repository. |
 | `docs/provenance.md` | Written locally as the provenance record for this repository. |

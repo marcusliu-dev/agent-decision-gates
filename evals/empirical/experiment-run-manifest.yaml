@@ -25,6 +25,7 @@ required_artifacts:
   - raw_transcript
   - annotation_record
   - annotation_guidelines
+  - agreement_check_record
   - model_runtime_record
   - cost_latency_record
   - prompt_version_record
@@ -37,6 +38,7 @@ schemas:
   annotation_schema: evals/empirical/annotation-schema.yaml
   evidence_package_schema: evals/empirical/evidence-package-schema.yaml
   results_summary_schema: evals/empirical/results-summary-schema.yaml
+  agreement_summary_schema: evals/empirical/agreement-summary-schema.yaml
   annotation_guidelines: docs/empirical-annotation-guidelines.md
 
 stop_gates:
@@ -47,6 +49,7 @@ stop_gates:
   - transcript_schema_available
   - annotation_schema_available
   - annotation_guidelines_available
+  - agreement_checker_available
   - no_paper_readiness_claim_before_results
   - no_model_result_fields_in_planning_manifest
 

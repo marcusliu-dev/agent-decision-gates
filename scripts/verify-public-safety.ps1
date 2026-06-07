@@ -36,6 +36,7 @@ $requiredPaths = @(
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
     'evals/empirical/results-summary-schema.yaml',
+    'evals/empirical/agreement-summary-schema.yaml',
     'docs/empirical-annotation-guidelines.md',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
@@ -45,6 +46,7 @@ $requiredPaths = @(
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
+    'docs/empirical-agreement-checks.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -61,6 +63,7 @@ $requiredPaths = @(
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
+    'scripts/score-empirical-agreement.ps1',
     'LICENSE'
 )
 
@@ -129,6 +132,7 @@ $ceilingOrder = @{
     'empirical_evidence_package_validator_present_and_self_tested' = 9
     'empirical_results_aggregator_present_and_self_tested' = 10
     'empirical_annotation_guidelines_present_and_structurally_scored' = 11
+    'empirical_agreement_checker_present_and_self_tested' = 12
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -446,7 +450,9 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'No private repository material',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
-        'score-empirical-evidence-package.ps1 -SelfTest'
+        'agreement-summary-schema.yaml',
+        'score-empirical-evidence-package.ps1 -SelfTest',
+        'score-empirical-agreement.ps1 -SelfTest'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
             $failures.Add("Missing experiment-run-packet boundary '$check' in docs/experiment-run-packet.md")
@@ -464,9 +470,12 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'raw_transcript',
         'annotation_record',
         'annotation_guidelines',
+        'agreement_check_record',
         'cost_latency_record',
         'results_summary_schema',
+        'agreement_summary_schema',
         'annotation_guidelines_available',
+        'agreement_checker_available',
         'prompt_version_record',
         'no_private_repository_material',
         'budget_recorded_before_execution',
@@ -671,6 +680,34 @@ if (Test-Path -LiteralPath $resultsSummarySchemaPath) {
     }
 }
 
+$agreementSummarySchemaPath = Join-Path $RepoRoot 'evals\empirical\agreement-summary-schema.yaml'
+if (Test-Path -LiteralPath $agreementSummarySchemaPath) {
+    $agreementSummarySchemaContent = Get-Content -LiteralPath $agreementSummarySchemaPath -Raw
+    if ($agreementSummarySchemaContent -notmatch 'claim_boundary:\s*agreement_summary_schema_only_no_real_agreement_results') {
+        $failures.Add('Agreement summary schema must declare agreement_summary_schema_only_no_real_agreement_results claim boundary.')
+    }
+    foreach ($check in @(
+        'human_llm_pairwise_exact_label_agreement_rate',
+        'human_llm_label_comparisons',
+        'human_llm_label_matches',
+        'known_bias_limitations',
+        'verbosity_bias',
+        'position_bias',
+        'self_enhancement_bias',
+        'correlated_model_failure',
+        'rubric_drift',
+        'missing_human_ground_truth',
+        'score-empirical-agreement.ps1 -SelfTest',
+        'no_human_llm_judge_agreement_results',
+        'no_judge_validity_claim',
+        'no_paper_readiness'
+    )) {
+        if ($agreementSummarySchemaContent -notlike "*$check*") {
+            $failures.Add("Missing agreement summary schema requirement '$check'.")
+        }
+    }
+}
+
 $empiricalResultsDocPath = Join-Path $RepoRoot 'docs\empirical-results-analysis.md'
 if (Test-Path -LiteralPath $empiricalResultsDocPath) {
     $empiricalResultsDocContent = Get-Content -LiteralPath $empiricalResultsDocPath -Raw
@@ -706,6 +743,45 @@ if (Test-Path -LiteralPath $empiricalResultsScorerPath) {
     )) {
         if (-not $empiricalResultsScorerContent.Contains($check)) {
             $failures.Add("Missing empirical results scorer invariant '$check'.")
+        }
+    }
+}
+
+$empiricalAgreementDocPath = Join-Path $RepoRoot 'docs\empirical-agreement-checks.md'
+if (Test-Path -LiteralPath $empiricalAgreementDocPath) {
+    $empiricalAgreementDocContent = Get-Content -LiteralPath $empiricalAgreementDocPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'score-empirical-agreement.ps1 -SelfTest',
+        'RequireHumanLlmPairs',
+        'MinimumAgreementRate',
+        'Bias Limitations',
+        'not prove',
+        'Current Nonclaims'
+    )) {
+        if (-not $empiricalAgreementDocContent.Contains($check)) {
+            $failures.Add("Missing empirical agreement-checks boundary '$check' in docs/empirical-agreement-checks.md")
+        }
+    }
+}
+
+$empiricalAgreementScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-agreement.ps1'
+if (Test-Path -LiteralPath $empiricalAgreementScorerPath) {
+    $empiricalAgreementScorerContent = Get-Content -LiteralPath $empiricalAgreementScorerPath -Raw
+    foreach ($check in @(
+        'Empirical agreement checks',
+        'Invoke-EvidencePackageValidator',
+        'human_llm_pairwise_exact_label_agreement_rate',
+        'Human/LLM-judge annotation pairs are required',
+        'below required minimum',
+        'known_bias_limitations',
+        'self_test_path_redaction_status',
+        'Rejected missing human/LLM pairs when required',
+        'Rejected low agreement when a minimum threshold was required',
+        'Provide -PackageRoot for a real evidence package or -SelfTest'
+    )) {
+        if (-not $empiricalAgreementScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical agreement scorer invariant '$check'.")
         }
     }
 }
@@ -830,6 +906,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-annotation-guidelines.md'
             Label = 'docs/empirical-annotation-guidelines.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-agreement-checks.md'
+            Label = 'docs/empirical-agreement-checks.md'
         }
     )
 

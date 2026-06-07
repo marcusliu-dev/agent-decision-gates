@@ -96,7 +96,8 @@ For paper-level results:
 4. Report known judge-bias risks, including verbosity bias, position bias,
    self-enhancement bias, and correlated model failure.
 5. Do not claim human/LLM-judge agreement until both annotation sets exist and
-   the results aggregator reports agreement values.
+   `score-empirical-agreement.ps1` reports agreement values for the exact
+   evidence package.
 
 ## Stop Conditions
 

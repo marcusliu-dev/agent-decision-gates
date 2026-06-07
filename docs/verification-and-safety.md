@@ -7,9 +7,9 @@ the scope of the claim.
 
 This repository's main verifier is deterministic. A passing public-surface
 integrity verifier plus fresh readback can prove the integrity of the current
-documentation, skill, and public eval surface. It does not, by itself, prove
-broader operational safety, deployment safety, empirical effectiveness, or
-product correctness outside that surface.
+documentation, skill, public eval, and empirical structural-scoring surface. It
+does not, by itself, prove broader operational safety, deployment safety,
+empirical effectiveness, or product correctness outside that surface.
 
 ## Match Evidence To Scope
 
@@ -42,6 +42,8 @@ broader state than the tracker and current verifier evidence support.
 - The verifier in this repository checks:
   - required public files and directories exist;
   - the installable skill package and public eval fixtures exist;
+  - empirical planning, run-packet, evidence-package, results-aggregation, and
+    agreement-check surfaces stay structurally present and claim-bounded;
   - the skill remains explicit-use only;
   - core consult invariants appear in the public skill text;
   - blocked markers and blocked private leakage terms do not appear;
@@ -80,8 +82,8 @@ authorized, stop and re-checkpoint before writing it.
 ## Current Repository Surface
 
 The live verifier in this repository is intentionally limited to the current
-public reference, skill-package, and eval-fixture surface. It is useful
-because it is honest about what it can and cannot prove.
+public reference, skill-package, eval-fixture, and empirical structural-scoring
+surface. It is useful because it is honest about what it can and cannot prove.
 
 It can support integrity claims about the current public repository surface. It
 does not replace broader verification for code, CI, deployment,

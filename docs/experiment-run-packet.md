@@ -30,6 +30,8 @@ The current structural run packet contains:
   the future label rubric and agreement route;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
+- [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
+  for future human-vs-LLM-judge agreement summaries;
 - [`score-empirical-run-packet.ps1`](../scripts/score-empirical-run-packet.ps1)
   for deterministic structural checks.
 
@@ -89,11 +91,13 @@ Run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
 ```
 
-Those commands check only the packet structure and evidence-package validator
-self-test. They do not run models, call APIs, score real completed transcripts,
-or prove empirical effectiveness.
+Those commands check only the packet structure, evidence-package validator
+self-test, and agreement-checker self-test. They do not run models, call APIs,
+score real completed transcripts, measure real agreement, or prove empirical
+effectiveness.
 
 ## Current Nonclaims
 

@@ -62,6 +62,7 @@ $paths = [ordered]@{
     AnnotationSchema = Join-Path $RepoRoot 'evals/empirical/annotation-schema.yaml'
     EvidencePackageSchema = Join-Path $RepoRoot 'evals/empirical/evidence-package-schema.yaml'
     ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
+    AgreementSummarySchema = Join-Path $RepoRoot 'evals/empirical/agreement-summary-schema.yaml'
     AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
 }
@@ -97,6 +98,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'raw_transcript',
         'annotation_record',
         'annotation_guidelines',
+        'agreement_check_record',
         'model_runtime_record',
         'cost_latency_record',
         'prompt_version_record',
@@ -109,6 +111,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'prompts_frozen_before_execution',
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
+        'agreement_checker_available',
         'no_paper_readiness_claim_before_results',
         'no_model_result_fields_in_planning_manifest'
     ) -Label 'stop_gates'
@@ -126,6 +129,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'annotation_schema: evals/empirical/annotation-schema.yaml',
         'evidence_package_schema: evals/empirical/evidence-package-schema.yaml',
         'results_summary_schema: evals/empirical/results-summary-schema.yaml',
+        'agreement_summary_schema: evals/empirical/agreement-summary-schema.yaml',
         'annotation_guidelines: docs/empirical-annotation-guidelines.md'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
@@ -273,6 +277,41 @@ if (Test-Path -LiteralPath $paths.ResultsSummarySchema) {
         'no_empirical_effectiveness_claim',
         'no_paper_readiness'
     ) -Label 'results summary current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.AgreementSummarySchema) {
+    $agreementSummary = Get-Content -LiteralPath $paths.AgreementSummarySchema -Raw
+    if ((Get-Scalar -Text $agreementSummary -Field 'claim_boundary') -ne 'agreement_summary_schema_only_no_real_agreement_results') {
+        $failures.Add('Agreement summary schema must declare agreement_summary_schema_only_no_real_agreement_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $agreementSummary -Field 'required_summary_fields') -Required @(
+        'package_id',
+        'compared_runs',
+        'human_llm_pairwise_exact_label_agreement_rate',
+        'human_llm_label_comparisons',
+        'human_llm_label_matches',
+        'human_annotation_count',
+        'llm_judge_annotation_count',
+        'agreement_unavailable_reason',
+        'known_bias_limitations',
+        'analyzer_version'
+    ) -Label 'agreement summary required_summary_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $agreementSummary -Field 'known_bias_limitations') -Required @(
+        'verbosity_bias',
+        'position_bias',
+        'self_enhancement_bias',
+        'correlated_model_failure',
+        'rubric_drift',
+        'missing_human_ground_truth'
+    ) -Label 'agreement summary known_bias_limitations'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $agreementSummary -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_real_human_labels',
+        'no_real_llm_judge_labels',
+        'no_human_llm_judge_agreement_results',
+        'no_judge_validity_claim',
+        'no_paper_readiness'
+    ) -Label 'agreement summary current_nonclaims'
 }
 
 if (Test-Path -LiteralPath $paths.AnnotationGuidelines) {

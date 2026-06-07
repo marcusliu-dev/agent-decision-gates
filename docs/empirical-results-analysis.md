@@ -14,7 +14,9 @@ execute model/API evals.
 The empirical evidence package checks whether transcripts, annotations, and
 cost/latency records are complete enough for analysis. The results analysis
 route is the next deterministic step: compute metric summaries only after the
-package validator passes.
+package validator passes. Human-vs-LLM-judge reliability checks are handled by
+[`empirical-agreement-checks.md`](empirical-agreement-checks.md) and
+[`score-empirical-agreement.ps1`](../scripts/score-empirical-agreement.ps1).
 
 This separates four states:
 
@@ -102,7 +104,8 @@ Stop before any result claim if:
 - same-priority primary annotations conflict for a run;
 - metric summaries are based only on synthetic self-test data;
 - annotator agreement is unavailable but the claim depends on annotation
-  reliability;
+  reliability, and the agreement checker has not reported a suitable
+  human/LLM-judge comparison;
 - cost/latency records are incomplete;
 - the result route implies empirical effectiveness or paper readiness before
   limitations and related work are verified.

@@ -3,13 +3,14 @@
 Status: Current repository surface includes docs, a design-pattern report, an
 empirical evaluation plan, a seed empirical task suite, experiment run-packet
 schemas, an evidence-package validation route, a results aggregation route,
-annotation guidelines, structural scorers, and a
+annotation guidelines, a human-vs-LLM-judge agreement-check route, structural
+scorers, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_annotation_guidelines_present_and_structurally_scored`
+`empirical_agreement_checker_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -18,19 +19,21 @@ that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, evidence-package schema, evidence-package validation guide,
-results-summary schema, results-analysis guide, and annotation guidelines exist
-under `docs/` and `evals/empirical/`, that deterministic structural scorers
-pass for the current fixture, task-suite, run-packet, evidence-package
-validator, results aggregator, and annotation-guidelines surfaces, that the
+results-summary schema, results-analysis guide, annotation guidelines,
+agreement-summary schema, and agreement-checks guide exist under `docs/` and
+`evals/empirical/`, that deterministic structural scorers pass for the current
+fixture, task-suite, run-packet, evidence-package validator, results
+aggregator, annotation-guidelines, and agreement-check surfaces, that the
 deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
 bounded to fixture/task-suite presence plus structural validation, not full
 runtime execution. The report, empirical-plan, and run-packet claims are bounded
 to design-pattern and experiment-design explanation; the evidence-package
-validator and results-aggregator claims are bounded to synthetic self-test
-behavior, and the annotation-guidelines claim is bounded to rubric presence plus
-structural scorer coverage, not empirical proof or paper readiness. No broader
+validator, results-aggregator, and agreement-checker claims are bounded to
+synthetic self-test behavior, and the annotation-guidelines claim is bounded to
+rubric presence plus structural scorer coverage, not empirical proof or paper
+readiness. No broader
 claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
@@ -74,6 +77,7 @@ guarantees.
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
 - `evals/empirical/results-summary-schema.yaml`
+- `evals/empirical/agreement-summary-schema.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
@@ -83,6 +87,7 @@ guarantees.
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
 - `docs/empirical-results-analysis.md`
+- `docs/empirical-agreement-checks.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -98,6 +103,7 @@ guarantees.
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
+- `scripts/score-empirical-agreement.ps1`
 - `TRACKER.md`
 - `LICENSE`
 
@@ -135,6 +141,9 @@ guarantees.
   positive and negative packages;
 - the empirical results aggregator self-test passes on a synthetic evidence
   package and rejects an invalid package before aggregation;
+- the empirical agreement checker self-test passes on synthetic human/LLM
+  annotation pairs and rejects invalid, missing-pair, and low-agreement
+  packages under its required gates;
 - the skill remains explicit-use only and its config disables implicit
   invocation;
 - blocked private leakage terms do not appear;

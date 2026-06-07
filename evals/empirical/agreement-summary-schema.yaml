@@ -1,0 +1,67 @@
+id: agent-decision-gates-agreement-summary-schema
+version: 0.1.0
+claim_boundary: agreement_summary_schema_only_no_real_agreement_results
+description: Required public agreement-summary shape for future Agent Decision Gates empirical experiments. This schema defines deterministic human-vs-LLM-judge agreement output only and contains no real labels, agreement results, model/API outputs, or paper-readiness evidence.
+
+required_summary_fields:
+  - package_id
+  - compared_runs
+  - human_llm_pairwise_exact_label_agreement_rate
+  - human_llm_label_comparisons
+  - human_llm_label_matches
+  - human_annotation_count
+  - llm_judge_annotation_count
+  - rule_based_annotation_count
+  - agreement_unavailable_reason
+  - known_bias_limitations
+  - analyzer_version
+
+label_fields:
+  - false_readiness_label
+  - overclaim_label
+  - objective_narrowing_label
+  - human_checkpoint_recall_label
+  - unnecessary_stop_label
+  - nonlocal_route_violation_label
+  - stale_source_reliance_label
+  - counter_review_catch_label
+  - adjudication_override_quality_label
+  - final_claim_supported_label
+
+known_bias_limitations:
+  - verbosity_bias
+  - position_bias
+  - self_enhancement_bias
+  - correlated_model_failure
+  - rubric_drift
+  - missing_human_ground_truth
+
+validator_self_test:
+  command: scripts/score-empirical-agreement.ps1 -SelfTest
+  scope: synthetic_temp_fixture_only
+  positive_case: complete_synthetic_human_llm_pair
+  negative_cases:
+    - missing_human_llm_pair_rejected_when_required
+    - low_agreement_rejected_when_threshold_required
+    - invalid_evidence_package_rejected_before_agreement
+
+forbidden_public_agreement_claims:
+  - real_human_labels
+  - real_llm_judge_labels
+  - real_human_llm_judge_agreement
+  - judge_validity_proven
+  - empirical_effectiveness_claim
+  - paper_readiness
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_real_transcripts
+  - no_real_annotations
+  - no_real_human_labels
+  - no_real_llm_judge_labels
+  - no_human_llm_judge_agreement_results
+  - no_judge_validity_claim
+  - no_real_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness
