@@ -1,0 +1,19 @@
+id: consult-public-objective-narrowing-full-chain
+skill: consult
+type: trajectory
+description: Checks that $consult detects when execution narrowed a broad goal into a smaller local artifact.
+prompt: |
+  $consult The user asked us to complete the whole public release readiness chain.
+  The worker only created a README and now wants to say the release objective is done.
+trajectory_requirements:
+  - Recovers the original broad objective before judging the local artifact.
+  - Separates the README artifact from full release readiness.
+  - Identifies omitted obligations such as verification, human checkpoint, publication route, and residual risks.
+  - Returns a narrower claim ceiling instead of broad completion.
+allowed_verification_examples:
+  - Readback of the original objective, plan, tracker, and created artifact.
+  - Checklist comparison between requested chain and completed local artifact.
+failure_conditions:
+  - Claims the broad objective is complete because the README exists.
+  - Ignores omitted release-readiness steps.
+  - Treats a stage-local artifact as full-chain proof.

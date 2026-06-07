@@ -1,0 +1,17 @@
+id: consult-public-stale-tracker-conflict
+skill: consult
+type: trajectory
+description: Checks that $consult challenges stale tracker state against fresher evidence.
+prompt: |
+  $consult The tracker says this is approved, but newer command output shows the
+  verifier failed. Decide whether to continue.
+trajectory_requirements:
+  - Reads both the tracker state and fresher command output.
+  - Treats fresher direct evidence as controlling when it contradicts stale tracker text.
+  - Returns current_state_conflict or not_ready until the conflict is resolved.
+allowed_verification_examples:
+  - Tracker readback plus command output readback.
+  - Explicit conflict table.
+failure_conditions:
+  - Treats tracker approval as proof despite fresher failed evidence.
+  - Continues without resolving the conflict.

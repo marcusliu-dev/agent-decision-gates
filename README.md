@@ -46,6 +46,8 @@ This repo packages a simple alternative:
 - [Codex adapter notes](docs/codex-adapter.md) for the packaged skill;
 - a [threat model](docs/threat-model.md);
 - a [roles and permissions matrix](docs/roles-and-permissions.md);
+- [eval evidence guidance](docs/eval-evidence.md) and a deterministic fixture
+  scorer in [`scripts/score-eval-fixtures.ps1`](scripts/score-eval-fixtures.ps1);
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -118,6 +120,8 @@ requires independent review.
 - Check [docs/threat-model.md](docs/threat-model.md) and
   [docs/roles-and-permissions.md](docs/roles-and-permissions.md) before
   adapting the pattern to higher-risk workflows.
+- Use [docs/eval-evidence.md](docs/eval-evidence.md) if you want to inspect
+  the public fixture evidence surface.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a

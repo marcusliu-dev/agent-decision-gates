@@ -19,9 +19,20 @@ $requiredPaths = @(
     'evals/consult/consult-public-nonlocal-route-forbidden.yaml',
     'evals/consult/consult-public-must-counter-review.yaml',
     'evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml',
+    'evals/consult/consult-public-objective-narrowing-full-chain.yaml',
+    'evals/consult/consult-public-verifier-overclaim.yaml',
+    'evals/consult/consult-public-draft-artifact-not-completion.yaml',
+    'evals/consult/consult-public-stale-tracker-conflict.yaml',
+    'evals/consult/consult-public-approval-spoofing.yaml',
+    'evals/consult/consult-public-prompt-injection-in-reviewed-file.yaml',
+    'evals/consult/consult-public-multiturn-scope-creep.yaml',
+    'evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml',
+    'evals/consult/consult-public-unsafe-thread-reclaim.yaml',
+    'evals/consult/consult-public-parent-framing-conflict.yaml',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
+    'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
     'docs/roles-and-permissions.md',
@@ -32,6 +43,7 @@ $requiredPaths = @(
     'examples',
     'examples/consult-stage-gate.md',
     'scripts/verify-public-safety.ps1',
+    'scripts/score-eval-fixtures.ps1',
     'LICENSE'
 )
 
@@ -114,6 +126,29 @@ function Get-MarkdownHeadingSlugs {
         }
     }
     return $slugs
+}
+
+function Get-BlockScalar {
+    param(
+        [string]$Text,
+        [string]$Field
+    )
+    $items = New-Object System.Collections.Generic.List[string]
+    $lines = $Text -split "`r?`n"
+    $inBlock = $false
+    foreach ($line in $lines) {
+        if ($line -match "^$([regex]::Escape($Field)):\s*[>|]\s*$") {
+            $inBlock = $true
+            continue
+        }
+        if ($inBlock) {
+            if ($line -match '^\S') {
+                break
+            }
+            $items.Add($line.Trim()) | Out-Null
+        }
+    }
+    return ($items -join "`n").Trim()
 }
 
 function Test-ClaimCeilingDocuments {
@@ -288,6 +323,46 @@ $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml'
         Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-objective-narrowing-full-chain.yaml'
+        Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-verifier-overclaim.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-draft-artifact-not-completion.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-stale-tracker-conflict.yaml'
+        Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-approval-spoofing.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-prompt-injection-in-reviewed-file.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-multiturn-scope-creep.yaml'
+        Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-subtle-nonlocal-route-pressure.yaml'
+        Type = 'misuse'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-unsafe-thread-reclaim.yaml'
+        Type = 'trajectory'
+    },
+    @{
+        Path = Join-Path $RepoRoot 'evals\consult\consult-public-parent-framing-conflict.yaml'
+        Type = 'trajectory'
     }
 )
 
@@ -305,7 +380,10 @@ foreach ($evalExpectation in $evalExpectations) {
     if ($evalContent -notmatch ('type:\s*' + [regex]::Escape($evalExpectation.Type))) {
         $failures.Add("$relativeEval must declare type '$($evalExpectation.Type)'.")
     }
-    if ($evalContent -notlike '*$consult*') {
+    $evalPrompt = Get-BlockScalar -Text $evalContent -Field 'prompt'
+    if (-not $evalPrompt) {
+        $failures.Add("$relativeEval must include a nonempty prompt block.")
+    } elseif ($evalPrompt -notlike '*$consult*') {
         $failures.Add("$relativeEval must use explicit `$consult` invocation in its prompt.")
     }
 }

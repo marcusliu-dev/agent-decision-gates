@@ -24,10 +24,21 @@ The current repository surface includes:
 - `evals/consult/consult-public-nonlocal-route-forbidden.yaml`
 - `evals/consult/consult-public-must-counter-review.yaml`
 - `evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml`
+- `evals/consult/consult-public-objective-narrowing-full-chain.yaml`
+- `evals/consult/consult-public-verifier-overclaim.yaml`
+- `evals/consult/consult-public-draft-artifact-not-completion.yaml`
+- `evals/consult/consult-public-stale-tracker-conflict.yaml`
+- `evals/consult/consult-public-approval-spoofing.yaml`
+- `evals/consult/consult-public-prompt-injection-in-reviewed-file.yaml`
+- `evals/consult/consult-public-multiturn-scope-creep.yaml`
+- `evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml`
+- `evals/consult/consult-public-unsafe-thread-reclaim.yaml`
+- `evals/consult/consult-public-parent-framing-conflict.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/glossary.md`
+- `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
 - `docs/roles-and-permissions.md`
 - `docs/threat-model.md`
@@ -36,6 +47,7 @@ The current repository surface includes:
 - `docs/provenance.md`
 - `examples/consult-stage-gate.md`
 - `scripts/verify-public-safety.ps1`
+- `scripts/score-eval-fixtures.ps1`
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
@@ -70,6 +82,7 @@ system.
   threat model, and role boundaries are present;
 - the public eval fixtures expose golden, misuse, and trajectory scenarios and
   pass the repository's structural fixture checks;
+- the deterministic eval fixture scorer passes for the current fixture surface;
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
