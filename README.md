@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_run_packet_schema_present_and_structurally_scored -->
+<!-- claim_ceiling: empirical_evidence_package_validator_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -58,6 +58,9 @@ This repo packages a simple alternative:
   annotation schemas under [`evals/empirical/`](evals/empirical/), and a
   structural run-packet scorer in
   [`scripts/score-empirical-run-packet.ps1`](scripts/score-empirical-run-packet.ps1);
+- an [empirical evidence-package guide](docs/empirical-evidence-package.md),
+  evidence-package schema, and a synthetic self-test validator in
+  [`scripts/score-empirical-evidence-package.ps1`](scripts/score-empirical-evidence-package.ps1);
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -138,6 +141,8 @@ requires independent review.
   for the future paper experiment design and current no-results boundary.
 - Read [docs/experiment-run-packet.md](docs/experiment-run-packet.md) for the
   frozen-artifact contract required before any future model/API eval run.
+- Read [docs/empirical-evidence-package.md](docs/empirical-evidence-package.md)
+  for the post-run package completeness checks required before result analysis.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a
@@ -157,11 +162,12 @@ requires independent review.
 
 This is a published public repository with a reusable `$consult` skill package,
 public eval fixtures, documentation, a design-pattern report, an empirical
-evaluation plan, experiment run-packet schemas, and deterministic structural
-scorers under `MIT`. The current ceiling is no higher than
-`empirical_run_packet_schema_present_and_structurally_scored`. The verifiers and
-scorers do not prove production safety, empirical effectiveness, paper
-readiness, executed model/API evals, or universal runtime correctness. The
+evaluation plan, experiment run-packet schemas, an evidence-package validator,
+and deterministic structural scorers under `MIT`. The current ceiling is no
+higher than `empirical_evidence_package_validator_present_and_self_tested`. The
+verifiers and scorers do not prove production safety, empirical effectiveness,
+paper readiness, executed model/API evals, transcripts, labels, or universal
+runtime correctness. The
 repository intentionally does not ship CI, deployment automation, application
 source scaffolding, model/API eval results, or a broader framework/runtime
 product surface.

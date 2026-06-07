@@ -60,6 +60,7 @@ $paths = [ordered]@{
     Manifest = Join-Path $RepoRoot 'evals/empirical/experiment-run-manifest.yaml'
     TranscriptSchema = Join-Path $RepoRoot 'evals/empirical/transcript-schema.yaml'
     AnnotationSchema = Join-Path $RepoRoot 'evals/empirical/annotation-schema.yaml'
+    EvidencePackageSchema = Join-Path $RepoRoot 'evals/empirical/evidence-package-schema.yaml'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
 }
 
@@ -111,8 +112,19 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'no_empirical_results',
         'no_cost_latency_results',
         'no_human_llm_judge_agreement_results',
+        'no_transcripts',
+        'no_annotations',
         'no_paper_readiness'
     ) -Label 'current_nonclaims'
+    foreach ($schemaLink in @(
+        'transcript_schema: evals/empirical/transcript-schema.yaml',
+        'annotation_schema: evals/empirical/annotation-schema.yaml',
+        'evidence_package_schema: evals/empirical/evidence-package-schema.yaml'
+    )) {
+        if (-not $manifest.Contains($schemaLink)) {
+            $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
+        }
+    }
 }
 
 if (Test-Path -LiteralPath $paths.TranscriptSchema) {
@@ -167,6 +179,37 @@ if (Test-Path -LiteralPath $paths.AnnotationSchema) {
         'agreement_metric_report',
         'judge_bias_limitations'
     ) -Label 'agreement_requirements'
+}
+
+if (Test-Path -LiteralPath $paths.EvidencePackageSchema) {
+    $evidencePackage = Get-Content -LiteralPath $paths.EvidencePackageSchema -Raw
+    if ((Get-Scalar -Text $evidencePackage -Field 'claim_boundary') -ne 'evidence_package_schema_only_no_experiment_results') {
+        $failures.Add('Evidence package schema must declare evidence_package_schema_only_no_experiment_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $evidencePackage -Field 'required_directories') -Required @(
+        'transcripts',
+        'annotations',
+        'cost-latency'
+    ) -Label 'evidence package required_directories'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $evidencePackage -Field 'join_requirements') -Required @(
+        'every_transcript_has_annotation',
+        'every_transcript_has_cost_latency_record',
+        'every_annotation_run_id_matches_transcript',
+        'every_cost_latency_run_id_matches_transcript',
+        'every_transcript_cost_latency_record_id_matches_cost_record',
+        'annotation_rationales_include_transcript_spans'
+    ) -Label 'evidence package join_requirements'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $evidencePackage -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_transcripts',
+        'no_annotations',
+        'no_cost_latency_results',
+        'no_human_llm_judge_agreement_results',
+        'no_aggregate_metrics',
+        'no_statistical_results',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'evidence package current_nonclaims'
 }
 
 if (Test-Path -LiteralPath $paths.RunPacketDoc) {

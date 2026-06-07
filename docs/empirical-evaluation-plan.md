@@ -110,6 +110,9 @@ A paper-ready evidence package should include:
 No private repository material should be required to reproduce the public
 results.
 
+The post-run package shape and completeness checks are defined in
+[`docs/empirical-evidence-package.md`](empirical-evidence-package.md).
+
 ## Execution Gates
 
 Before any model/API eval run:
@@ -140,11 +143,13 @@ Run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 ```
 
 These scorers verify only the shape of the public task-suite seed and run
-packet. They do not execute model/API evals, score completed transcripts, or
-prove empirical effectiveness.
+packet plus the evidence-package validator's synthetic self-test. They do not
+execute model/API evals, score real completed transcripts, or prove empirical
+effectiveness.
 
 ## Current Nonclaims
 

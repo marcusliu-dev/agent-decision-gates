@@ -34,6 +34,7 @@ required_artifacts:
 schemas:
   transcript_schema: evals/empirical/transcript-schema.yaml
   annotation_schema: evals/empirical/annotation-schema.yaml
+  evidence_package_schema: evals/empirical/evidence-package-schema.yaml
 
 stop_gates:
   - no_private_repository_material
@@ -60,4 +61,6 @@ current_nonclaims:
   - no_empirical_results
   - no_cost_latency_results
   - no_human_llm_judge_agreement_results
+  - no_transcripts
+  - no_annotations
   - no_paper_readiness

@@ -26,6 +26,8 @@ The current structural run packet contains:
   run transcript shape;
 - [`annotation-schema.yaml`](../evals/empirical/annotation-schema.yaml) for
   human and judge labels;
+- [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
+  for post-run package completeness and join requirements;
 - [`score-empirical-run-packet.ps1`](../scripts/score-empirical-run-packet.ps1)
   for deterministic structural checks.
 
@@ -81,10 +83,12 @@ Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 ```
 
-That command checks only the packet structure. It does not run models, call
-APIs, score completed transcripts, or prove empirical effectiveness.
+Those commands check only the packet structure and evidence-package validator
+self-test. They do not run models, call APIs, score real completed transcripts,
+or prove empirical effectiveness.
 
 ## Current Nonclaims
 

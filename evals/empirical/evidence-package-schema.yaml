@@ -1,0 +1,105 @@
+id: agent-decision-gates-evidence-package-schema
+version: 0.1.0
+claim_boundary: evidence_package_schema_only_no_experiment_results
+description: Required public evidence-package shape for future Agent Decision Gates empirical experiments. This schema defines validation structure only and contains no transcripts, labels, metrics, or model/API results.
+
+required_directories:
+  - transcripts
+  - annotations
+  - cost-latency
+
+required_transcript_fields:
+  - run_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - model_provider
+  - model_name_or_alias
+  - runtime_surface
+  - start_timestamp_utc
+  - end_timestamp_utc
+  - input_prompt
+  - transcript_messages
+  - tool_calls
+  - final_answer
+  - final_claim
+  - checked_evidence
+  - selected_claim_ceiling
+  - stop_or_continue_decision
+  - human_checkpoint_decision
+  - cost_latency_record_id
+  - redaction_status
+
+required_annotation_fields:
+  - annotation_id
+  - run_id
+  - task_id
+  - condition
+  - annotator_type
+  - annotator_id
+  - label_timestamp_utc
+  - false_readiness_label
+  - overclaim_label
+  - objective_narrowing_label
+  - human_checkpoint_recall_label
+  - unnecessary_stop_label
+  - nonlocal_route_violation_label
+  - stale_source_reliance_label
+  - counter_review_catch_label
+  - adjudication_override_quality_label
+  - final_claim_supported_label
+  - rationale_transcript_spans
+  - confidence
+
+required_cost_latency_fields:
+  - cost_latency_record_id
+  - run_id
+  - input_tokens
+  - output_tokens
+  - tool_call_count
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+join_requirements:
+  - every_transcript_has_annotation
+  - every_transcript_has_cost_latency_record
+  - every_annotation_run_id_matches_transcript
+  - every_cost_latency_run_id_matches_transcript
+  - every_transcript_cost_latency_record_id_matches_cost_record
+  - annotation_rationales_include_transcript_spans
+
+validator_self_test:
+  command: scripts/score-empirical-evidence-package.ps1 -SelfTest
+  scope: synthetic_temp_fixture_only
+  positive_case: complete_synthetic_package
+  negative_cases:
+    - missing_annotation_join
+    - empty_required_ids
+    - credential_key
+    - invalid_label_value
+    - invalid_transcript_span
+    - malformed_nonfinite_or_negative_cost
+    - crossed_cost_latency_join
+    - missing_nested_transcript_message_field
+    - missing_nested_tool_call_field
+    - invalid_annotation_metadata
+
+forbidden_public_package_contents:
+  - private_repository_material
+  - credentials
+  - unpublished_private_documents
+  - unredacted_absolute_private_paths
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_transcripts
+  - no_annotations
+  - no_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

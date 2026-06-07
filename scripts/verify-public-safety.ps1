@@ -34,12 +34,14 @@ $requiredPaths = @(
     'evals/empirical/experiment-run-manifest.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
+    'evals/empirical/evidence-package-schema.yaml',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
     'docs/deep-dive-report.md',
     'docs/empirical-evaluation-plan.md',
     'docs/experiment-run-packet.md',
+    'docs/empirical-evidence-package.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -54,6 +56,7 @@ $requiredPaths = @(
     'scripts/score-eval-fixtures.ps1',
     'scripts/score-empirical-task-suite.ps1',
     'scripts/score-empirical-run-packet.ps1',
+    'scripts/score-empirical-evidence-package.ps1',
     'LICENSE'
 )
 
@@ -83,6 +86,30 @@ $blockedLeakagePatterns = @(
     @{
         Label = 'absolute_windows_path_forwardslash'
         Pattern = '(?i)\b[A-Z]:/[^\r\n`"]+'
+    },
+    @{
+        Label = 'credential_assignment'
+        Pattern = '(?i)(^|[\s,{])"?\b(api[_-]?key|secret|password|token)\b"?\s*[:=]'
+    },
+    @{
+        Label = 'bearer_token'
+        Pattern = '(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*'
+    },
+    @{
+        Label = 'github_token'
+        Pattern = '(?i)\bgh[pousr]_[A-Za-z0-9_]{20,}'
+    },
+    @{
+        Label = 'openai_style_key'
+        Pattern = '(?i)\bsk-[A-Za-z0-9_-]{16,}'
+    },
+    @{
+        Label = 'aws_access_key'
+        Pattern = '\bAKIA[0-9A-Z]{16}\b'
+    },
+    @{
+        Label = 'private_key_marker'
+        Pattern = '-----BEGIN [A-Z ]*PRIVATE KEY-----'
     }
 )
 
@@ -95,6 +122,7 @@ $ceilingOrder = @{
     'public_consult_skill_package_present_and_verifier_backed' = 6
     'empirical_plan_and_task_suite_present_and_structurally_scored' = 7
     'empirical_run_packet_schema_present_and_structurally_scored' = 8
+    'empirical_evidence_package_validator_present_and_self_tested' = 9
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -328,7 +356,8 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'does not claim paper readiness',
         'false readiness rate',
         'human/LLM-judge agreement',
-        'cost/latency'
+        'cost/latency',
+        'score-empirical-evidence-package.ps1 -SelfTest'
     )) {
         if (-not $empiricalPlanContent.Contains($check)) {
             $failures.Add("Missing empirical-plan boundary '$check' in docs/empirical-evaluation-plan.md")
@@ -384,7 +413,9 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'report results',
         'claim paper readiness',
         'No private repository material',
-        'score-empirical-run-packet.ps1'
+        'score-empirical-run-packet.ps1',
+        'evidence-package-schema.yaml',
+        'score-empirical-evidence-package.ps1 -SelfTest'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
             $failures.Add("Missing experiment-run-packet boundary '$check' in docs/experiment-run-packet.md")
@@ -407,6 +438,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'budget_recorded_before_execution',
         'no_model_api_eval_execution',
         'no_empirical_results',
+        'no_transcripts',
+        'no_annotations',
         'no_paper_readiness'
     )) {
         if ($runManifestContent -notlike "*$check*") {
@@ -459,6 +492,75 @@ if (Test-Path -LiteralPath $annotationSchemaPath) {
     )) {
         if ($annotationSchemaContent -notlike "*$check*") {
             $failures.Add("Missing annotation schema requirement '$check'.")
+        }
+    }
+}
+
+$evidencePackageSchemaPath = Join-Path $RepoRoot 'evals\empirical\evidence-package-schema.yaml'
+if (Test-Path -LiteralPath $evidencePackageSchemaPath) {
+    $evidencePackageSchemaContent = Get-Content -LiteralPath $evidencePackageSchemaPath -Raw
+    if ($evidencePackageSchemaContent -notmatch 'claim_boundary:\s*evidence_package_schema_only_no_experiment_results') {
+        $failures.Add('Evidence package schema must declare evidence_package_schema_only_no_experiment_results claim boundary.')
+    }
+    foreach ($check in @(
+        'transcripts',
+        'annotations',
+        'cost-latency',
+        'every_transcript_has_annotation',
+        'every_transcript_has_cost_latency_record',
+        'annotation_rationales_include_transcript_spans',
+        'crossed_cost_latency_join',
+        'no_model_api_eval_execution',
+        'no_transcripts',
+        'no_annotations',
+        'no_aggregate_metrics',
+        'no_paper_readiness'
+    )) {
+        if ($evidencePackageSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing evidence package schema requirement '$check'.")
+        }
+    }
+}
+
+$evidencePackageDocPath = Join-Path $RepoRoot 'docs\empirical-evidence-package.md'
+if (Test-Path -LiteralPath $evidencePackageDocPath) {
+    $evidencePackageDocContent = Get-Content -LiteralPath $evidencePackageDocPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'include transcripts',
+        'include labels',
+        'report results',
+        'claim paper readiness',
+        'score-empirical-evidence-package.ps1 -SelfTest',
+        'synthetic data',
+        'not empirical effectiveness results'
+    )) {
+        if (-not $evidencePackageDocContent.Contains($check)) {
+            $failures.Add("Missing empirical evidence-package boundary '$check' in docs/empirical-evidence-package.md")
+        }
+    }
+}
+
+$evidencePackageScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-evidence-package.ps1'
+if (Test-Path -LiteralPath $evidencePackageScorerPath) {
+    $evidencePackageScorerContent = Get-Content -LiteralPath $evidencePackageScorerPath -Raw
+    foreach ($check in @(
+        'Empirical evidence-package scoring',
+        'Synthetic positive evidence package',
+        'Synthetic negative evidence package',
+        'has no matching annotation record',
+        'empty ids',
+        'credential keys',
+        'invalid labels',
+        'invalid spans',
+        'malformed costs',
+        'crossed cost joins',
+        'incomplete nested schema fields',
+        'does not match transcript run_id',
+        'Provide -PackageRoot for a real evidence package or -SelfTest'
+    )) {
+        if (-not $evidencePackageScorerContent.Contains($check)) {
+            $failures.Add("Missing evidence-package scorer invariant '$check'.")
         }
     }
 }
@@ -571,6 +673,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'
             Label = 'docs/experiment-run-packet.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-evidence-package.md'
+            Label = 'docs/empirical-evidence-package.md'
         }
     )
 
