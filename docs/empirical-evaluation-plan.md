@@ -44,6 +44,10 @@ Each task should be run under the same input packet with these conditions:
 | `full_consult_gate` | test primary, counter-review, parent adjudication, and claim ceiling |
 | `programmatic_gate_variant` | test prompt-level gate plus a deterministic blocker or permission check |
 
+All conditions use shared output-record instrumentation for measurement. The
+`no_gate` condition means no explicit decision-gate protocol, not a completely
+unprompted default interaction.
+
 The public seed suite is
 [`evals/empirical/agent-decision-gates-task-suite.yaml`](../evals/empirical/agent-decision-gates-task-suite.yaml).
 
@@ -145,6 +149,7 @@ Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-prompt-pack.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
@@ -152,10 +157,10 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package.ps1 -SelfTest
 ```
 
-These scorers verify only the shape of the public task-suite seed and run
-packet plus the evidence-package validator's and results aggregator's synthetic
-self-tests, the agreement checker's synthetic self-test, and the dry-run package builder
-synthetic self-test. They do not execute model/API evals,
+These scorers verify only the shape of the public task-suite seed, condition
+prompt pack, and run packet plus the evidence-package validator's and results
+aggregator's synthetic self-tests, the agreement checker's synthetic self-test,
+and the dry-run package builder synthetic self-test. They do not execute model/API evals,
 score real completed transcripts, report real aggregate metrics, measure real
 human/LLM-judge agreement, or prove empirical effectiveness.
 

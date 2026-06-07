@@ -28,6 +28,9 @@ The current structural run packet contains:
   human and judge labels;
 - [`empirical-annotation-guidelines.md`](empirical-annotation-guidelines.md) for
   the future label rubric and agreement route;
+- [`condition-prompt-pack.yaml`](../evals/empirical/condition-prompt-pack.yaml)
+  and [`condition-prompt-pack.md`](condition-prompt-pack.md) for the frozen
+  condition prompt surface;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -36,6 +39,7 @@ The current structural run packet contains:
   [`build-empirical-dry-run-package.ps1`](../scripts/build-empirical-dry-run-package.ps1)
   for a synthetic end-to-end package exercise before any real model/API run;
 - [`score-empirical-run-packet.ps1`](../scripts/score-empirical-run-packet.ps1)
+  and [`score-empirical-prompt-pack.ps1`](../scripts/score-empirical-prompt-pack.ps1)
   for deterministic structural checks.
 
 These files define the shape of a future experiment. They intentionally contain
@@ -80,6 +84,7 @@ Stop before execution if:
 
 - private repository material is required for reproduction;
 - task prompts or condition prompts are not frozen;
+- the condition_prompt_pack_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -93,6 +98,7 @@ Stop before execution if:
 Run:
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-prompt-pack.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest

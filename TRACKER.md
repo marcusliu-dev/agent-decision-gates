@@ -4,13 +4,14 @@ Status: Current repository surface includes docs, a design-pattern report, an
 empirical evaluation plan, a seed empirical task suite, experiment run-packet
 schemas, an evidence-package validation route, a results aggregation route,
 annotation guidelines, a human-vs-LLM-judge agreement-check route, structural
-scorers, a synthetic dry-run evidence-package builder, and a
+scorers, a synthetic dry-run evidence-package builder, a versioned condition
+prompt pack for future empirical runs, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_dry_run_package_builder_present_and_self_tested`
+`empirical_condition_prompt_pack_present_and_structurally_scored`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -20,11 +21,13 @@ report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, evidence-package schema, evidence-package validation guide,
 results-summary schema, results-analysis guide, annotation guidelines,
-agreement-summary schema, and agreement-checks guide exist under `docs/` and
-`evals/empirical/`, that a synthetic dry-run package guide and builder exist,
+agreement-summary schema, agreement-checks guide, and condition prompt pack
+exist under `docs/` and `evals/empirical/`, that a synthetic dry-run package
+guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
-annotation-guidelines, agreement-check, and dry-run package-builder surfaces,
+annotation-guidelines, agreement-check, dry-run package-builder, and condition
+prompt-pack surfaces,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -34,7 +37,8 @@ to design-pattern and experiment-design explanation; the evidence-package
 validator, results-aggregator, agreement-checker, and dry-run package-builder
 claims are bounded to synthetic self-test behavior, and the
 annotation-guidelines claim is bounded to rubric presence plus structural
-scorer coverage, not empirical proof or paper readiness. No broader
+scorer coverage, and the condition-prompt claim is bounded to versioned prompt
+presence plus structural scoring, not empirical proof or paper readiness. No broader
 claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
@@ -74,6 +78,7 @@ guarantees.
 - `evals/consult/consult-public-parent-framing-conflict.yaml`
 - `evals/empirical/agent-decision-gates-task-suite.yaml`
 - `evals/empirical/experiment-run-manifest.yaml`
+- `evals/empirical/condition-prompt-pack.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -84,6 +89,7 @@ guarantees.
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
+- `docs/condition-prompt-pack.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -102,6 +108,7 @@ guarantees.
 - `scripts/verify-public-safety.ps1`
 - `scripts/score-eval-fixtures.ps1`
 - `scripts/score-empirical-task-suite.ps1`
+- `scripts/score-empirical-prompt-pack.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -137,6 +144,8 @@ guarantees.
 - the deterministic eval fixture scorer passes for the current fixture surface;
 - the empirical task-suite scorer passes for the current seed task-suite
   surface;
+- the empirical prompt-pack scorer passes for the current versioned condition
+  prompt surface and explicitly does not report model results;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

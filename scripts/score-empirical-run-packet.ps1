@@ -63,10 +63,13 @@ $paths = [ordered]@{
     EvidencePackageSchema = Join-Path $RepoRoot 'evals/empirical/evidence-package-schema.yaml'
     ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
     AgreementSummarySchema = Join-Path $RepoRoot 'evals/empirical/agreement-summary-schema.yaml'
+    ConditionPromptPack = Join-Path $RepoRoot 'evals/empirical/condition-prompt-pack.yaml'
     AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
+    ConditionPromptDoc = Join-Path $RepoRoot 'docs/condition-prompt-pack.md'
     EmpiricalPlan = Join-Path $RepoRoot 'docs/empirical-evaluation-plan.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
     DryRunDoc = Join-Path $RepoRoot 'docs/empirical-dry-run-package.md'
+    PromptPackScorer = Join-Path $RepoRoot 'scripts/score-empirical-prompt-pack.ps1'
     DryRunBuilder = Join-Path $RepoRoot 'scripts/build-empirical-dry-run-package.ps1'
 }
 
@@ -102,6 +105,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'annotation_record',
         'annotation_guidelines',
         'agreement_check_record',
+        'condition_prompt_pack',
         'model_runtime_record',
         'cost_latency_record',
         'prompt_version_record',
@@ -112,6 +116,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'stop_gates') -Required @(
         'no_private_repository_material',
         'prompts_frozen_before_execution',
+        'condition_prompt_pack_available',
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
         'agreement_checker_available',
@@ -134,10 +139,73 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'evidence_package_schema: evals/empirical/evidence-package-schema.yaml',
         'results_summary_schema: evals/empirical/results-summary-schema.yaml',
         'agreement_summary_schema: evals/empirical/agreement-summary-schema.yaml',
-        'annotation_guidelines: docs/empirical-annotation-guidelines.md'
+        'annotation_guidelines: docs/empirical-annotation-guidelines.md',
+        'condition_prompt_pack: evals/empirical/condition-prompt-pack.yaml'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.ConditionPromptPack) {
+    $promptPack = Get-Content -LiteralPath $paths.ConditionPromptPack -Raw
+    if ((Get-Scalar -Text $promptPack -Field 'claim_boundary') -ne 'condition_prompt_pack_only_no_model_results') {
+        $failures.Add('Condition prompt pack must declare condition_prompt_pack_only_no_model_results.')
+    }
+    if ((Get-Scalar -Text $promptPack -Field 'prompt_pack_version') -ne 'condition-prompts-v0.1.0') {
+        $failures.Add('Condition prompt pack must declare prompt_pack_version: condition-prompts-v0.1.0.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $promptPack -Field 'required_record_fields') -Required @(
+        'final_claim',
+        'checked_evidence',
+        'selected_claim_ceiling',
+        'stop_or_continue_decision',
+        'human_checkpoint_decision'
+    ) -Label 'condition prompt pack required_record_fields'
+    foreach ($condition in @(
+        'no_gate',
+        'checklist_only',
+        'single_self_review',
+        'same_context_critique',
+        'separate_counter_review',
+        'claim_ceiling_only',
+        'counter_review_only',
+        'full_consult_gate',
+        'programmatic_gate_variant'
+    )) {
+        if (-not [regex]::IsMatch($promptPack, "(?m)^\s{2}-\s+condition:\s*$([regex]::Escape($condition))\s*$")) {
+            $failures.Add("Condition prompt pack is missing condition '$condition'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.ConditionPromptDoc) {
+    $doc = Get-Content -LiteralPath $paths.ConditionPromptDoc -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'score-empirical-prompt-pack.ps1',
+        'condition-prompts-v0.1.0',
+        'Current Nonclaims',
+        'real transcripts'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Condition prompt-pack doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.PromptPackScorer) {
+    $promptPackScorer = Get-Content -LiteralPath $paths.PromptPackScorer -Raw
+    foreach ($check in @(
+        'Empirical prompt-pack scoring',
+        'condition_prompt_pack_only_no_model_results',
+        'condition-prompts-v0.1.0',
+        'condition_prompt_pack_available',
+        'Condition prompt pack must contain exactly'
+    )) {
+        if (-not $promptPackScorer.Contains($check)) {
+            $failures.Add("Empirical prompt-pack scorer is missing invariant '$check'.")
         }
     }
 }
@@ -356,6 +424,8 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'report results',
         'claim paper readiness',
         'No private repository material',
+        'condition_prompt_pack_available',
+        'score-empirical-prompt-pack.ps1',
         'score-empirical-run-packet.ps1',
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -371,6 +441,7 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
     $plan = Get-Content -LiteralPath $paths.EmpiricalPlan -Raw
     foreach ($check in @(
         'score-empirical-task-suite.ps1',
+        'score-empirical-prompt-pack.ps1',
         'score-empirical-run-packet.ps1',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-results.ps1 -SelfTest',

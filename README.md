@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_dry_run_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_condition_prompt_pack_present_and_structurally_scored -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -54,6 +54,11 @@ This repo packages a simple alternative:
   seed [task suite](evals/empirical/agent-decision-gates-task-suite.yaml), and
   a structural task-suite scorer in
   [`scripts/score-empirical-task-suite.ps1`](scripts/score-empirical-task-suite.ps1);
+- a versioned [condition prompt pack](docs/condition-prompt-pack.md) and
+  structural scorer in
+  [`scripts/score-empirical-prompt-pack.ps1`](scripts/score-empirical-prompt-pack.ps1)
+  for freezing future experimental condition instructions before any model/API
+  eval run;
 - an [experiment run packet](docs/experiment-run-packet.md), transcript and
   annotation schemas under [`evals/empirical/`](evals/empirical/), and a
   structural run-packet scorer in
@@ -152,6 +157,8 @@ requires independent review.
   design-pattern rationale and research-evidence boundary.
 - Read [docs/empirical-evaluation-plan.md](docs/empirical-evaluation-plan.md)
   for the future paper experiment design and current no-results boundary.
+- Read [docs/condition-prompt-pack.md](docs/condition-prompt-pack.md) for the
+  frozen condition instructions required before any future model/API eval run.
 - Read [docs/experiment-run-packet.md](docs/experiment-run-packet.md) for the
   frozen-artifact contract required before any future model/API eval run.
 - Read [docs/empirical-annotation-guidelines.md](docs/empirical-annotation-guidelines.md)
@@ -186,14 +193,15 @@ This is a published public repository with a reusable `$consult` skill package,
 public eval fixtures, documentation, a design-pattern report, an empirical
 evaluation plan, experiment run-packet schemas, an evidence-package validator,
 a results aggregator, empirical annotation guidelines, an agreement checker, a
-synthetic dry-run package builder, and deterministic structural scorers under
-`MIT`. The current ceiling is no higher than
-`empirical_dry_run_package_builder_present_and_self_tested`. The
+synthetic dry-run package builder, a versioned condition prompt pack, and
+deterministic structural scorers under `MIT`. The current ceiling is no higher
+than `empirical_condition_prompt_pack_present_and_structurally_scored`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
 correctness. The dry-run package is synthetic evidence-shape exercise only. The
-repository intentionally does not ship CI, deployment automation, application
+condition prompt pack freezes planned instructions only. The repository
+intentionally does not ship CI, deployment automation, application
 source scaffolding, model/API eval results, or a broader framework/runtime
 product surface.
 

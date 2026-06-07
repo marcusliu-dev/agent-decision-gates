@@ -1,13 +1,14 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_dry_run_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_condition_prompt_pack_present_and_structurally_scored -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
 evidence-package validator, a results aggregator, an installable `$consult`
 skill package, public eval fixtures, a seed empirical task suite, empirical
 annotation guidelines, an agreement checker, and deterministic structural
-checks, plus a synthetic dry-run evidence-package builder.
+checks, plus a synthetic dry-run evidence-package builder and versioned
+condition prompt pack.
 
 ## Purpose
 
@@ -40,6 +41,7 @@ The current repository surface includes:
 - `evals/consult/consult-public-parent-framing-conflict.yaml`
 - `evals/empirical/agent-decision-gates-task-suite.yaml`
 - `evals/empirical/experiment-run-manifest.yaml`
+- `evals/empirical/condition-prompt-pack.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -50,6 +52,7 @@ The current repository surface includes:
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
+- `docs/condition-prompt-pack.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -68,6 +71,7 @@ The current repository surface includes:
 - `scripts/verify-public-safety.ps1`
 - `scripts/score-eval-fixtures.ps1`
 - `scripts/score-empirical-task-suite.ps1`
+- `scripts/score-empirical-prompt-pack.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -92,12 +96,13 @@ The current release claim is narrow and explicit:
   annotation-guidelines surface, and evidence-package validator are
   structurally validated or self-tested, and the agreement-check route is
   synthetic-self-tested, with a synthetic dry-run package builder self-tested
-  against the validator chain;
+  against the validator chain and a versioned condition prompt pack
+  structurally scored;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_dry_run_package_builder_present_and_self_tested`.
+`empirical_condition_prompt_pack_present_and_structurally_scored`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -117,6 +122,9 @@ system.
 - the deterministic eval fixture scorer passes for the current fixture surface;
 - the deterministic empirical task-suite scorer passes for the current seed
   task-suite surface and explicitly does not report model results;
+- the deterministic empirical prompt-pack scorer passes for the current
+  versioned condition prompt surface and explicitly does not report model
+  results;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
