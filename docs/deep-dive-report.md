@@ -211,6 +211,10 @@ A paper path would require at least:
 - a limitations section that treats prompt-only gates as governance guidance,
   not hard safety enforcement.
 
-Until that exists, this repository should be described as a public
-design-pattern package with structural verifier and fixture evidence, not as a
-proven safety framework or peer-reviewed research result.
+A structural plan for that path is now recorded in
+[empirical-evaluation-plan.md](empirical-evaluation-plan.md). It defines the
+future experiment shape only; it does not contain model/API results.
+
+Until that full evidence package exists, this repository should be described as
+a public design-pattern package with structural verifier and fixture evidence,
+not as a proven safety framework or peer-reviewed research result.

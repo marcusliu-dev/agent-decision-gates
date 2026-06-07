@@ -30,10 +30,12 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml` | Written locally as a public misuse eval fixture for subtle non-local route pressure. |
 | `evals/consult/consult-public-unsafe-thread-reclaim.yaml` | Written locally as a public trajectory eval fixture for unsafe thread reclaim. |
 | `evals/consult/consult-public-parent-framing-conflict.yaml` | Written locally as a public trajectory eval fixture for parent-framing conflict. |
+| `evals/empirical/agent-decision-gates-task-suite.yaml` | Written locally as a public seed empirical task suite for future reproducible experiments, with no model results. |
 | `docs/consult-protocol.md` | Written locally as public-facing protocol guidance and updated to align with the installable consult skill package. |
 | `docs/core-protocol.md` | Written locally as runtime-neutral protocol guidance for adopters outside the original Codex environment. |
 | `docs/codex-adapter.md` | Written locally to isolate Codex-specific adapter behavior from the runtime-neutral pattern. |
 | `docs/deep-dive-report.md` | Written locally as a public design-pattern report explaining claim ceilings, decision gates, verification boundaries, and the empirical paper path. |
+| `docs/empirical-evaluation-plan.md` | Written locally as a public experiment-design plan for future empirical paper work, with explicit no-results and no-paper-readiness boundaries. |
 | `docs/eval-evidence.md` | Written locally to describe the deterministic fixture scorer and its evidence boundary. |
 | `docs/glossary.md` | Written locally to define public terms such as claim ceiling, parent framing, and human checkpoint. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
@@ -43,6 +45,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `examples/consult-stage-gate.md` | Written locally as a fictional example for this repository. |
 | `scripts/verify-public-safety.ps1` | Written locally as a deterministic public-surface integrity verifier for this repository's current public doc, skill, and eval surface. |
 | `scripts/score-eval-fixtures.ps1` | Written locally as a dependency-free deterministic scorer for the public consult eval fixture surface. |
+| `scripts/score-empirical-task-suite.ps1` | Written locally as a dependency-free deterministic structural scorer for the public empirical task-suite seed. |
 | `TRACKER.md` | Written locally as the bounded outside-repo stage ledger for this repository. |
 | `docs/release-readiness.md` | Written locally as the release-state record for this repository. |
 | `docs/provenance.md` | Written locally as the provenance record for this repository. |

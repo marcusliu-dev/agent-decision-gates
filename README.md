@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: public_consult_skill_package_present_and_verifier_backed -->
+<!-- claim_ceiling: empirical_plan_and_task_suite_present_and_structurally_scored -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -50,6 +50,10 @@ This repo packages a simple alternative:
   scorer in [`scripts/score-eval-fixtures.ps1`](scripts/score-eval-fixtures.ps1);
 - a design-pattern [deep-dive report](docs/deep-dive-report.md) on claim
   ceilings for agentic workflows;
+- an [empirical evaluation plan](docs/empirical-evaluation-plan.md), a public
+  seed [task suite](evals/empirical/agent-decision-gates-task-suite.yaml), and
+  a structural task-suite scorer in
+  [`scripts/score-empirical-task-suite.ps1`](scripts/score-empirical-task-suite.ps1);
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -126,6 +130,8 @@ requires independent review.
   the public fixture evidence surface.
 - Read [docs/deep-dive-report.md](docs/deep-dive-report.md) for the
   design-pattern rationale and research-evidence boundary.
+- Read [docs/empirical-evaluation-plan.md](docs/empirical-evaluation-plan.md)
+  for the future paper experiment design and current no-results boundary.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a
@@ -144,14 +150,14 @@ requires independent review.
 ## Project Status
 
 This is a published public repository with a reusable `$consult` skill package,
-public eval fixtures, documentation, a design-pattern report, and one
-deterministic public-surface integrity verifier under `MIT`. The current
+public eval fixtures, documentation, a design-pattern report, an empirical
+evaluation plan, and deterministic structural scorers under `MIT`. The current
 ceiling is no higher than
-`public_consult_skill_package_present_and_verifier_backed`. This verifier does
-not prove production safety, empirical effectiveness, or universal runtime
-correctness. The repository intentionally does not ship CI, deployment
-automation, application source scaffolding, or a broader framework/runtime
-product surface.
+`empirical_plan_and_task_suite_present_and_structurally_scored`. The verifiers
+and scorers do not prove production safety, empirical effectiveness, paper
+readiness, or universal runtime correctness. The repository intentionally does
+not ship CI, deployment automation, application source scaffolding, model/API
+eval results, or a broader framework/runtime product surface.
 
 If this pattern is useful in your own agent workflows, adapt it, improve it,
 and make the decision boundaries explicit in your own systems.

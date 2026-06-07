@@ -1,26 +1,31 @@
 # Agent Decision Gates Tracker
 
-Status: Current repository surface includes docs, a design-pattern report, and
+Status: Current repository surface includes docs, a design-pattern report, an
+empirical evaluation plan, a seed empirical task suite, structural scorers, and
 a reusable `$consult` skill package for evidence-first decision gates in
 AI-agent workflows.
 
 ## Current Claim Ceiling
 
-`public_consult_skill_package_present_and_verifier_backed`
+`empirical_plan_and_task_suite_present_and_structurally_scored`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
 repository surface contains a reusable skill package under `skills/consult/`,
 that public eval fixtures exist under `evals/consult/`, that a design-pattern
-report exists under `docs/deep-dive-report.md`, that the deterministic
-public-surface integrity verifier passes for the current repository surface,
-and that the materials in this repository are aligned with that surface. The
-eval claim is bounded to fixture presence plus structural validation, not full
-runtime execution. The report claim is bounded to design-pattern explanation,
-not empirical proof or paper readiness. No broader claim is made for
-package-manager distribution, executable framework behavior beyond the current
-skill package, CI coverage, deployment safety, empirical effectiveness, or
-production runtime guarantees.
+report exists under `docs/deep-dive-report.md`, that an empirical evaluation
+plan and seed task suite exist under `docs/empirical-evaluation-plan.md` and
+`evals/empirical/`, that deterministic structural scorers pass for the current
+fixture and task-suite surfaces, that the deterministic public-surface
+integrity verifier passes for the current repository surface, and that the
+materials in this repository are aligned with that surface. The eval and
+task-suite claims are bounded to fixture/task-suite presence plus structural
+validation, not full runtime execution. The report and empirical-plan claims
+are bounded to design-pattern and experiment-design explanation, not empirical
+proof or paper readiness. No broader claim is made for package-manager
+distribution, executable framework behavior beyond the current skill package,
+CI coverage, deployment safety, empirical effectiveness, or production runtime
+guarantees.
 
 ## Publication Snapshot
 
@@ -53,10 +58,12 @@ production runtime guarantees.
 - `evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml`
 - `evals/consult/consult-public-unsafe-thread-reclaim.yaml`
 - `evals/consult/consult-public-parent-framing-conflict.yaml`
+- `evals/empirical/agent-decision-gates-task-suite.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
+- `docs/empirical-evaluation-plan.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -68,6 +75,7 @@ production runtime guarantees.
 - `examples/consult-stage-gate.md`
 - `scripts/verify-public-safety.ps1`
 - `scripts/score-eval-fixtures.ps1`
+- `scripts/score-empirical-task-suite.ps1`
 - `TRACKER.md`
 - `LICENSE`
 
@@ -78,6 +86,7 @@ production runtime guarantees.
 - no `tests/` surface;
 - no CI automation yet;
 - no claim that the deterministic verifier proves production safety;
+- no model/API eval results or empirical paper claim;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -94,6 +103,8 @@ production runtime guarantees.
 - the public eval fixtures are structurally validated as golden, misuse, and
   trajectory artifacts;
 - the deterministic eval fixture scorer passes for the current fixture surface;
+- the empirical task-suite scorer passes for the current seed task-suite
+  surface;
 - the skill remains explicit-use only and its config disables implicit
   invocation;
 - blocked private leakage terms do not appear;

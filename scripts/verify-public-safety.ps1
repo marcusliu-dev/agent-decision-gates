@@ -29,10 +29,13 @@ $requiredPaths = @(
     'evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml',
     'evals/consult/consult-public-unsafe-thread-reclaim.yaml',
     'evals/consult/consult-public-parent-framing-conflict.yaml',
+    'evals/empirical',
+    'evals/empirical/agent-decision-gates-task-suite.yaml',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
     'docs/deep-dive-report.md',
+    'docs/empirical-evaluation-plan.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -45,6 +48,7 @@ $requiredPaths = @(
     'examples/consult-stage-gate.md',
     'scripts/verify-public-safety.ps1',
     'scripts/score-eval-fixtures.ps1',
+    'scripts/score-empirical-task-suite.ps1',
     'LICENSE'
 )
 
@@ -84,6 +88,7 @@ $ceilingOrder = @{
     'release_packet_ready_for_human_decision' = 4
     'public_github_repo_published_and_verified' = 5
     'public_consult_skill_package_present_and_verifier_backed' = 6
+    'empirical_plan_and_task_suite_present_and_structurally_scored' = 7
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -308,6 +313,63 @@ if (Test-Path -LiteralPath $skillConfigPath) {
     }
 }
 
+$empiricalPlanPath = Join-Path $RepoRoot 'docs\empirical-evaluation-plan.md'
+if (Test-Path -LiteralPath $empiricalPlanPath) {
+    $empiricalPlanContent = Get-Content -LiteralPath $empiricalPlanPath -Raw
+    foreach ($check in @(
+        'does not report model results',
+        'does not execute model/API evals',
+        'does not claim paper readiness',
+        'false readiness rate',
+        'human/LLM-judge agreement',
+        'cost/latency'
+    )) {
+        if (-not $empiricalPlanContent.Contains($check)) {
+            $failures.Add("Missing empirical-plan boundary '$check' in docs/empirical-evaluation-plan.md")
+        }
+    }
+}
+
+$empiricalSuitePath = Join-Path $RepoRoot 'evals\empirical\agent-decision-gates-task-suite.yaml'
+if (Test-Path -LiteralPath $empiricalSuitePath) {
+    $empiricalSuiteContent = Get-Content -LiteralPath $empiricalSuitePath -Raw
+    if ($empiricalSuiteContent -notmatch 'claim_boundary:\s*structural_plan_only_no_model_results') {
+        $failures.Add('Empirical task suite must declare structural_plan_only_no_model_results claim boundary.')
+    }
+    foreach ($check in @(
+        'no_gate',
+        'checklist_only',
+        'full_consult_gate',
+        'programmatic_gate_variant',
+        'false_readiness_rate',
+        'objective_narrowing_rate',
+        'human_annotation',
+        'llm_judge_agreement_check',
+        'cost_latency_logs'
+    )) {
+        if ($empiricalSuiteContent -notlike "*$check*") {
+            $failures.Add("Missing empirical task-suite requirement '$check'.")
+        }
+    }
+    foreach ($blockedField in @(
+        'results',
+        'pass_rate',
+        'win_rate',
+        'effectiveness_claim',
+        'paper_ready',
+        'production_ready',
+        'statistical_significance'
+    )) {
+        if ([regex]::IsMatch($empiricalSuiteContent, "(?m)^\s*$([regex]::Escape($blockedField))\s*:")) {
+            $failures.Add("Empirical task suite must not contain result field '$blockedField'.")
+        }
+    }
+    $empiricalTaskCount = ([regex]::Matches($empiricalSuiteContent, '(?m)^\s{2}-\s+id:\s*')).Count
+    if ($empiricalTaskCount -lt 12) {
+        $failures.Add("Empirical task suite must contain at least 12 task definitions; found $empiricalTaskCount.")
+    }
+}
+
 $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
@@ -408,6 +470,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\deep-dive-report.md'
             Label = 'docs/deep-dive-report.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-evaluation-plan.md'
+            Label = 'docs/empirical-evaluation-plan.md'
         }
     )
 

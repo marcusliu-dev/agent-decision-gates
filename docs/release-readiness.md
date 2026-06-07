@@ -1,10 +1,11 @@
 # Release Readiness
 
-<!-- claim_ceiling: public_consult_skill_package_present_and_verifier_backed -->
+<!-- claim_ceiling: empirical_plan_and_task_suite_present_and_structurally_scored -->
 
 Status: Current repository surface includes documentation, a design-pattern
-report, an installable `$consult` skill package, public eval fixtures, and a
-deterministic verifier.
+report, an empirical evaluation plan, an installable `$consult` skill package,
+public eval fixtures, a seed empirical task suite, and deterministic structural
+checks.
 
 ## Purpose
 
@@ -35,10 +36,12 @@ The current repository surface includes:
 - `evals/consult/consult-public-subtle-nonlocal-route-pressure.yaml`
 - `evals/consult/consult-public-unsafe-thread-reclaim.yaml`
 - `evals/consult/consult-public-parent-framing-conflict.yaml`
+- `evals/empirical/agent-decision-gates-task-suite.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
+- `docs/empirical-evaluation-plan.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -50,6 +53,7 @@ The current repository surface includes:
 - `examples/consult-stage-gate.md`
 - `scripts/verify-public-safety.ps1`
 - `scripts/score-eval-fixtures.ps1`
+- `scripts/score-empirical-task-suite.ps1`
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
@@ -65,12 +69,12 @@ The current release claim is narrow and explicit:
   artifact;
 - the documentation and skill surface are internally consistent and
   verifier-backed, the design-pattern report is present, and the public eval
-  fixtures are structurally validated;
+  fixtures plus seed empirical task suite are structurally validated;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`public_consult_skill_package_present_and_verifier_backed`.
+`empirical_plan_and_task_suite_present_and_structurally_scored`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -88,6 +92,8 @@ system.
 - the public eval fixtures expose golden, misuse, and trajectory scenarios and
   pass the repository's structural fixture checks;
 - the deterministic eval fixture scorer passes for the current fixture surface;
+- the deterministic empirical task-suite scorer passes for the current seed
+  task-suite surface and explicitly does not report model results;
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
@@ -107,7 +113,8 @@ These are intentionally outside the current release scope:
 - a package or framework distribution surface;
 - deployment automation;
 - any claim that this deterministic verifier proves production safety,
-  empirical effectiveness, or universal runtime correctness.
+  empirical effectiveness, paper readiness, or universal runtime correctness;
+- model/API eval execution or result publication.
 
 ## Interpretation Rule
 
