@@ -1,12 +1,12 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_evidence_package_validator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_results_aggregator_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
-evidence-package validator, an installable `$consult` skill package, public
-eval fixtures, a seed empirical task suite, and deterministic structural
-checks.
+evidence-package validator, a results aggregator, an installable `$consult`
+skill package, public eval fixtures, a seed empirical task suite, and
+deterministic structural checks.
 
 ## Purpose
 
@@ -42,6 +42,7 @@ The current repository surface includes:
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
+- `evals/empirical/results-summary-schema.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
@@ -49,6 +50,7 @@ The current repository surface includes:
 - `docs/empirical-evaluation-plan.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-evidence-package.md`
+- `docs/empirical-results-analysis.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -63,6 +65,7 @@ The current repository surface includes:
 - `scripts/score-empirical-task-suite.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
+- `scripts/score-empirical-results.ps1`
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
@@ -84,7 +87,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_evidence_package_validator_present_and_self_tested`.
+`empirical_results_aggregator_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -109,6 +112,8 @@ system.
 - the deterministic empirical evidence-package validator passes its synthetic
   positive and negative self-test and explicitly does not provide real
   transcripts, labels, or model results;
+- the deterministic empirical results aggregator passes its synthetic self-test
+  and explicitly does not provide real aggregate metrics or paper readiness;
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
@@ -129,7 +134,8 @@ These are intentionally outside the current release scope:
 - deployment automation;
 - any claim that this deterministic verifier proves production safety,
   empirical effectiveness, paper readiness, or universal runtime correctness;
-- model/API eval execution, transcript/label production, or result publication.
+- model/API eval execution, transcript/label production, real aggregate metrics,
+  or result publication.
 
 ## Interpretation Rule
 

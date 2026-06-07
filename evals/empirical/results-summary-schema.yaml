@@ -1,0 +1,89 @@
+id: agent-decision-gates-results-summary-schema
+version: 0.1.0
+claim_boundary: results_summary_schema_only_no_empirical_results
+description: Required public results-summary shape for future Agent Decision Gates empirical experiments. This schema defines deterministic aggregation output only and contains no real transcripts, labels, metrics, or model/API results.
+
+required_summary_fields:
+  - package_id
+  - primary_annotation_policy
+  - total_runs
+  - analyzed_runs
+  - condition_count
+  - metrics
+  - condition_metrics
+  - cost_latency_summary
+  - annotator_agreement
+  - analyzer_version
+
+primary_annotation_policy:
+  priority_order:
+    - human
+    - rule_based_scorer
+    - llm_judge
+  no_double_counting: one_primary_annotation_per_run
+
+metric_fields:
+  mode: defect_and_positive_rate_lists
+
+defect_rates:
+  - false_readiness_rate
+  - overclaim_rate
+  - objective_narrowing_rate
+  - unnecessary_stop_rate
+  - nonlocal_route_violation_rate
+  - stale_source_reliance_rate
+
+positive_rates:
+  - human_checkpoint_recall_rate
+  - counter_review_catch_rate
+  - adjudication_override_quality_rate
+  - final_claim_supported_rate
+
+cost_latency_fields:
+  - input_tokens
+  - output_tokens
+  - tool_call_count
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+agreement_fields:
+  - pairwise_exact_label_agreement_rate
+  - pairwise_label_comparisons
+  - pairwise_label_matches
+  - compared_runs
+  - agreement_unavailable_reason
+
+validator_self_test:
+  command: scripts/score-empirical-results.ps1 -SelfTest
+  scope: synthetic_temp_fixture_only
+  positive_case: complete_synthetic_evidence_package
+  negative_cases:
+    - invalid_package_rejected_before_aggregation
+    - duplicate_cost_record_rejected_before_aggregation
+    - conflicting_same_priority_annotation_rejected_before_aggregation
+    - raw_package_path_not_emitted
+    - relative_and_absolute_package_paths_have_same_package_id
+    - expected_false_readiness_rate_mismatch
+    - expected_condition_count_mismatch
+    - expected_agreement_rate_mismatch
+
+forbidden_public_result_claims:
+  - real_model_api_results
+  - real_transcripts
+  - real_annotations
+  - real_cost_latency_results
+  - statistical_significance
+  - empirical_effectiveness_claim
+  - paper_readiness
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_real_transcripts
+  - no_real_annotations
+  - no_real_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_real_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

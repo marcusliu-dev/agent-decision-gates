@@ -144,12 +144,13 @@ Run:
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
 ```
 
 These scorers verify only the shape of the public task-suite seed and run
-packet plus the evidence-package validator's synthetic self-test. They do not
-execute model/API evals, score real completed transcripts, or prove empirical
-effectiveness.
+packet plus the evidence-package validator's and results aggregator's synthetic
+self-tests. They do not execute model/API evals, score real completed
+transcripts, report real aggregate metrics, or prove empirical effectiveness.
 
 ## Current Nonclaims
 
@@ -160,6 +161,7 @@ This repository does not yet claim:
 - statistical significance;
 - human/LLM-judge agreement;
 - cost/latency results;
+- real aggregate metrics;
 - paper readiness;
 - production safety;
 - universal runtime compliance.

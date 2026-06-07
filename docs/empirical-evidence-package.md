@@ -59,6 +59,11 @@ For a future real package, run:
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -PackageRoot path\to\evidence-package
 ```
 
+After this validator passes, the bounded post-package aggregation route is
+defined in [`empirical-results-analysis.md`](empirical-results-analysis.md). The
+current aggregation route is synthetic-self-tested only and does not report real
+experiment results.
+
 ## Result Boundary
 
 The validator may summarize counts from a supplied package, such as transcript
@@ -91,7 +96,7 @@ This repository still does not prove:
 - human or LLM-judge labels;
 - cost/latency measurement;
 - reviewer agreement;
-- aggregate metrics;
+- real aggregate metrics;
 - statistical significance;
 - empirical effectiveness;
 - paper readiness;

@@ -35,6 +35,7 @@ $requiredPaths = @(
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
+    'evals/empirical/results-summary-schema.yaml',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
@@ -42,6 +43,7 @@ $requiredPaths = @(
     'docs/empirical-evaluation-plan.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
+    'docs/empirical-results-analysis.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -57,6 +59,7 @@ $requiredPaths = @(
     'scripts/score-empirical-task-suite.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
+    'scripts/score-empirical-results.ps1',
     'LICENSE'
 )
 
@@ -123,6 +126,7 @@ $ceilingOrder = @{
     'empirical_plan_and_task_suite_present_and_structurally_scored' = 7
     'empirical_run_packet_schema_present_and_structurally_scored' = 8
     'empirical_evidence_package_validator_present_and_self_tested' = 9
+    'empirical_results_aggregator_present_and_self_tested' = 10
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -433,6 +437,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'raw_transcript',
         'annotation_record',
         'cost_latency_record',
+        'results_summary_schema',
         'prompt_version_record',
         'no_private_repository_material',
         'budget_recorded_before_execution',
@@ -565,6 +570,72 @@ if (Test-Path -LiteralPath $evidencePackageScorerPath) {
     }
 }
 
+$resultsSummarySchemaPath = Join-Path $RepoRoot 'evals\empirical\results-summary-schema.yaml'
+if (Test-Path -LiteralPath $resultsSummarySchemaPath) {
+    $resultsSummarySchemaContent = Get-Content -LiteralPath $resultsSummarySchemaPath -Raw
+    if ($resultsSummarySchemaContent -notmatch 'claim_boundary:\s*results_summary_schema_only_no_empirical_results') {
+        $failures.Add('Results summary schema must declare results_summary_schema_only_no_empirical_results claim boundary.')
+    }
+    foreach ($check in @(
+        'primary_annotation_policy',
+        'false_readiness_rate',
+        'overclaim_rate',
+        'objective_narrowing_rate',
+        'unnecessary_stop_rate',
+        'human_checkpoint_recall_rate',
+        'cost_latency_summary',
+        'pairwise_exact_label_agreement_rate',
+        'pairwise_label_matches',
+        'no_model_api_eval_execution',
+        'no_human_llm_judge_agreement_results',
+        'no_real_aggregate_metrics',
+        'no_paper_readiness'
+    )) {
+        if ($resultsSummarySchemaContent -notlike "*$check*") {
+            $failures.Add("Missing results summary schema requirement '$check'.")
+        }
+    }
+}
+
+$empiricalResultsDocPath = Join-Path $RepoRoot 'docs\empirical-results-analysis.md'
+if (Test-Path -LiteralPath $empiricalResultsDocPath) {
+    $empiricalResultsDocContent = Get-Content -LiteralPath $empiricalResultsDocPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'real aggregate metrics',
+        'score-empirical-results.ps1 -SelfTest',
+        'Synthetic self-test metrics',
+        'not empirical proof or paper readiness',
+        'Current Nonclaims'
+    )) {
+        if (-not $empiricalResultsDocContent.Contains($check)) {
+            $failures.Add("Missing empirical results-analysis boundary '$check' in docs/empirical-results-analysis.md")
+        }
+    }
+}
+
+$empiricalResultsScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-results.ps1'
+if (Test-Path -LiteralPath $empiricalResultsScorerPath) {
+    $empiricalResultsScorerContent = Get-Content -LiteralPath $empiricalResultsScorerPath -Raw
+    foreach ($check in @(
+        'Empirical results aggregation',
+        'Invoke-EvidencePackageValidator',
+        'false_readiness_rate',
+        'condition_metrics',
+        'cost_latency_summary',
+        'pairwise_exact_label_agreement_rate',
+        'not referenced by any transcript',
+        'conflicting same-priority primary annotations',
+        'self_test_relative_package_id_status',
+        'Rejected invalid package, duplicate cost records, and conflicting primary annotations before aggregation',
+        'Provide -PackageRoot for a real evidence package or -SelfTest'
+    )) {
+        if (-not $empiricalResultsScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical results scorer invariant '$check'.")
+        }
+    }
+}
+
 $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
@@ -677,6 +748,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-evidence-package.md'
             Label = 'docs/empirical-evidence-package.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-results-analysis.md'
+            Label = 'docs/empirical-results-analysis.md'
         }
     )
 

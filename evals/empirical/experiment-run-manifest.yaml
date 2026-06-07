@@ -35,6 +35,7 @@ schemas:
   transcript_schema: evals/empirical/transcript-schema.yaml
   annotation_schema: evals/empirical/annotation-schema.yaml
   evidence_package_schema: evals/empirical/evidence-package-schema.yaml
+  results_summary_schema: evals/empirical/results-summary-schema.yaml
 
 stop_gates:
   - no_private_repository_material

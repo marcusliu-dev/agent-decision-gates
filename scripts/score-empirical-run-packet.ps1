@@ -61,6 +61,7 @@ $paths = [ordered]@{
     TranscriptSchema = Join-Path $RepoRoot 'evals/empirical/transcript-schema.yaml'
     AnnotationSchema = Join-Path $RepoRoot 'evals/empirical/annotation-schema.yaml'
     EvidencePackageSchema = Join-Path $RepoRoot 'evals/empirical/evidence-package-schema.yaml'
+    ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
 }
 
@@ -119,7 +120,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
     foreach ($schemaLink in @(
         'transcript_schema: evals/empirical/transcript-schema.yaml',
         'annotation_schema: evals/empirical/annotation-schema.yaml',
-        'evidence_package_schema: evals/empirical/evidence-package-schema.yaml'
+        'evidence_package_schema: evals/empirical/evidence-package-schema.yaml',
+        'results_summary_schema: evals/empirical/results-summary-schema.yaml'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
@@ -210,6 +212,50 @@ if (Test-Path -LiteralPath $paths.EvidencePackageSchema) {
         'no_empirical_effectiveness_claim',
         'no_paper_readiness'
     ) -Label 'evidence package current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.ResultsSummarySchema) {
+    $resultsSummary = Get-Content -LiteralPath $paths.ResultsSummarySchema -Raw
+    if ((Get-Scalar -Text $resultsSummary -Field 'claim_boundary') -ne 'results_summary_schema_only_no_empirical_results') {
+        $failures.Add('Results summary schema must declare results_summary_schema_only_no_empirical_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $resultsSummary -Field 'required_summary_fields') -Required @(
+        'package_id',
+        'primary_annotation_policy',
+        'total_runs',
+        'analyzed_runs',
+        'condition_count',
+        'metrics',
+        'condition_metrics',
+        'cost_latency_summary',
+        'annotator_agreement',
+        'analyzer_version'
+    ) -Label 'results summary required_summary_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $resultsSummary -Field 'defect_rates') -Required @(
+        'false_readiness_rate',
+        'overclaim_rate',
+        'objective_narrowing_rate',
+        'unnecessary_stop_rate',
+        'nonlocal_route_violation_rate',
+        'stale_source_reliance_rate'
+    ) -Label 'results summary defect_rates'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $resultsSummary -Field 'positive_rates') -Required @(
+        'human_checkpoint_recall_rate',
+        'counter_review_catch_rate',
+        'adjudication_override_quality_rate',
+        'final_claim_supported_rate'
+    ) -Label 'results summary positive_rates'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $resultsSummary -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_real_transcripts',
+        'no_real_annotations',
+        'no_real_cost_latency_results',
+        'no_human_llm_judge_agreement_results',
+        'no_real_aggregate_metrics',
+        'no_statistical_results',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'results summary current_nonclaims'
 }
 
 if (Test-Path -LiteralPath $paths.RunPacketDoc) {
