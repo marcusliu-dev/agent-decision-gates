@@ -139,10 +139,12 @@ Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 ```
 
-That scorer verifies only the shape of the public task-suite seed. It does not
-execute model/API evals, score transcripts, or prove empirical effectiveness.
+These scorers verify only the shape of the public task-suite seed and run
+packet. They do not execute model/API evals, score completed transcripts, or
+prove empirical effectiveness.
 
 ## Current Nonclaims
 

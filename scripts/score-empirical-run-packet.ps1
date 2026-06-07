@@ -1,0 +1,238 @@
+param(
+    [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
+    [switch]$Json
+)
+
+$ErrorActionPreference = 'Stop'
+
+function Get-Scalar {
+    param(
+        [string]$Text,
+        [string]$Field
+    )
+    $match = [regex]::Match($Text, "(?m)^$([regex]::Escape($Field)):\s*(.+?)\s*$")
+    if ($match.Success) {
+        return $match.Groups[1].Value.Trim('"').Trim("'").Trim()
+    }
+    return $null
+}
+
+function Get-YamlList {
+    param(
+        [string]$Text,
+        [string]$Field
+    )
+    $items = New-Object System.Collections.Generic.List[string]
+    $lines = $Text -split "`r?`n"
+    $inList = $false
+    foreach ($line in $lines) {
+        if ($line -match "^$([regex]::Escape($Field)):\s*$") {
+            $inList = $true
+            continue
+        }
+        if ($inList) {
+            if ($line -match '^\S') {
+                break
+            }
+            if ($line -match '^\s*-\s*(.+?)\s*$') {
+                $items.Add($Matches[1].Trim()) | Out-Null
+            }
+        }
+    }
+    return @($items)
+}
+
+function Assert-ListContains {
+    param(
+        [System.Collections.Generic.List[string]]$Failures,
+        [string[]]$Items,
+        [string[]]$Required,
+        [string]$Label
+    )
+    foreach ($requiredItem in $Required) {
+        if ($Items -notcontains $requiredItem) {
+            $Failures.Add("$Label is missing '$requiredItem'.")
+        }
+    }
+}
+
+$paths = [ordered]@{
+    Manifest = Join-Path $RepoRoot 'evals/empirical/experiment-run-manifest.yaml'
+    TranscriptSchema = Join-Path $RepoRoot 'evals/empirical/transcript-schema.yaml'
+    AnnotationSchema = Join-Path $RepoRoot 'evals/empirical/annotation-schema.yaml'
+    RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
+}
+
+$failures = New-Object System.Collections.Generic.List[string]
+$warnings = New-Object System.Collections.Generic.List[string]
+$info = New-Object System.Collections.Generic.List[string]
+
+foreach ($entry in $paths.GetEnumerator()) {
+    if (-not (Test-Path -LiteralPath $entry.Value)) {
+        $failures.Add("Missing required run-packet artifact: $($entry.Value)")
+    }
+}
+
+if (Test-Path -LiteralPath $paths.Manifest) {
+    $manifest = Get-Content -LiteralPath $paths.Manifest -Raw
+    if ((Get-Scalar -Text $manifest -Field 'claim_boundary') -ne 'run_packet_schema_only_no_execution_results') {
+        $failures.Add('Experiment run manifest must declare run_packet_schema_only_no_execution_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'conditions') -Required @(
+        'no_gate',
+        'checklist_only',
+        'single_self_review',
+        'same_context_critique',
+        'separate_counter_review',
+        'claim_ceiling_only',
+        'counter_review_only',
+        'full_consult_gate',
+        'programmatic_gate_variant'
+    ) -Label 'conditions'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'required_artifacts') -Required @(
+        'raw_transcript',
+        'annotation_record',
+        'model_runtime_record',
+        'cost_latency_record',
+        'prompt_version_record',
+        'task_suite_hash_record',
+        'scorer_version_record',
+        'redaction_review_record'
+    ) -Label 'required_artifacts'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'stop_gates') -Required @(
+        'no_private_repository_material',
+        'prompts_frozen_before_execution',
+        'budget_recorded_before_execution',
+        'no_paper_readiness_claim_before_results',
+        'no_model_result_fields_in_planning_manifest'
+    ) -Label 'stop_gates'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_empirical_results',
+        'no_cost_latency_results',
+        'no_human_llm_judge_agreement_results',
+        'no_paper_readiness'
+    ) -Label 'current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.TranscriptSchema) {
+    $transcript = Get-Content -LiteralPath $paths.TranscriptSchema -Raw
+    if ((Get-Scalar -Text $transcript -Field 'claim_boundary') -ne 'transcript_schema_only_no_transcripts') {
+        $failures.Add('Transcript schema must declare transcript_schema_only_no_transcripts.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $transcript -Field 'required_fields') -Required @(
+        'run_id',
+        'task_id',
+        'condition',
+        'model_provider',
+        'model_name_or_alias',
+        'input_prompt',
+        'transcript_messages',
+        'final_claim',
+        'checked_evidence',
+        'selected_claim_ceiling',
+        'cost_latency_record_id',
+        'redaction_status'
+    ) -Label 'transcript required_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $transcript -Field 'privacy_requirements') -Required @(
+        'synthetic_or_redacted_repository_fixture',
+        'no_private_paths',
+        'no_credentials',
+        'no_unpublished_private_documents'
+    ) -Label 'transcript privacy_requirements'
+}
+
+if (Test-Path -LiteralPath $paths.AnnotationSchema) {
+    $annotation = Get-Content -LiteralPath $paths.AnnotationSchema -Raw
+    if ((Get-Scalar -Text $annotation -Field 'claim_boundary') -ne 'annotation_schema_only_no_labels') {
+        $failures.Add('Annotation schema must declare annotation_schema_only_no_labels.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $annotation -Field 'required_fields') -Required @(
+        'annotation_id',
+        'run_id',
+        'task_id',
+        'condition',
+        'annotator_type',
+        'false_readiness_label',
+        'overclaim_label',
+        'objective_narrowing_label',
+        'human_checkpoint_recall_label',
+        'rationale_transcript_spans',
+        'confidence'
+    ) -Label 'annotation required_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $annotation -Field 'agreement_requirements') -Required @(
+        'human_primary_labels',
+        'llm_judge_labels_if_used',
+        'disagreement_adjudication',
+        'agreement_metric_report',
+        'judge_bias_limitations'
+    ) -Label 'agreement_requirements'
+}
+
+if (Test-Path -LiteralPath $paths.RunPacketDoc) {
+    $doc = Get-Content -LiteralPath $paths.RunPacketDoc -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'report results',
+        'claim paper readiness',
+        'No private repository material',
+        'score-empirical-run-packet.ps1'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Experiment run packet doc is missing boundary '$check'.")
+        }
+    }
+}
+
+$blockedResultFields = @(
+    'pass_rate',
+    'win_rate',
+    'p_value',
+    'confidence_interval',
+    'statistical_significance',
+    'effectiveness_claim',
+    'paper_ready',
+    'production_ready'
+)
+
+foreach ($entry in $paths.GetEnumerator()) {
+    if (-not (Test-Path -LiteralPath $entry.Value)) {
+        continue
+    }
+    $text = Get-Content -LiteralPath $entry.Value -Raw
+    foreach ($blockedField in $blockedResultFields) {
+        if ([regex]::IsMatch($text, "(?m)^\s*$([regex]::Escape($blockedField))\s*:")) {
+            $failures.Add("$($entry.Key) must not contain result field '$blockedField'.")
+        }
+    }
+}
+
+$info.Add('Scored empirical run-packet structure.')
+$info.Add("Checked $($paths.Count) run-packet artifact(s).")
+
+$status = if ($failures.Count -eq 0) { 'pass' } else { 'fail' }
+$result = [ordered]@{
+    status = $status
+    failures = @($failures)
+    warnings = @($warnings)
+    info = @($info)
+}
+
+if ($Json) {
+    $result | ConvertTo-Json -Depth 5
+} else {
+    "Empirical run-packet scoring: $status"
+    ''
+    'Failures:'
+    if ($failures.Count -eq 0) { '  none' } else { $failures | ForEach-Object { "  - $_" } }
+    ''
+    'Warnings:'
+    if ($warnings.Count -eq 0) { '  none' } else { $warnings | ForEach-Object { "  - $_" } }
+    ''
+    'Info:'
+    if ($info.Count -eq 0) { '  none' } else { $info | ForEach-Object { "  - $_" } }
+}
+
+if ($failures.Count -gt 0) {
+    exit 1
+}

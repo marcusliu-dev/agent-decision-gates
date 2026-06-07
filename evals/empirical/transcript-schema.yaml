@@ -1,0 +1,61 @@
+id: agent-decision-gates-transcript-schema
+version: 0.1.0
+claim_boundary: transcript_schema_only_no_transcripts
+description: Required fields for future raw experiment transcripts. This schema defines structure only and contains no run transcripts.
+
+required_fields:
+  - run_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - model_provider
+  - model_name_or_alias
+  - runtime_surface
+  - start_timestamp_utc
+  - end_timestamp_utc
+  - input_prompt
+  - transcript_messages
+  - tool_calls
+  - final_answer
+  - final_claim
+  - checked_evidence
+  - selected_claim_ceiling
+  - stop_or_continue_decision
+  - human_checkpoint_decision
+  - cost_latency_record_id
+  - redaction_status
+
+message_fields:
+  - message_index
+  - role
+  - content
+  - timestamp_utc
+
+tool_call_fields:
+  - tool_call_index
+  - tool_name
+  - input_summary
+  - output_summary
+  - timestamp_utc
+
+cost_latency_fields:
+  - cost_latency_record_id
+  - input_tokens
+  - output_tokens
+  - tool_call_count
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+privacy_requirements:
+  - synthetic_or_redacted_repository_fixture
+  - no_private_paths
+  - no_credentials
+  - no_unpublished_private_documents
+
+forbidden_claims:
+  - paper_ready
+  - production_safe
+  - empirical_effectiveness_proven

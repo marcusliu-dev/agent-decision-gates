@@ -31,11 +31,15 @@ $requiredPaths = @(
     'evals/consult/consult-public-parent-framing-conflict.yaml',
     'evals/empirical',
     'evals/empirical/agent-decision-gates-task-suite.yaml',
+    'evals/empirical/experiment-run-manifest.yaml',
+    'evals/empirical/transcript-schema.yaml',
+    'evals/empirical/annotation-schema.yaml',
     'docs/consult-protocol.md',
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
     'docs/deep-dive-report.md',
     'docs/empirical-evaluation-plan.md',
+    'docs/experiment-run-packet.md',
     'docs/eval-evidence.md',
     'docs/glossary.md',
     'docs/human-checkpoints.md',
@@ -49,6 +53,7 @@ $requiredPaths = @(
     'scripts/verify-public-safety.ps1',
     'scripts/score-eval-fixtures.ps1',
     'scripts/score-empirical-task-suite.ps1',
+    'scripts/score-empirical-run-packet.ps1',
     'LICENSE'
 )
 
@@ -89,6 +94,7 @@ $ceilingOrder = @{
     'public_github_repo_published_and_verified' = 5
     'public_consult_skill_package_present_and_verifier_backed' = 6
     'empirical_plan_and_task_suite_present_and_structurally_scored' = 7
+    'empirical_run_packet_schema_present_and_structurally_scored' = 8
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -370,6 +376,93 @@ if (Test-Path -LiteralPath $empiricalSuitePath) {
     }
 }
 
+$experimentRunPacketPath = Join-Path $RepoRoot 'docs\experiment-run-packet.md'
+if (Test-Path -LiteralPath $experimentRunPacketPath) {
+    $experimentRunPacketContent = Get-Content -LiteralPath $experimentRunPacketPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'report results',
+        'claim paper readiness',
+        'No private repository material',
+        'score-empirical-run-packet.ps1'
+    )) {
+        if (-not $experimentRunPacketContent.Contains($check)) {
+            $failures.Add("Missing experiment-run-packet boundary '$check' in docs/experiment-run-packet.md")
+        }
+    }
+}
+
+$runManifestPath = Join-Path $RepoRoot 'evals\empirical\experiment-run-manifest.yaml'
+if (Test-Path -LiteralPath $runManifestPath) {
+    $runManifestContent = Get-Content -LiteralPath $runManifestPath -Raw
+    if ($runManifestContent -notmatch 'claim_boundary:\s*run_packet_schema_only_no_execution_results') {
+        $failures.Add('Experiment run manifest must declare run_packet_schema_only_no_execution_results claim boundary.')
+    }
+    foreach ($check in @(
+        'raw_transcript',
+        'annotation_record',
+        'cost_latency_record',
+        'prompt_version_record',
+        'no_private_repository_material',
+        'budget_recorded_before_execution',
+        'no_model_api_eval_execution',
+        'no_empirical_results',
+        'no_paper_readiness'
+    )) {
+        if ($runManifestContent -notlike "*$check*") {
+            $failures.Add("Missing experiment run manifest requirement '$check'.")
+        }
+    }
+}
+
+$transcriptSchemaPath = Join-Path $RepoRoot 'evals\empirical\transcript-schema.yaml'
+if (Test-Path -LiteralPath $transcriptSchemaPath) {
+    $transcriptSchemaContent = Get-Content -LiteralPath $transcriptSchemaPath -Raw
+    if ($transcriptSchemaContent -notmatch 'claim_boundary:\s*transcript_schema_only_no_transcripts') {
+        $failures.Add('Transcript schema must declare transcript_schema_only_no_transcripts claim boundary.')
+    }
+    foreach ($check in @(
+        'run_id',
+        'task_id',
+        'condition',
+        'model_provider',
+        'transcript_messages',
+        'final_claim',
+        'checked_evidence',
+        'selected_claim_ceiling',
+        'cost_latency_record_id',
+        'no_private_paths'
+    )) {
+        if ($transcriptSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing transcript schema requirement '$check'.")
+        }
+    }
+}
+
+$annotationSchemaPath = Join-Path $RepoRoot 'evals\empirical\annotation-schema.yaml'
+if (Test-Path -LiteralPath $annotationSchemaPath) {
+    $annotationSchemaContent = Get-Content -LiteralPath $annotationSchemaPath -Raw
+    if ($annotationSchemaContent -notmatch 'claim_boundary:\s*annotation_schema_only_no_labels') {
+        $failures.Add('Annotation schema must declare annotation_schema_only_no_labels claim boundary.')
+    }
+    foreach ($check in @(
+        'annotation_id',
+        'run_id',
+        'false_readiness_label',
+        'overclaim_label',
+        'objective_narrowing_label',
+        'rationale_transcript_spans',
+        'human_primary_labels',
+        'llm_judge_labels_if_used',
+        'agreement_metric_report',
+        'judge_bias_limitations'
+    )) {
+        if ($annotationSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing annotation schema requirement '$check'.")
+        }
+    }
+}
+
 $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
@@ -474,6 +567,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-evaluation-plan.md'
             Label = 'docs/empirical-evaluation-plan.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'
+            Label = 'docs/experiment-run-packet.md'
         }
     )
 

@@ -1,0 +1,63 @@
+id: agent-decision-gates-experiment-run-manifest
+version: 0.1.0
+claim_boundary: run_packet_schema_only_no_execution_results
+description: Structural run manifest for future Agent Decision Gates empirical experiments. This manifest freezes planned experiment shape only and contains no model/API results.
+
+task_suite:
+  path: evals/empirical/agent-decision-gates-task-suite.yaml
+  id: agent-decision-gates-empirical-task-suite
+  version: 0.1.0
+
+conditions:
+  - no_gate
+  - checklist_only
+  - single_self_review
+  - same_context_critique
+  - separate_counter_review
+  - claim_ceiling_only
+  - counter_review_only
+  - full_consult_gate
+  - programmatic_gate_variant
+
+planned_repeats_per_task_condition: 3
+
+required_artifacts:
+  - raw_transcript
+  - annotation_record
+  - model_runtime_record
+  - cost_latency_record
+  - prompt_version_record
+  - task_suite_hash_record
+  - scorer_version_record
+  - redaction_review_record
+
+schemas:
+  transcript_schema: evals/empirical/transcript-schema.yaml
+  annotation_schema: evals/empirical/annotation-schema.yaml
+
+stop_gates:
+  - no_private_repository_material
+  - prompts_frozen_before_execution
+  - task_suite_hash_recorded
+  - budget_recorded_before_execution
+  - transcript_schema_available
+  - annotation_schema_available
+  - no_paper_readiness_claim_before_results
+  - no_model_result_fields_in_planning_manifest
+
+forbidden_result_fields:
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - effectiveness_claim
+  - paper_ready
+  - production_ready
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_empirical_results
+  - no_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_paper_readiness

@@ -1,11 +1,11 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_plan_and_task_suite_present_and_structurally_scored -->
+<!-- claim_ceiling: empirical_run_packet_schema_present_and_structurally_scored -->
 
 Status: Current repository surface includes documentation, a design-pattern
-report, an empirical evaluation plan, an installable `$consult` skill package,
-public eval fixtures, a seed empirical task suite, and deterministic structural
-checks.
+report, an empirical evaluation plan, experiment run-packet schemas, an
+installable `$consult` skill package, public eval fixtures, a seed empirical
+task suite, and deterministic structural checks.
 
 ## Purpose
 
@@ -37,11 +37,15 @@ The current repository surface includes:
 - `evals/consult/consult-public-unsafe-thread-reclaim.yaml`
 - `evals/consult/consult-public-parent-framing-conflict.yaml`
 - `evals/empirical/agent-decision-gates-task-suite.yaml`
+- `evals/empirical/experiment-run-manifest.yaml`
+- `evals/empirical/transcript-schema.yaml`
+- `evals/empirical/annotation-schema.yaml`
 - `docs/consult-protocol.md`
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
+- `docs/experiment-run-packet.md`
 - `docs/glossary.md`
 - `docs/eval-evidence.md`
 - `docs/human-checkpoints.md`
@@ -54,6 +58,7 @@ The current repository surface includes:
 - `scripts/verify-public-safety.ps1`
 - `scripts/score-eval-fixtures.ps1`
 - `scripts/score-empirical-task-suite.ps1`
+- `scripts/score-empirical-run-packet.ps1`
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
@@ -69,12 +74,13 @@ The current release claim is narrow and explicit:
   artifact;
 - the documentation and skill surface are internally consistent and
   verifier-backed, the design-pattern report is present, and the public eval
-  fixtures plus seed empirical task suite are structurally validated;
+  fixtures, seed empirical task suite, and experiment run-packet schemas are
+  structurally validated;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_plan_and_task_suite_present_and_structurally_scored`.
+`empirical_run_packet_schema_present_and_structurally_scored`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -94,6 +100,8 @@ system.
 - the deterministic eval fixture scorer passes for the current fixture surface;
 - the deterministic empirical task-suite scorer passes for the current seed
   task-suite surface and explicitly does not report model results;
+- the deterministic empirical run-packet scorer passes for the current
+  manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
