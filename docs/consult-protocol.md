@@ -53,7 +53,9 @@ workflow first attempts one bounded cleanup of visible completed
 consult-owned current-thread agents, retries the same spawn once, and only
 then falls back to inline self-challenge. If independence still cannot be
 restored, the consult should fail closed rather than pretending the stronger
-route succeeded.
+route succeeded. Inline self-challenge can preserve notes and identify a next
+safe action, but it is not approval evidence for a decision-bearing step when
+independent review is material.
 
 ## What Good Output Looks Like
 

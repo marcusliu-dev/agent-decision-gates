@@ -1,5 +1,7 @@
 # Release Readiness
 
+<!-- claim_ceiling: public_consult_skill_package_present_and_verifier_backed -->
+
 Status: Current repository surface includes documentation, an installable
 `$consult` skill package, public eval fixtures, and a deterministic verifier.
 
@@ -14,6 +16,7 @@ out of scope.
 The current repository surface includes:
 
 - `README.md`
+- `.gitignore`
 - `TRACKER.md`
 - `skills/consult/SKILL.md`
 - `skills/consult/agents/openai.yaml`
@@ -46,12 +49,15 @@ The current release claim is narrow and explicit:
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
+The current claim ceiling is no higher than
+`public_consult_skill_package_present_and_verifier_backed`.
+
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
 
 ## Verified Evidence
 
-- the deterministic public-safety verifier passes for the current public
+- the deterministic public-surface integrity verifier passes for the current public
   doc-plus-skill surface;
 - required public files, directories, skill files, and eval fixtures are
   present;
@@ -60,6 +66,8 @@ system.
 - the skill remains explicit-use only and the public config keeps implicit
   invocation disabled;
 - blocked markers and blocked private leakage terms do not appear;
+- generated review packages under `dist/` are ignored and excluded from the
+  public-surface scan;
 - relative markdown links resolve;
 - `src/` and `tests/` remain absent on the current doc-plus-skill surface;
 - `LICENSE` and `docs/provenance.md` are present and aligned with the current
@@ -73,8 +81,8 @@ These are intentionally outside the current release scope:
 - executable product scaffolding beyond the current skill package;
 - a package or framework distribution surface;
 - deployment automation;
-- any claim that this deterministic verifier proves production safety or
-  universal runtime correctness.
+- any claim that this deterministic verifier proves production safety,
+  empirical effectiveness, or universal runtime correctness.
 
 ## Interpretation Rule
 

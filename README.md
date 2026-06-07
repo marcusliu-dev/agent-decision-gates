@@ -1,5 +1,7 @@
 # Agent Decision Gates
 
+<!-- claim_ceiling: public_consult_skill_package_present_and_verifier_backed -->
+
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
 
@@ -35,7 +37,7 @@ This repo packages a simple alternative:
 
 ## What You Get
 
-- an installable [`$consult` skill package](skills/consult/SKILL.md);
+- an installable or directly reusable [`$consult` skill package](skills/consult/SKILL.md);
 - a machine-readable skill config in
   [`skills/consult/agents/openai.yaml`](skills/consult/agents/openai.yaml);
 - public eval fixtures under [`evals/consult/`](evals/consult/);
@@ -44,21 +46,39 @@ This repo packages a simple alternative:
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
   aligned with evidence;
 - a fictional [stage-gate example](examples/consult-stage-gate.md);
-- a lightweight local verifier in
+- a lightweight public-surface integrity verifier in
   [`scripts/verify-public-safety.ps1`](scripts/verify-public-safety.ps1);
 - a small [tracker](TRACKER.md) and [release record](docs/release-readiness.md)
   for keeping state honest.
 
 ## Quick Start
 
-If you want to install the skill package:
+If your Codex runtime has the `skill-installer` skill, ask Codex:
 
 ```text
-scripts/install-skill-from-github.py --repo marcusliu-dev/agent-decision-gates --path skills/consult
+$skill-installer install the consult skill from github repo marcusliu-dev/agent-decision-gates path skills/consult
 ```
 
-This is the GitHub repo/path install route used by Codex's `skill-installer`
-helper. After installation, restart Codex and invoke the skill explicitly with
+If you are installing manually from a local clone, copy the skill directory into
+your Codex skills directory.
+
+PowerShell:
+
+```powershell
+$CodexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
+$SkillTarget = Join-Path $CodexHome "skills\consult"
+New-Item -ItemType Directory -Force -Path $SkillTarget | Out-Null
+Copy-Item -Recurse -Force "skills\consult\*" $SkillTarget
+```
+
+macOS/Linux shell:
+
+```sh
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills/consult"
+cp -R skills/consult/. "${CODEX_HOME:-$HOME/.codex}/skills/consult/"
+```
+
+After installation, restart Codex and invoke the skill explicitly with
 `$consult`.
 
 If you want to adapt the underlying pattern:
@@ -74,7 +94,9 @@ For decision-bearing consults, the reference workflow prefers independent
 spawned agents at the strongest model and highest reasoning effort your runtime
 supports. In the example workflow here, that means `gpt-5.5` with `xhigh`
 when available. If your runtime cannot supply that route, record what actually
-ran and fail closed when independence materially matters.
+ran and fail closed when independence materially matters. Inline self-challenge
+can document uncertainty, but it cannot approve a decision-bearing step that
+requires independent review.
 
 ## Repository Guide
 
@@ -100,9 +122,13 @@ ran and fail closed when independence materially matters.
 ## Project Status
 
 This is a published public repository with a reusable `$consult` skill package,
-public eval fixtures, documentation, and one deterministic verifier under
-`MIT`. It intentionally does not ship CI, deployment automation, application
-source scaffolding, or a broader framework/runtime product surface.
+public eval fixtures, documentation, and one deterministic public-surface
+integrity verifier under `MIT`. The current ceiling is no higher than
+`public_consult_skill_package_present_and_verifier_backed`. This verifier does
+not prove production safety, empirical effectiveness, or universal runtime
+correctness. The repository intentionally does not ship CI, deployment
+automation, application source scaffolding, or a broader framework/runtime
+product surface.
 
 If this pattern is useful in your own agent workflows, adapt it, improve it,
 and make the decision boundaries explicit in your own systems.

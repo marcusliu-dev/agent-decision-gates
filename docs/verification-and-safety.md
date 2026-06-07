@@ -5,10 +5,11 @@
 Do not make a readiness or completion claim without fresh evidence that matches
 the scope of the claim.
 
-This repository's main verifier is deterministic. A passing verifier plus
-fresh readback can prove the integrity of the current documentation, skill, and
-public eval surface. It does not, by itself, prove broader operational safety,
-deployment safety, or product correctness outside that surface.
+This repository's main verifier is deterministic. A passing public-surface
+integrity verifier plus fresh readback can prove the integrity of the current
+documentation, skill, and public eval surface. It does not, by itself, prove
+broader operational safety, deployment safety, empirical effectiveness, or
+product correctness outside that surface.
 
 ## Match Evidence To Scope
 
@@ -45,7 +46,8 @@ broader state than the tracker and current verifier evidence support.
   - core consult invariants appear in the public skill text;
   - blocked markers and blocked private leakage terms do not appear;
   - relative markdown links resolve;
-  - no file claims a broader state than `TRACKER.md`;
+  - claim-bearing release surfaces carry machine-readable claim-ceiling
+    metadata and do not claim a broader state than `TRACKER.md`;
   - the repository remains free of unexpected executable scaffolding such as
     `src/` and `tests/`.
 - Broader verification belongs to the broader surface. If you add code, CI, or
@@ -83,4 +85,4 @@ because it is honest about what it can and cannot prove.
 
 It can support integrity claims about the current public repository surface. It
 does not replace broader verification for code, CI, deployment,
-infrastructure, or high-risk external actions.
+infrastructure, empirical effectiveness, or high-risk external actions.

@@ -116,6 +116,11 @@ unavailable or rejected, or the single retry still fails, say so and run the
 strongest possible inline primary plus self-challenge. Do not pretend that
 inline self-challenge is independent evidence.
 
+For decision-bearing consults where independent review is material, inline
+self-challenge may preserve notes, uncertainties, and the next safe action,
+but it must not substitute for approval, readiness, signoff, or stage
+advancement.
+
 If subagents launch but the `gpt-5.5` override is unavailable or rejected,
 record the actual Step 1/Step 2 model and reasoning effort instead of
 pretending the override happened. Do not change parent, global, or other-skill

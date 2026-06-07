@@ -34,6 +34,11 @@ $forbiddenPaths = @(
     'tests'
 )
 
+$excludedScanRoots = @(
+    '.git',
+    'dist'
+)
+
 $blockedMarkers = @(
     'TODO_PRIVATE',
     'PRIVATE_ONLY',
@@ -74,6 +79,17 @@ function Get-RelativePath {
     return $FullPath.Substring($BasePath.Length).TrimStart('\')
 }
 
+function Test-IsExcludedScanPath {
+    param(
+        [string]$BasePath,
+        [string]$FullPath
+    )
+
+    $relativePath = Get-RelativePath -BasePath $BasePath -FullPath $FullPath
+    $firstSegment = $relativePath.Split([char[]]@('\', '/'), 2)[0]
+    return $excludedScanRoots -contains $firstSegment
+}
+
 function Get-MarkdownHeadingSlugs {
     param(
         [string]$Path
@@ -92,6 +108,37 @@ function Get-MarkdownHeadingSlugs {
         }
     }
     return $slugs
+}
+
+function Test-ClaimCeilingDocuments {
+    param(
+        [string]$TrackerCeiling,
+        [array]$ClaimDocuments,
+        [hashtable]$CeilingOrder
+    )
+
+    $claimFailures = New-Object System.Collections.Generic.List[string]
+
+    if (-not $CeilingOrder.ContainsKey($TrackerCeiling)) {
+        $claimFailures.Add("TRACKER.md uses an unknown claim ceiling '$TrackerCeiling'.")
+        return $claimFailures
+    }
+
+    foreach ($claimDocument in $ClaimDocuments) {
+        $claimedCeiling = $claimDocument.Ceiling
+        $label = $claimDocument.Label
+
+        if (-not $CeilingOrder.ContainsKey($claimedCeiling)) {
+            $claimFailures.Add("$label uses an unknown claim ceiling '$claimedCeiling'.")
+            continue
+        }
+
+        if ($CeilingOrder[$claimedCeiling] -gt $CeilingOrder[$TrackerCeiling]) {
+            $claimFailures.Add("$label claims a broader ceiling '$claimedCeiling' than TRACKER.md '$TrackerCeiling'.")
+        }
+    }
+
+    return $claimFailures
 }
 
 foreach ($relativePath in $requiredPaths) {
@@ -113,7 +160,8 @@ $selfPath = (Resolve-Path -LiteralPath $PSCommandPath).Path
 $textFiles = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File |
     Where-Object {
         $_.Extension -in '.md', '.ps1', '.txt', '.yaml' -and
-        (Resolve-Path -LiteralPath $_.FullName).Path -ne $selfPath
+        (Resolve-Path -LiteralPath $_.FullName).Path -ne $selfPath -and
+        -not (Test-IsExcludedScanPath -BasePath $RepoRoot -FullPath $_.FullName)
     }
 
 foreach ($file in $textFiles) {
@@ -184,7 +232,9 @@ if (Test-Path -LiteralPath $skillPath) {
         'Run local Step 2.',
         'Parent adjudicates.',
         'agent thread limit reached',
-        'retry the same failed Step 1 or Step 2 spawn once'
+        'retry the same failed Step 1 or Step 2 spawn once',
+        'self-challenge may preserve notes',
+        'must not substitute for approval'
     )
 
     foreach ($check in $skillChecks) {
@@ -253,50 +303,60 @@ if (-not $trackerCeilingMatch.Success) {
     $failures.Add('TRACKER.md is missing a parseable current claim ceiling.')
 } else {
     $trackerCeiling = $trackerCeilingMatch.Groups[1].Value
-    if (-not $ceilingOrder.ContainsKey($trackerCeiling)) {
-        $failures.Add("TRACKER.md uses an unknown claim ceiling '$trackerCeiling'.")
-    } else {
-        $claimChecks = @(
-            @{
-                Path = Join-Path $RepoRoot 'README.md'
-                Label = 'README.md'
-                Pattern = 'current ceiling is no higher than `([^`]+)`'
-            },
-            @{
-                Path = Join-Path $RepoRoot 'docs\release-readiness.md'
-                Label = 'docs/release-readiness.md'
-                Pattern = 'no higher than `([^`]+)`'
-            }
-        )
-
-        foreach ($claimCheck in $claimChecks) {
-            if (-not (Test-Path -LiteralPath $claimCheck.Path)) {
-                continue
-            }
-
-            $claimContent = Get-Content -LiteralPath $claimCheck.Path -Raw
-            $claimMatch = [regex]::Match($claimContent, $claimCheck.Pattern)
-            if (-not $claimMatch.Success) {
-                continue
-            }
-
-            $claimedCeiling = $claimMatch.Groups[1].Value
-            if (-not $ceilingOrder.ContainsKey($claimedCeiling)) {
-                $failures.Add("$($claimCheck.Label) uses an unknown claim ceiling '$claimedCeiling'.")
-                continue
-            }
-
-            if ($ceilingOrder[$claimedCeiling] -gt $ceilingOrder[$trackerCeiling]) {
-                $failures.Add("$($claimCheck.Label) claims a broader ceiling '$claimedCeiling' than TRACKER.md '$trackerCeiling'.")
-            }
+    $claimChecks = @(
+        @{
+            Path = Join-Path $RepoRoot 'README.md'
+            Label = 'README.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\release-readiness.md'
+            Label = 'docs/release-readiness.md'
         }
+    )
+
+    $claimDocuments = @()
+    foreach ($claimCheck in $claimChecks) {
+        if (-not (Test-Path -LiteralPath $claimCheck.Path)) {
+            continue
+        }
+
+        $claimContent = Get-Content -LiteralPath $claimCheck.Path -Raw
+        $claimMatches = [regex]::Matches($claimContent, '(?m)^<!--\s*claim_ceiling:\s*([a-z0-9_]+)\s*-->\s*$')
+        if ($claimMatches.Count -eq 0) {
+            $failures.Add("$($claimCheck.Label) is missing required claim_ceiling metadata.")
+            continue
+        }
+        if ($claimMatches.Count -gt 1) {
+            $failures.Add("$($claimCheck.Label) contains multiple claim_ceiling metadata entries.")
+            continue
+        }
+
+        $claimDocuments += [pscustomobject]@{
+            Label = $claimCheck.Label
+            Ceiling = $claimMatches[0].Groups[1].Value
+        }
+    }
+
+    foreach ($claimFailure in (Test-ClaimCeilingDocuments -TrackerCeiling $trackerCeiling -ClaimDocuments $claimDocuments -CeilingOrder $ceilingOrder)) {
+        $failures.Add($claimFailure)
+    }
+
+    $regressionDocuments = @(
+        [pscustomobject]@{
+            Label = 'claim-ceiling regression fixture'
+            Ceiling = 'public_consult_skill_package_present_and_verifier_backed'
+        }
+    )
+    $regressionFailures = Test-ClaimCeilingDocuments -TrackerCeiling 'generic_public_docs_drafted' -ClaimDocuments $regressionDocuments -CeilingOrder $ceilingOrder
+    if ($regressionFailures.Count -eq 0) {
+        $failures.Add('Claim-ceiling regression check did not catch a deliberately broader claim.')
     }
 }
 
 if ($failures.Count -eq 0) {
-    Write-Host 'Public safety verification: pass'
+    Write-Host 'Public surface integrity verification: pass'
 } else {
-    Write-Host 'Public safety verification: fail'
+    Write-Host 'Public surface integrity verification: fail'
 }
 
 Write-Host ''

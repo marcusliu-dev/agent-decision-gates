@@ -12,6 +12,7 @@ repository and the source boundaries used to keep the public surface generic.
 
 | surface | provenance |
 | --- | --- |
+| `.gitignore` | Written locally to keep generated review-package output such as `dist/` out of the public repository surface. |
 | `README.md` | Written locally as public-facing overview text for this repository and updated to include the installable consult skill package. |
 | `skills/consult/SKILL.md` | Written locally as a public-safe adaptation of an internal consult workflow, with private paths, private trackers, and local-only boundaries removed. |
 | `skills/consult/agents/openai.yaml` | Written locally as a public skill config for explicit `$consult` invocation. |
@@ -23,7 +24,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
 | `docs/verification-and-safety.md` | Written locally as public-facing verification guidance matched to the current doc-plus-skill surface. |
 | `examples/consult-stage-gate.md` | Written locally as a fictional example for this repository. |
-| `scripts/verify-public-safety.ps1` | Written locally as a deterministic verifier for this repository's current public doc, skill, and eval surface. |
+| `scripts/verify-public-safety.ps1` | Written locally as a deterministic public-surface integrity verifier for this repository's current public doc, skill, and eval surface. |
 | `TRACKER.md` | Written locally as the bounded outside-repo stage ledger for this repository. |
 | `docs/release-readiness.md` | Written locally as the release-state record for this repository. |
 | `docs/provenance.md` | Written locally as the provenance record for this repository. |

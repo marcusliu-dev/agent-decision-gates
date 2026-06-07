@@ -11,12 +11,12 @@ Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
 repository surface contains a reusable skill package under `skills/consult/`,
 that public eval fixtures exist under `evals/consult/`, that the deterministic
-public-safety verifier passes for the current repository surface, and that the
+public-surface integrity verifier passes for the current repository surface, and that the
 materials in this repository are aligned with that surface. The eval claim is
 bounded to fixture presence plus structural validation, not full runtime
 execution. No broader claim is made for package-manager distribution,
 executable framework behavior beyond the current skill package, CI coverage,
-deployment safety, or production runtime guarantees.
+deployment safety, empirical effectiveness, or production runtime guarantees.
 
 ## Publication Snapshot
 
@@ -32,6 +32,7 @@ deployment safety, or production runtime guarantees.
 ## Current Surface
 
 - `README.md`
+- `.gitignore`
 - `skills/consult/SKILL.md`
 - `skills/consult/agents/openai.yaml`
 - `evals/consult/consult-public-happy-path.yaml`
@@ -61,7 +62,7 @@ deployment safety, or production runtime guarantees.
 
 ## Verification Snapshot
 
-- the deterministic public-safety verifier passes for the current doc, skill,
+- the deterministic public-surface integrity verifier passes for the current doc, skill,
   and eval surface;
 - required public files, directories, skill files, and eval fixtures are
   present;
@@ -70,6 +71,10 @@ deployment safety, or production runtime guarantees.
 - the skill remains explicit-use only and its config disables implicit
   invocation;
 - blocked private leakage terms do not appear;
+- generated review packages under `dist/` are ignored and excluded from the
+  public-surface scan;
+- claim-bearing release surfaces carry machine-readable claim-ceiling metadata
+  and do not claim broader state than `TRACKER.md`;
 - relative markdown links resolve;
 - the repository remains intentionally documentation-first plus a lightweight
   skill package.
