@@ -40,7 +40,12 @@ deployment safety, empirical effectiveness, or production runtime guarantees.
 - `evals/consult/consult-public-must-counter-review.yaml`
 - `evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml`
 - `docs/consult-protocol.md`
+- `docs/core-protocol.md`
+- `docs/codex-adapter.md`
+- `docs/glossary.md`
 - `docs/human-checkpoints.md`
+- `docs/roles-and-permissions.md`
+- `docs/threat-model.md`
 - `docs/verification-and-safety.md`
 - `docs/release-readiness.md`
 - `docs/provenance.md`
@@ -66,6 +71,8 @@ deployment safety, empirical effectiveness, or production runtime guarantees.
   and eval surface;
 - required public files, directories, skill files, and eval fixtures are
   present;
+- adoption docs for glossary, runtime-neutral protocol, Codex adapter notes,
+  threat model, and role boundaries are present;
 - the public eval fixtures are structurally validated as golden, misuse, and
   trajectory artifacts;
 - the skill remains explicit-use only and its config disables implicit

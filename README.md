@@ -41,6 +41,11 @@ This repo packages a simple alternative:
 - a machine-readable skill config in
   [`skills/consult/agents/openai.yaml`](skills/consult/agents/openai.yaml);
 - public eval fixtures under [`evals/consult/`](evals/consult/);
+- a short [glossary](docs/glossary.md) for the core terms;
+- a runtime-neutral [core protocol](docs/core-protocol.md);
+- [Codex adapter notes](docs/codex-adapter.md) for the packaged skill;
+- a [threat model](docs/threat-model.md);
+- a [roles and permissions matrix](docs/roles-and-permissions.md);
 - a reusable [consult protocol](docs/consult-protocol.md);
 - [human checkpoint rules](docs/human-checkpoints.md) for high-risk actions;
 - [verification guidance](docs/verification-and-safety.md) for keeping claims
@@ -102,8 +107,17 @@ requires independent review.
 
 - Start with [`skills/consult/SKILL.md`](skills/consult/SKILL.md) if you want
   the installable skill artifact.
-- Start with [docs/consult-protocol.md](docs/consult-protocol.md).
+- Start with [docs/core-protocol.md](docs/core-protocol.md) if you want the
+  runtime-neutral pattern.
+- Read [docs/codex-adapter.md](docs/codex-adapter.md) if you are installing
+  the packaged Codex skill.
+- Use [docs/glossary.md](docs/glossary.md) for terminology.
+- Start with [docs/consult-protocol.md](docs/consult-protocol.md) for the
+  original compact protocol guide.
 - Then read [docs/human-checkpoints.md](docs/human-checkpoints.md).
+- Check [docs/threat-model.md](docs/threat-model.md) and
+  [docs/roles-and-permissions.md](docs/roles-and-permissions.md) before
+  adapting the pattern to higher-risk workflows.
 - Use [docs/verification-and-safety.md](docs/verification-and-safety.md) to
   match claims to evidence.
 - Read [examples/consult-stage-gate.md](examples/consult-stage-gate.md) for a

@@ -21,7 +21,12 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/consult/consult-public-must-counter-review.yaml` | Written locally as a public trajectory eval fixture for the consult skill. |
 | `evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml` | Written locally as a public trajectory eval fixture for the consult skill's bounded thread-limit fallback behavior. |
 | `docs/consult-protocol.md` | Written locally as public-facing protocol guidance and updated to align with the installable consult skill package. |
+| `docs/core-protocol.md` | Written locally as runtime-neutral protocol guidance for adopters outside the original Codex environment. |
+| `docs/codex-adapter.md` | Written locally to isolate Codex-specific adapter behavior from the runtime-neutral pattern. |
+| `docs/glossary.md` | Written locally to define public terms such as claim ceiling, parent framing, and human checkpoint. |
 | `docs/human-checkpoints.md` | Written locally as public-facing checkpoint guidance and updated to align with public skill publication/update workflows. |
+| `docs/roles-and-permissions.md` | Written locally as a compact role/authority matrix for adopters. |
+| `docs/threat-model.md` | Written locally to state protected properties, in-scope failures, and out-of-scope safety claims. |
 | `docs/verification-and-safety.md` | Written locally as public-facing verification guidance matched to the current doc-plus-skill surface. |
 | `examples/consult-stage-gate.md` | Written locally as a fictional example for this repository. |
 | `scripts/verify-public-safety.ps1` | Written locally as a deterministic public-surface integrity verifier for this repository's current public doc, skill, and eval surface. |

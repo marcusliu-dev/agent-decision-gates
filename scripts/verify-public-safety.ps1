@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 
 $requiredPaths = @(
     'README.md',
+    '.gitignore',
     'TRACKER.md',
     'skills',
     'skills/consult',
@@ -19,7 +20,12 @@ $requiredPaths = @(
     'evals/consult/consult-public-must-counter-review.yaml',
     'evals/consult/consult-public-must-reclaim-thread-capacity-before-inline-fallback.yaml',
     'docs/consult-protocol.md',
+    'docs/core-protocol.md',
+    'docs/codex-adapter.md',
+    'docs/glossary.md',
     'docs/human-checkpoints.md',
+    'docs/roles-and-permissions.md',
+    'docs/threat-model.md',
     'docs/verification-and-safety.md',
     'docs/release-readiness.md',
     'docs/provenance.md',
@@ -152,6 +158,14 @@ foreach ($relativePath in $forbiddenPaths) {
     $fullPath = Join-Path $RepoRoot $relativePath
     if (Test-Path -LiteralPath $fullPath) {
         $failures.Add("Forbidden path present for current public surface: $relativePath")
+    }
+}
+
+$gitignorePath = Join-Path $RepoRoot '.gitignore'
+if (Test-Path -LiteralPath $gitignorePath) {
+    $gitignoreContent = Get-Content -LiteralPath $gitignorePath -Raw
+    if ($gitignoreContent -notmatch '(?m)^dist/$') {
+        $failures.Add(".gitignore must ignore generated dist/ review-package output.")
     }
 }
 
