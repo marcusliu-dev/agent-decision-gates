@@ -35,7 +35,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_claim_phrase_preservation_for_annotation_self_tested`
+`empirical_evidence_package_empty_tool_calls_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -95,6 +95,9 @@ request/run-input mismatches while preserving natural-language readiness/result
 phrases for downstream annotation, and that the pilot execution
 package builder validates each runner response with that scorer and requires
 explicit runner token, API cost, and retry telemetry before package wrapping,
+that the evidence-package validator self-test now accepts transcript records
+with a present-but-empty `tool_calls` array while still rejecting missing
+required fields and incomplete nested tool-call records,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -381,7 +384,9 @@ guarantees.
 - the empirical annotation guidelines are present and structurally checked as
   the required future label rubric;
 - the empirical evidence-package validator self-test passes on synthetic
-  positive and negative packages;
+  positive and negative packages, including a positive transcript with an empty
+  `tool_calls` array and negative packages with missing nested tool-call
+  fields;
 - the empirical results analyzer self-test passes on a synthetic evidence
   package, computes run-to-run variance summaries across repeated task/condition
   primary-annotation metric scores, and rejects invalid packages before

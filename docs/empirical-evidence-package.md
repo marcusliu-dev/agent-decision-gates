@@ -1,6 +1,6 @@
 # Empirical Evidence Package
 
-<!-- claim_ceiling: empirical_evidence_package_validator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_evidence_package_empty_tool_calls_self_tested -->
 
 Status: Structural evidence-package validation route for future empirical
 experiments. This document defines how a future completed experiment package
@@ -61,8 +61,10 @@ The negative cases include missing annotation joins, empty required ids,
 credential-like JSON keys, invalid labels, invalid transcript spans, malformed
 cost records, missing annotation guideline versions, crossed cost/latency joins,
 wrong annotation guideline versions, invalid annotation metadata, and missing
-nested transcript/tool-call fields. The self-test proves only that the validator
-catches these basic structure and join failures on synthetic data.
+nested transcript/tool-call fields. A positive case also confirms that
+`tool_calls` may be an empty array when a transcript includes the field and the
+run made no tool calls. The self-test proves only that the validator catches
+these basic structure and join failures on synthetic data.
 
 For a future real package, run:
 
@@ -105,8 +107,10 @@ Stop before result computation if:
 - any annotation lacks `annotation_guideline_version` or uses the wrong
   guideline version;
 - annotation rationales do not cite transcript spans;
-- transcript message, tool-call, annotation, or cost fields are missing or
-  malformed in the basic schema fields used by the validator;
+- transcript message, annotation, or cost fields are missing or malformed in
+  the basic schema fields used by the validator;
+- `tool_calls` is missing entirely, or a nonempty tool-call record is missing
+  required nested fields;
 - private repository material or credentials appear in package JSON;
 - the package route implies paper readiness before metrics and limitations are
   verified.

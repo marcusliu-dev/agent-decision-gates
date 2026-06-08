@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_claim_phrase_preservation_for_annotation_self_tested -->
+<!-- claim_ceiling: empirical_evidence_package_empty_tool_calls_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -301,9 +301,11 @@ transcripts, plus a label-template package builder for deriving fillable
 placeholder templates from annotation work items, plus an annotation intake
 validator for future completed label records, plus an evidence-package builder
 that assembles future pilot transcripts, cost/latency records, and completed
-annotation records into a validation-ready package. The current
-ceiling is no higher than
-`empirical_claim_phrase_preservation_for_annotation_self_tested`. The
+annotation records into a validation-ready package. The evidence-package
+validator now treats `tool_calls` as a required transcript field while allowing
+an empty array when a chat run made no tool calls. The current ceiling is no
+higher than
+`empirical_evidence_package_empty_tool_calls_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime

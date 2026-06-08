@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_claim_phrase_preservation_for_annotation_self_tested -->
+<!-- claim_ceiling: empirical_evidence_package_empty_tool_calls_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -189,7 +189,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_claim_phrase_preservation_for_annotation_self_tested`.
+`empirical_evidence_package_empty_tool_calls_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -291,8 +291,10 @@ system.
 - the empirical annotation guidelines are present and structurally checked as
   the required future annotation rubric;
 - the deterministic empirical evidence-package validator passes its synthetic
-  positive and negative self-test and explicitly does not provide real
-  transcripts, labels, or model results;
+  positive and negative self-test, including a positive transcript with an
+  empty `tool_calls` array and negative packages with missing nested tool-call
+  fields, and explicitly does not provide real transcripts, labels, or model
+  results;
 - the deterministic empirical results analyzer passes its synthetic self-test,
   includes run-to-run variance summaries across repeated task/condition
   primary-annotation metric scores, and explicitly does not provide real

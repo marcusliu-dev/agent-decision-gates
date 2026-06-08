@@ -198,6 +198,7 @@ $ceilingOrder = @{
     'empirical_pilot_runner_request_package_builder_present_and_self_tested' = 29
     'empirical_pilot_runner_request_package_scorer_present_and_self_tested' = 30
     'empirical_claim_phrase_preservation_for_annotation_self_tested' = 31
+    'empirical_evidence_package_empty_tool_calls_self_tested' = 32
 }
 
 $failures = New-Object System.Collections.Generic.List[string]

@@ -288,7 +288,6 @@ function Invoke-PackageValidation {
         'end_timestamp_utc',
         'input_prompt',
         'transcript_messages',
-        'tool_calls',
         'final_answer',
         'final_claim',
         'checked_evidence',
@@ -388,6 +387,9 @@ function Invoke-PackageValidation {
         $runId = Get-PropertyValue -Record $transcript -Name 'run_id'
         $label = if ($runId) { "transcript '$runId'" } else { 'transcript record' }
         Add-RequiredFieldFailures -Failures $failures -Record $transcript -Fields $transcriptFields -Label $label
+        if (-not (Test-HasProperty -Record $transcript -Name 'tool_calls')) {
+            $failures.Add("$label is missing required field 'tool_calls'.")
+        }
         if (Test-IsPresentText -Value $runId) {
             if ($transcriptsByRunId.ContainsKey([string]$runId)) {
                 $failures.Add("Duplicate transcript run_id '$runId'.")
@@ -396,7 +398,7 @@ function Invoke-PackageValidation {
             }
         }
 
-        foreach ($arrayField in @('transcript_messages', 'tool_calls', 'checked_evidence')) {
+        foreach ($arrayField in @('transcript_messages', 'checked_evidence')) {
             $value = Get-PropertyValue -Record $transcript -Name $arrayField
             if ($null -eq $value -or @($value).Count -eq 0) {
                 $failures.Add("$label must include nonempty '$arrayField'.")
@@ -736,6 +738,20 @@ function Invoke-SelfTest {
             $failures.Add('Synthetic positive evidence package did not pass validation.')
             foreach ($failure in $positiveResult.failures) {
                 $failures.Add("positive: $failure")
+            }
+        }
+
+        $emptyToolCallsRoot = Join-Path $tempBase 'positive-empty-tool-calls'
+        New-SyntheticEvidencePackage -Root $emptyToolCallsRoot
+        $emptyToolCallsPath = Join-Path $emptyToolCallsRoot 'transcripts/synthetic-run-001.json'
+        $emptyToolCalls = Get-Content -LiteralPath $emptyToolCallsPath -Raw | ConvertFrom-Json
+        $emptyToolCalls.tool_calls = @()
+        Write-JsonFile -Path $emptyToolCallsPath -Value $emptyToolCalls
+        $emptyToolCallsResult = Invoke-PackageValidation -Root $emptyToolCallsRoot
+        if ($emptyToolCallsResult.status -ne 'pass') {
+            $failures.Add('Synthetic evidence package with empty tool_calls did not pass validation.')
+            foreach ($failure in $emptyToolCallsResult.failures) {
+                $failures.Add("positive-empty-tool-calls: $failure")
             }
         }
 
