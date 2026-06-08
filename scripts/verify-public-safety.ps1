@@ -39,6 +39,7 @@ $requiredPaths = @(
     'evals/empirical/runner-response-schema.yaml',
     'evals/empirical/pilot-execution-package-schema.yaml',
     'evals/empirical/pilot-execution-readiness-schema.yaml',
+    'evals/empirical/pilot-runner-request-schema.yaml',
     'evals/empirical/annotation-worklist-schema.yaml',
     'evals/empirical/label-template-package-schema.yaml',
     'evals/empirical/annotation-intake-schema.yaml',
@@ -61,6 +62,7 @@ $requiredPaths = @(
     'docs/empirical-pilot-execution-runner.md',
     'docs/empirical-pilot-run-chain.md',
     'docs/empirical-pilot-execution-readiness.md',
+    'docs/empirical-pilot-runner-requests.md',
     'docs/empirical-annotation-worklist.md',
     'docs/empirical-label-template-package.md',
     'docs/empirical-annotation-intake.md',
@@ -95,6 +97,7 @@ $requiredPaths = @(
     'scripts/score-empirical-pilot-execution-package.ps1',
     'scripts/build-empirical-pilot-run-chain.ps1',
     'scripts/check-empirical-pilot-execution-readiness.ps1',
+    'scripts/build-empirical-pilot-runner-requests.ps1',
     'scripts/build-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/build-empirical-label-template-package.ps1',
@@ -191,6 +194,7 @@ $ceilingOrder = @{
     'empirical_pilot_cost_telemetry_gate_present_and_self_tested' = 26
     'empirical_pilot_budget_gate_present_and_self_tested' = 27
     'empirical_pilot_execution_readiness_checker_present_and_self_tested' = 28
+    'empirical_pilot_runner_request_package_builder_present_and_self_tested' = 29
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -461,6 +465,9 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
+        'pilot runner request package with selected request JSON files',
+        'pilot_runner_request_package_builder_available',
+        'build-empirical-pilot-runner-requests.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
@@ -607,6 +614,9 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_execution_readiness_record',
         'pilot_execution_readiness_schema',
         'pilot_execution_readiness_checker',
+        'pilot_runner_request_package',
+        'pilot_runner_request_schema',
+        'pilot_runner_request_builder',
         'annotation_worklist',
         'annotation_worklist_schema',
         'label_template_package',
@@ -626,6 +636,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_run_chain_builder_available',
         'pilot_execution_readiness_checker_available',
         'required_environment_variables_checked_before_execution',
+        'pilot_runner_request_package_builder_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -1126,6 +1137,66 @@ if (Test-Path -LiteralPath $pilotExecutionReadinessCheckerPath) {
     )) {
         if (-not $pilotExecutionReadinessCheckerContent.Contains($check)) {
             $failures.Add("Missing empirical pilot execution readiness checker invariant '$check'.")
+        }
+    }
+}
+
+$pilotRunnerRequestSchemaPath = Join-Path $RepoRoot 'evals\empirical\pilot-runner-request-schema.yaml'
+if (Test-Path -LiteralPath $pilotRunnerRequestSchemaPath) {
+    $pilotRunnerRequestSchemaContent = Get-Content -LiteralPath $pilotRunnerRequestSchemaPath -Raw
+    foreach ($check in @(
+        'pilot_runner_request_package_schema_only_no_runner_execution',
+        'one_request_per_selected_run_input_id',
+        'selected_run_input_ids_exist_in_run_input_package',
+        'request_package_does_not_execute_runner',
+        'request_package_does_not_call_model_api',
+        'raw_runner_response',
+        'transcript_record',
+        'cost_latency_record',
+        'credential_values',
+        'no_runner_execution',
+        'no_runner_responses',
+        'no_paper_readiness'
+    )) {
+        if (-not $pilotRunnerRequestSchemaContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot runner request schema invariant '$check'.")
+        }
+    }
+}
+
+$pilotRunnerRequestDocPath = Join-Path $RepoRoot 'docs\empirical-pilot-runner-requests.md'
+if (Test-Path -LiteralPath $pilotRunnerRequestDocPath) {
+    $pilotRunnerRequestDocContent = Get-Content -LiteralPath $pilotRunnerRequestDocPath -Raw
+    foreach ($check in @(
+        'build-empirical-pilot-runner-requests.ps1 -SelfTest',
+        'does not execute the runner',
+        'request package',
+        'No runner script was executed',
+        'Current Nonclaims',
+        'credential validity',
+        'paper readiness'
+    )) {
+        if (-not $pilotRunnerRequestDocContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot runner request doc boundary '$check'.")
+        }
+    }
+}
+
+$pilotRunnerRequestBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-pilot-runner-requests.ps1'
+if (Test-Path -LiteralPath $pilotRunnerRequestBuilderPath) {
+    $pilotRunnerRequestBuilderContent = Get-Content -LiteralPath $pilotRunnerRequestBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical pilot runner request package builder',
+        'pilot_runner_request_package_no_runner_execution',
+        'Built a 9-request pilot runner request package',
+        'Rejected missing selected run inputs, bad runner labels, and non-generated overwrite attempts',
+        'No runner script was executed and no model/API calls were made by this request builder',
+        'requests/pilot-request-',
+        'source-run-input-manifest-hash.json',
+        'source-preflight-hash.json'
+    )) {
+        if (-not $pilotRunnerRequestBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot runner request builder invariant '$check'.")
         }
     }
 }

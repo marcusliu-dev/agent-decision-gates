@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_execution_readiness_checker_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_runner_request_package_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -27,7 +27,8 @@ explicit local-runner execution, pilot package validation, annotation worklist
 generation, and label-template generation, plus a pilot execution readiness
 checker for validating run inputs, execution preflight, private runner path,
 runner label, and required environment variable presence before any explicit
-local runner invocation.
+local runner invocation, plus a pilot runner request package builder for
+freezing selected request JSON files before any private runner invocation.
 
 ## Purpose
 
@@ -67,6 +68,7 @@ The current repository surface includes:
 - `evals/empirical/runner-response-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/pilot-execution-readiness-schema.yaml`
+- `evals/empirical/pilot-runner-request-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
 - `evals/empirical/annotation-intake-schema.yaml`
@@ -88,6 +90,7 @@ The current repository surface includes:
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-pilot-run-chain.md`
 - `docs/empirical-pilot-execution-readiness.md`
+- `docs/empirical-pilot-runner-requests.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
@@ -122,6 +125,7 @@ The current repository surface includes:
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-pilot-run-chain.ps1`
 - `scripts/check-empirical-pilot-execution-readiness.ps1`
+- `scripts/build-empirical-pilot-runner-requests.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -178,7 +182,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_execution_readiness_checker_present_and_self_tested`.
+`empirical_pilot_runner_request_package_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -227,6 +231,11 @@ system.
   rejects missing required environment variables, invalid environment variable
   names, repo-local runner scripts, and bad runner labels without executing the
   fixture runner or printing secret values;
+- the deterministic empirical pilot runner request package builder self-test
+  generates 9 selected request JSON files from the run-input package and
+  execution preflight, records source hashes, rejects missing selected
+  run-input ids, bad runner labels, and non-generated overwrite attempts, and
+  does not execute a runner or call model/API routes;
 - the deterministic empirical annotation worklist builder and scorer
   self-tests pass for a generated 9-item unlabeled worklist derived from a
   temporary local fixture pilot execution package and reject missing work
@@ -321,6 +330,10 @@ These are intentionally outside the current release scope:
   model/API run, proof of credential validity, runner-quality result, real cost
   accuracy result, transcript, annotation, metric result, agreement result, or
   empirical finding;
+- any claim that the pilot runner request package is itself a completed
+  model/API run, validated runner response, transcript, cost/latency result,
+  proof of credential validity, runner-quality result, annotation, metric
+  result, agreement result, or empirical finding;
 - any claim that the annotation worklist self-test is itself a completed
   annotation set, human-label result, LLM-judge result, agreement measurement,
   metric result, annotator-quality claim, or empirical finding;

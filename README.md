@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_pilot_execution_readiness_checker_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_runner_request_package_builder_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -84,6 +84,9 @@ This repo packages a simple alternative:
   schema, and checker for validating run inputs, execution preflight, private
   runner path, runner label, and required environment variable presence before
   any explicit local runner is invoked;
+- an [empirical pilot runner request guide](docs/empirical-pilot-runner-requests.md),
+  schema, and builder for freezing selected pilot request JSON files before any
+  private runner is invoked;
 - an [empirical annotation worklist guide](docs/empirical-annotation-worklist.md),
   schema, builder, and scorer for deriving unlabeled annotation work items from
   pilot transcripts before any human or LLM-judge labels are claimed;
@@ -222,6 +225,9 @@ requires independent review.
   for the pre-run gate that checks run inputs, execution preflight, private
   runner path, runner label, and required environment variable presence without
   executing the runner or printing secret values.
+- Read [docs/empirical-pilot-runner-requests.md](docs/empirical-pilot-runner-requests.md)
+  for the pre-execution request-package route that freezes selected JSON
+  requests for a future private runner without executing the runner.
 - Read [docs/empirical-annotation-worklist.md](docs/empirical-annotation-worklist.md)
   for the unlabeled worklist route that prepares future transcript annotation
   without creating labels, metrics, or paper-readiness evidence.
@@ -283,7 +289,9 @@ explicit runner execution, pilot package validation, annotation worklist
 generation, and label-template generation, plus an
 pilot execution readiness checker for validating run inputs, execution
 preflight, private runner path, runner label, and required environment variable
-presence before any explicit local runner invocation, plus an annotation
+presence before any explicit local runner invocation, plus a pilot runner
+request package builder for freezing selected request JSON files before any
+private runner invocation, plus an annotation
 worklist builder for deriving unlabeled future-labeling work items from pilot
 transcripts, plus a label-template package builder for deriving fillable
 placeholder templates from annotation work items, plus an annotation intake
@@ -291,7 +299,7 @@ validator for future completed label records, plus an evidence-package builder
 that assembles future pilot transcripts, cost/latency records, and completed
 annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_pilot_execution_readiness_checker_present_and_self_tested`. The
+`empirical_pilot_runner_request_package_builder_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -304,7 +312,11 @@ package is synthetic evidence-shape exercise only. The pilot execution readiness
 checker validates pre-run local structure, private runner path placement, and
 required environment variable presence without executing the runner or printing
 secret values, but it does not prove runner quality, credential validity, real
-cost accuracy, or model/API eval results. The
+cost accuracy, or model/API eval results. The pilot runner request package
+builder freezes selected request JSON files without executing the runner,
+calling model/API routes, reading credentials, or creating responses,
+transcripts, cost/latency records, labels, metrics, or paper-readiness evidence.
+The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape

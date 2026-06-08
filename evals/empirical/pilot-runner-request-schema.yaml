@@ -1,0 +1,72 @@
+id: agent-decision-gates-pilot-runner-request-schema
+version: 0.1.0
+claim_boundary: pilot_runner_request_package_schema_only_no_runner_execution
+description: Required request-package shape for freezing selected pilot runner requests before a private/local runner is invoked. This schema defines pre-execution request materialization only and does not prove runner quality, credential validity, model/API execution, empirical effectiveness, or paper readiness.
+
+required_inputs:
+  - run_input_root
+  - execution_preflight_path
+  - runner_label
+
+required_directories:
+  - requests
+  - metadata
+
+required_metadata_files:
+  - pilot-runner-request-manifest.json
+  - source-preflight-hash.json
+  - source-run-input-manifest-hash.json
+
+required_request_fields:
+  - request_id
+  - run_id
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_pack_version
+  - input_prompt
+  - expected_failure_modes
+  - required_conditions
+  - forbidden_claims
+  - preflight_id
+  - model_provider
+  - model_name_or_alias
+  - runtime_surface
+  - runner_label
+
+request_requirements:
+  - one_request_per_selected_run_input_id
+  - selected_run_input_ids_exist_in_run_input_package
+  - requests_match_source_run_input_prompts
+  - requests_match_execution_preflight_runtime
+  - source_preflight_hash_recorded
+  - source_run_input_manifest_hash_recorded
+  - runner_label_has_no_path_separator
+  - request_package_does_not_execute_runner
+  - request_package_does_not_call_model_api
+
+forbidden_outputs:
+  - raw_runner_response
+  - transcript_record
+  - cost_latency_record
+  - environment_variable_values
+  - credential_values
+  - annotation_record
+  - aggregate_metrics
+  - pass_rate
+  - win_rate
+  - paper_ready
+  - production_ready
+
+current_nonclaims:
+  - no_runner_execution
+  - no_model_api_eval_execution
+  - no_runner_responses
+  - no_real_transcripts
+  - no_real_cost_latency_results
+  - no_annotations
+  - no_aggregate_metrics
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

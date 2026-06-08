@@ -108,6 +108,9 @@ A paper-ready evidence package should include:
 - runner response contract, used to validate one local/private runner response
   before that response is wrapped into a pilot transcript and cost-latency
   record;
+- pilot runner request package with selected request JSON files, source hashes,
+  and runner label, used only to freeze runner input before private runner
+  invocation;
 - pilot execution package generated through an explicitly allowed local runner
   script, used only as transcript/cost-latency evidence before annotation and
   metric claims;
@@ -161,22 +164,25 @@ Before any model/API eval run:
    cost-latency package joins without model/API calls.
 8. Score a sample runner response against the runner response contract before
    spending budget on the full pilot route.
-9. Build and score a pilot execution package through an explicitly allowed
+9. Satisfy the pilot_runner_request_package_builder_available stop gate by
+   building and self-testing selected runner request JSON files before private
+   runner invocation.
+10. Build and score a pilot execution package through an explicitly allowed
    local runner script only after the preflight and mock package routes pass.
-10. For a reproducible first pilot, run and score the pilot run chain through an
+11. For a reproducible first pilot, run and score the pilot run chain through an
    explicitly allowed local runner script before treating downstream annotation
    work items or label templates as current.
-11. Build and score an annotation worklist from the pilot package before any
+12. Build and score an annotation worklist from the pilot package before any
    human or LLM-judge label production.
-12. Build and score a label-template package from the annotation worklist
+13. Build and score a label-template package from the annotation worklist
     before any completed annotation records are produced.
-13. Score completed annotation intake records against the label-template
+14. Score completed annotation intake records against the label-template
     package before agreement, metric, or paper-readiness claims.
-14. Build and validate an evidence package from the pilot execution package and
+15. Build and validate an evidence package from the pilot execution package and
     annotation-intake package before result aggregation or agreement checks.
-15. Run a small dry run with real transcripts only after the pilot package route
+16. Run a small dry run with real transcripts only after the pilot package route
    passes and the budget/runtime route is still current.
-16. Review the dry run for prompt leakage, false result claims, and annotation
+17. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
 
 Before any paper-readiness or submission claim:
@@ -205,6 +211,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-prefl
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
@@ -223,15 +230,16 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 
 These scorers verify only the shape of the public task-suite seed, condition
 prompt pack, generated run-input package route, execution preflight route, mock
-execution package route, runner response contract route, pilot execution runner route,
-pilot run chain route, annotation worklist route, label-template package route,
+execution package route, runner response contract route, pilot runner request route,
+pilot execution runner route, pilot run chain route, annotation worklist route, label-template package route,
 annotation intake route, evidence-package builder route, and run packet
 plus the evidence-package validator's and results
 aggregator's synthetic self-tests, the agreement
 checker's synthetic self-test, and the dry-run package builder synthetic
 self-test. The mock execution package route is a package-shape check only. The
 runner response contract self-test validates fixture response JSON only and does
-not call hosted model APIs. The pilot execution runner self-test uses a
+not call hosted model APIs. The pilot runner request self-test freezes request
+JSON files only and does not execute a runner or call model/API routes. The pilot execution runner self-test uses a
 temporary local fixture runner and is not a completed empirical study. The annotation worklist self-tests create
 unlabeled future-labeling work items only. The label-template self-tests create
 placeholders only, not completed labels. The annotation-intake scorer self-test
@@ -241,11 +249,11 @@ The pilot run chain self-test uses a temporary local fixture runner and
 connects downstream package-shape checks only; it does not produce completed
 labels, agreement metrics, aggregate metrics, or paper-readiness evidence. The
 current structural surface explicitly includes the mock execution package route.
-It also includes the runner response contract route, pilot execution runner route,
-pilot run chain route, annotation worklist route, label-template package route,
+It also includes the runner response contract route, pilot runner request route,
+pilot execution runner route, pilot run chain route, annotation worklist route, label-template package route,
 annotation intake route, and evidence package builder route.
 
-Verification sync terms: runner response contract route; score-empirical-runner-response.ps1 -SelfTest; pilot run chain route; build-empirical-pilot-run-chain.ps1 -SelfTest.
+Verification sync terms: runner response contract route; score-empirical-runner-response.ps1 -SelfTest; pilot_runner_request_package_builder_available; build-empirical-pilot-runner-requests.ps1 -SelfTest; pilot run chain route; build-empirical-pilot-run-chain.ps1 -SelfTest.
 They do not execute hosted model/API evals, score annotated completed
 transcripts, report real aggregate metrics, measure real human/LLM-judge
 agreement, or prove empirical effectiveness.

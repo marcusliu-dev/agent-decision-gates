@@ -70,6 +70,7 @@ $paths = [ordered]@{
     RunnerResponseSchema = Join-Path $RepoRoot 'evals/empirical/runner-response-schema.yaml'
     PilotExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-package-schema.yaml'
     PilotExecutionReadinessSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-readiness-schema.yaml'
+    PilotRunnerRequestSchema = Join-Path $RepoRoot 'evals/empirical/pilot-runner-request-schema.yaml'
     AnnotationWorklistSchema = Join-Path $RepoRoot 'evals/empirical/annotation-worklist-schema.yaml'
     LabelTemplatePackageSchema = Join-Path $RepoRoot 'evals/empirical/label-template-package-schema.yaml'
     AnnotationIntakeSchema = Join-Path $RepoRoot 'evals/empirical/annotation-intake-schema.yaml'
@@ -82,6 +83,7 @@ $paths = [ordered]@{
     PilotExecutionRunnerDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-runner.md'
     PilotRunChainDoc = Join-Path $RepoRoot 'docs/empirical-pilot-run-chain.md'
     PilotExecutionReadinessDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-readiness.md'
+    PilotRunnerRequestDoc = Join-Path $RepoRoot 'docs/empirical-pilot-runner-requests.md'
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
     LabelTemplatePackageDoc = Join-Path $RepoRoot 'docs/empirical-label-template-package.md'
     AnnotationIntakeDoc = Join-Path $RepoRoot 'docs/empirical-annotation-intake.md'
@@ -101,6 +103,7 @@ $paths = [ordered]@{
     PilotExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-pilot-execution-package.ps1'
     PilotRunChainBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-run-chain.ps1'
     PilotExecutionReadinessChecker = Join-Path $RepoRoot 'scripts/check-empirical-pilot-execution-readiness.ps1'
+    PilotRunnerRequestBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-runner-requests.ps1'
     AnnotationWorklistBuilder = Join-Path $RepoRoot 'scripts/build-empirical-annotation-worklist.ps1'
     AnnotationWorklistScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-worklist.ps1'
     LabelTemplatePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-label-template-package.ps1'
@@ -144,6 +147,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_execution_package',
         'pilot_run_chain',
         'pilot_execution_readiness_record',
+        'pilot_runner_request_package',
         'annotation_worklist',
         'label_template_package',
         'annotation_intake_package',
@@ -173,6 +177,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_run_chain_builder_available',
         'pilot_execution_readiness_checker_available',
         'required_environment_variables_checked_before_execution',
+        'pilot_runner_request_package_builder_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -219,6 +224,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_run_chain_builder: docs/empirical-pilot-run-chain.md',
         'pilot_execution_readiness_schema: evals/empirical/pilot-execution-readiness-schema.yaml',
         'pilot_execution_readiness_checker: docs/empirical-pilot-execution-readiness.md',
+        'pilot_runner_request_schema: evals/empirical/pilot-runner-request-schema.yaml',
+        'pilot_runner_request_builder: docs/empirical-pilot-runner-requests.md',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
         'label_template_package_schema: evals/empirical/label-template-package-schema.yaml',
         'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml',
@@ -967,6 +974,107 @@ if (Test-Path -LiteralPath $paths.PilotExecutionReadinessChecker) {
     }
 }
 
+if (Test-Path -LiteralPath $paths.PilotRunnerRequestSchema) {
+    $schema = Get-Content -LiteralPath $paths.PilotRunnerRequestSchema -Raw
+    if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'pilot_runner_request_package_schema_only_no_runner_execution') {
+        $failures.Add('Pilot runner request schema must declare pilot_runner_request_package_schema_only_no_runner_execution.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_inputs') -Required @(
+        'run_input_root',
+        'execution_preflight_path',
+        'runner_label'
+    ) -Label 'pilot runner request required_inputs'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_directories') -Required @(
+        'requests',
+        'metadata'
+    ) -Label 'pilot runner request required_directories'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_metadata_files') -Required @(
+        'pilot-runner-request-manifest.json',
+        'source-preflight-hash.json',
+        'source-run-input-manifest-hash.json'
+    ) -Label 'pilot runner request required_metadata_files'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_request_fields') -Required @(
+        'request_id',
+        'run_id',
+        'run_input_id',
+        'task_id',
+        'condition',
+        'input_prompt',
+        'preflight_id',
+        'model_provider',
+        'model_name_or_alias',
+        'runtime_surface',
+        'runner_label'
+    ) -Label 'pilot runner request required_request_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'request_requirements') -Required @(
+        'one_request_per_selected_run_input_id',
+        'selected_run_input_ids_exist_in_run_input_package',
+        'requests_match_source_run_input_prompts',
+        'requests_match_execution_preflight_runtime',
+        'source_preflight_hash_recorded',
+        'source_run_input_manifest_hash_recorded',
+        'runner_label_has_no_path_separator',
+        'request_package_does_not_execute_runner',
+        'request_package_does_not_call_model_api'
+    ) -Label 'pilot runner request request_requirements'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'forbidden_outputs') -Required @(
+        'raw_runner_response',
+        'transcript_record',
+        'cost_latency_record',
+        'environment_variable_values',
+        'credential_values',
+        'aggregate_metrics',
+        'paper_ready',
+        'production_ready'
+    ) -Label 'pilot runner request forbidden_outputs'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'current_nonclaims') -Required @(
+        'no_runner_execution',
+        'no_model_api_eval_execution',
+        'no_runner_responses',
+        'no_real_transcripts',
+        'no_real_cost_latency_results',
+        'no_annotations',
+        'no_aggregate_metrics',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'pilot runner request current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.PilotRunnerRequestDoc) {
+    $doc = Get-Content -LiteralPath $paths.PilotRunnerRequestDoc -Raw
+    foreach ($check in @(
+        'build-empirical-pilot-runner-requests.ps1 -SelfTest',
+        'does not execute the runner',
+        'request package',
+        'No runner script was executed',
+        'Current Nonclaims',
+        'credential validity',
+        'paper readiness'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical pilot runner request doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.PilotRunnerRequestBuilder) {
+    $builder = Get-Content -LiteralPath $paths.PilotRunnerRequestBuilder -Raw
+    foreach ($check in @(
+        'Empirical pilot runner request package builder',
+        'pilot_runner_request_package_no_runner_execution',
+        'Built a 9-request pilot runner request package',
+        'Rejected missing selected run inputs, bad runner labels, and non-generated overwrite attempts',
+        'No runner script was executed and no model/API calls were made by this request builder',
+        'requests/pilot-request-',
+        'source-run-input-manifest-hash.json',
+        'source-preflight-hash.json'
+    )) {
+        if (-not $builder.Contains($check)) {
+            $failures.Add("Empirical pilot runner request builder is missing invariant '$check'.")
+        }
+    }
+}
+
 if (Test-Path -LiteralPath $paths.PilotRunChainDoc) {
     $doc = Get-Content -LiteralPath $paths.PilotRunChainDoc -Raw
     foreach ($check in @(
@@ -1627,6 +1735,11 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'pilot-execution-readiness-schema.yaml',
         'check-empirical-pilot-execution-readiness.ps1 -SelfTest',
         'pilot execution readiness',
+        'pilot_runner_request_package_builder_available',
+        'pilot-runner-request-schema.yaml',
+        'build-empirical-pilot-runner-requests.ps1 -SelfTest',
+        'pilot runner request',
+        'pilot runner request package with selected request JSON files',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',

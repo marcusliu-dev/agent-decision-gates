@@ -73,6 +73,11 @@ The current structural run packet contains:
   for the pre-run pilot execution readiness gate that checks run inputs,
   execution preflight, private runner path, runner label, and required
   environment variable presence without executing the runner;
+- [`pilot-runner-request-schema.yaml`](../evals/empirical/pilot-runner-request-schema.yaml),
+  [`empirical-pilot-runner-requests.md`](empirical-pilot-runner-requests.md),
+  and [`build-empirical-pilot-runner-requests.ps1`](../scripts/build-empirical-pilot-runner-requests.ps1)
+  for freezing selected pilot request JSON files before private runner
+  invocation, without creating runner responses or transcripts;
 - [`annotation-worklist-schema.yaml`](../evals/empirical/annotation-worklist-schema.yaml),
   [`empirical-annotation-worklist.md`](empirical-annotation-worklist.md),
   [`build-empirical-annotation-worklist.ps1`](../scripts/build-empirical-annotation-worklist.ps1),
@@ -120,14 +125,16 @@ Before running model/API evals, freeze:
 2. condition prompts and prompt versions;
 3. execution preflight record with selected run-input ids, model/provider/runtime
    identifiers, source hashes, and budget;
-4. repeat count and randomization strategy;
-5. transcript schema;
-6. annotation schema;
-7. annotation guideline version;
-8. cost/latency log fields;
-9. scorer version;
-10. redaction and synthetic-fixture boundary;
-11. budget and stop conditions.
+4. pilot runner request package with selected request JSON files, source
+   hashes, and runner label;
+5. repeat count and randomization strategy;
+6. transcript schema;
+7. annotation schema;
+8. annotation guideline version;
+9. cost/latency log fields;
+10. scorer version;
+11. redaction and synthetic-fixture boundary;
+12. budget and stop conditions.
 
 Any change after the freeze creates a new experiment version.
 
@@ -163,6 +170,7 @@ Stop before execution if:
 - the first-pilot chain is needed but the pilot_run_chain_builder_available stop gate is not satisfied;
 - pilot execution readiness is needed but the pilot_execution_readiness_checker_available stop gate is not satisfied;
 - required environment variables are not checked before execution;
+- selected runner requests are needed but the pilot_runner_request_package_builder_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
@@ -192,6 +200,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/check-empirical-pilot-execution-readiness.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
@@ -210,7 +219,7 @@ validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the runner response contract scorer
 self-test, the pilot execution runner package builder/scorer self-tests, the
 pilot run chain builder self-test, the pilot execution readiness checker
-self-test, the
+self-test, the pilot runner request package builder self-test, the
 annotation worklist builder/scorer self-tests, the label-template package
 builder/scorer self-tests, the annotation-intake scorer self-test, the
 evidence-package builder self-test, and the synthetic
