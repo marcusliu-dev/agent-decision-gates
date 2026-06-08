@@ -403,6 +403,7 @@ if (Test-Path -LiteralPath $paths.ExecutionPreflightSchema) {
         'selected_run_count',
         'selected_conditions',
         'selected_task_ids',
+        'task_selection_scope',
         'provider',
         'model_name_or_alias',
         'runtime_surface',
@@ -417,6 +418,7 @@ if (Test-Path -LiteralPath $paths.ExecutionPreflightSchema) {
         'provider_model_runtime_recorded',
         'budget_recorded_before_execution',
         'selected_run_inputs_exist',
+        'task_selection_scope_recorded',
         'no_model_api_call_performed'
     ) -Label 'execution preflight schema metadata_requirements'
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'forbidden_fields') -Required @(
@@ -449,6 +451,7 @@ if (Test-Path -LiteralPath $paths.ExecutionPreflightDoc) {
         'build-empirical-execution-preflight.ps1 -SelfTest',
         'score-empirical-execution-preflight.ps1 -SelfTest',
         '9 records from the 324-record run-input package',
+        '-TaskIds',
         'Current Nonclaims'
     )) {
         if (-not $doc.Contains($check)) {
@@ -467,6 +470,8 @@ if (Test-Path -LiteralPath $paths.ExecutionPreflightBuilder) {
         'provider_model_runtime_recorded',
         'budget_recorded_before_execution',
         'no_model_api_call_performed',
+        'TaskIds',
+        'Built requested-task execution preflights',
         'Built a 9-record execution preflight'
     )) {
         if (-not $builder.Contains($check)) {
@@ -483,6 +488,7 @@ if (Test-Path -LiteralPath $paths.ExecutionPreflightScorer) {
         'execution_preflight_only_no_model_api_calls',
         'preflight_only_no_model_api_call',
         'Rejected missing budget, missing run-input id, non-first sorted selection, transcript field injection, and metadata hash mutation cases',
+        'Validated requested TaskIds selection',
         'transcript_messages',
         'task_suite_sha256',
         'selected_run_input_ids',
@@ -1142,6 +1148,7 @@ if (Test-Path -LiteralPath $paths.PilotRunChainDoc) {
     foreach ($check in @(
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'AllowRunnerScript',
+        'TaskIds',
         'explicitly allowed local runner',
         'does not embed provider API code',
         'does not prove',
@@ -1162,6 +1169,7 @@ if (Test-Path -LiteralPath $paths.PilotRunChainBuilder) {
         'score-empirical-pilot-execution-package.ps1',
         'score-empirical-annotation-worklist.ps1',
         'score-empirical-label-template-package.ps1',
+        'Built a requested TaskIds fixture pilot run chain',
         'Required -AllowRunnerScript and refused non-generated files when -Force was used',
         'Rejected root-level and nested non-generated files when -Force was used',
         'Generated no completed labels, agreement metrics, aggregate metrics, or paper-readiness claim'

@@ -6,6 +6,7 @@ param(
     [string]$RuntimeSurface,
     [double]$MaxBudgetUsd = -1,
     [int]$RecordsPerCondition = 1,
+    [string[]]$TaskIds,
     [switch]$SelfTest,
     [switch]$Force,
     [switch]$Json
@@ -67,6 +68,27 @@ function Assert-OutputPathWritable {
     }
 }
 
+function Get-NormalizedTaskIds {
+    param([string[]]$RequestedTaskIds)
+    $normalized = New-Object System.Collections.Generic.List[string]
+    $seen = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($rawTaskId in @($RequestedTaskIds)) {
+        foreach ($part in ([string]$rawTaskId -split ',')) {
+            $taskId = ([string]$part).Trim()
+            if ([string]::IsNullOrWhiteSpace($taskId)) {
+                throw 'TaskIds entries must be nonblank when provided.'
+            }
+            if ($taskId -match '[\\/]') {
+                throw "TaskIds entry '$taskId' cannot contain path separators."
+            }
+            if ($seen.Add($taskId)) {
+                $normalized.Add($taskId) | Out-Null
+            }
+        }
+    }
+    return @($normalized.ToArray())
+}
+
 function New-ExecutionPreflight {
     param(
         [string]$InputRoot,
@@ -76,6 +98,7 @@ function New-ExecutionPreflight {
         [string]$RuntimeName,
         [double]$BudgetUsd,
         [int]$PerCondition,
+        [string[]]$RequestedTaskIds,
         [bool]$AllowOverwrite
     )
 
@@ -115,11 +138,40 @@ function New-ExecutionPreflight {
     }
 
     $records = @($runInputFiles | ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json })
+    $normalizedTaskIds = @(Get-NormalizedTaskIds -RequestedTaskIds $RequestedTaskIds)
+    $taskSelectionScope = 'all_tasks_first_sorted'
+    $selectionStrategy = 'first_sorted_run_input_per_condition'
+    if ($normalizedTaskIds.Count -gt 0) {
+        $taskSelectionScope = 'requested_task_ids'
+        $selectionStrategy = 'first_sorted_run_input_per_condition_per_requested_task'
+        $knownTaskIds = @($records | Select-Object -ExpandProperty task_id -Unique)
+        foreach ($taskId in $normalizedTaskIds) {
+            if ($knownTaskIds -notcontains $taskId) {
+                throw "TaskIds contains unknown task id '$taskId'."
+            }
+        }
+    }
+
     $selected = New-Object System.Collections.Generic.List[object]
-    foreach ($condition in @($records | Sort-Object condition, task_id, repeat_index | Select-Object -ExpandProperty condition -Unique)) {
-        $conditionRecords = @($records | Where-Object { $_.condition -eq $condition } | Sort-Object task_id, repeat_index, run_input_id | Select-Object -First $PerCondition)
-        foreach ($record in $conditionRecords) {
-            $selected.Add($record) | Out-Null
+    $conditions = @($records | Sort-Object condition | Select-Object -ExpandProperty condition -Unique)
+    if ($normalizedTaskIds.Count -gt 0) {
+        foreach ($condition in $conditions) {
+            foreach ($taskId in $normalizedTaskIds) {
+                $conditionTaskRecords = @($records | Where-Object { $_.condition -eq $condition -and $_.task_id -eq $taskId } | Sort-Object repeat_index, run_input_id | Select-Object -First $PerCondition)
+                if ($conditionTaskRecords.Count -lt $PerCondition) {
+                    throw "Only found $($conditionTaskRecords.Count) run input(s) for task '$taskId' and condition '$condition'; expected $PerCondition."
+                }
+                foreach ($record in $conditionTaskRecords) {
+                    $selected.Add($record) | Out-Null
+                }
+            }
+        }
+    } else {
+        foreach ($condition in $conditions) {
+            $conditionRecords = @($records | Where-Object { $_.condition -eq $condition } | Sort-Object task_id, repeat_index, run_input_id | Select-Object -First $PerCondition)
+            foreach ($record in $conditionRecords) {
+                $selected.Add($record) | Out-Null
+            }
         }
     }
     if ($selected.Count -eq 0) {
@@ -148,6 +200,8 @@ function New-ExecutionPreflight {
         selected_run_count = $selected.Count
         selected_conditions = @($selected | Select-Object -ExpandProperty condition -Unique)
         selected_task_ids = @($selected | Select-Object -ExpandProperty task_id -Unique)
+        task_selection_scope = $taskSelectionScope
+        requested_task_ids = @($normalizedTaskIds)
         provider = $ModelProvider
         model_name_or_alias = $ModelAlias
         runtime_surface = $RuntimeName
@@ -158,7 +212,7 @@ function New-ExecutionPreflight {
         estimated_output_tokens = $estimatedOutputTokens
         estimated_total_tokens = $estimatedInputTokens + $estimatedOutputTokens
         records_per_condition = $PerCondition
-        selection_strategy = 'first_sorted_run_input_per_condition'
+        selection_strategy = $selectionStrategy
         stop_gates_satisfied = @(
             'no_private_repository_material',
             'prompts_frozen_before_execution',
@@ -167,6 +221,7 @@ function New-ExecutionPreflight {
             'selected_run_inputs_exist',
             'source_run_input_manifest_hash_recorded',
             'task_suite_hash_recorded',
+            'task_selection_scope_recorded',
             'provider_model_runtime_recorded',
             'budget_recorded_before_execution',
             'no_model_api_call_performed'
@@ -188,6 +243,8 @@ function New-ExecutionPreflight {
     return [ordered]@{
         selected_run_count = $selected.Count
         selected_condition_count = @($preflight.selected_conditions).Count
+        selected_task_count = @($preflight.selected_task_ids).Count
+        task_selection_scope = $taskSelectionScope
         estimated_input_tokens = $estimatedInputTokens
         estimated_total_tokens = $preflight.estimated_total_tokens
         max_budget_usd = $BudgetUsd
@@ -210,12 +267,28 @@ function Invoke-SelfTest {
             $failures.Add("Run-input builder failed during execution-preflight self-test: $($buildOutput | Out-String)")
             return (New-Result -Status 'fail' -Failures $failures -Warnings $warnings -Info $info -Summary $summary)
         }
-        $summary = New-ExecutionPreflight -InputRoot $runInputRoot -Path $preflightPath -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runtime' -BudgetUsd 1.0 -PerCondition 1 -AllowOverwrite $false
+        $summary = New-ExecutionPreflight -InputRoot $runInputRoot -Path $preflightPath -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runtime' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowOverwrite $false
         if ([int]$summary.selected_run_count -ne 9) {
             $failures.Add("Expected 9 selected run inputs; found $($summary.selected_run_count).")
         }
         if ([int]$summary.selected_condition_count -ne 9) {
             $failures.Add("Expected 9 selected conditions; found $($summary.selected_condition_count).")
+        }
+        $filteredPreflightPath = Join-Path $tempBase 'execution-preflight-task-filtered.json'
+        $filteredSummary = New-ExecutionPreflight -InputRoot $runInputRoot -Path $filteredPreflightPath -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runtime' -BudgetUsd 1.0 -PerCondition 2 -RequestedTaskIds @('objective-narrowing-release-chain') -AllowOverwrite $false
+        if ([int]$filteredSummary.selected_run_count -ne 18) {
+            $failures.Add("Expected 18 selected requested-task run inputs; found $($filteredSummary.selected_run_count).")
+        }
+        if ([int]$filteredSummary.selected_task_count -ne 1) {
+            $failures.Add("Expected 1 selected requested task; found $($filteredSummary.selected_task_count).")
+        }
+        $multiTaskPreflightPath = Join-Path $tempBase 'execution-preflight-multi-task-filtered.json'
+        $multiTaskSummary = New-ExecutionPreflight -InputRoot $runInputRoot -Path $multiTaskPreflightPath -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runtime' -BudgetUsd 1.0 -PerCondition 2 -RequestedTaskIds @('objective-narrowing-release-chain,verifier-overclaim-single-green-check') -AllowOverwrite $false
+        if ([int]$multiTaskSummary.selected_run_count -ne 36) {
+            $failures.Add("Expected 36 selected comma-separated requested-task run inputs; found $($multiTaskSummary.selected_run_count).")
+        }
+        if ([int]$multiTaskSummary.selected_task_count -ne 2) {
+            $failures.Add("Expected 2 selected comma-separated requested tasks; found $($multiTaskSummary.selected_task_count).")
         }
         $scorer = Join-Path $PSScriptRoot 'score-empirical-execution-preflight.ps1'
         if (Test-Path -LiteralPath $scorer) {
@@ -223,9 +296,26 @@ function Invoke-SelfTest {
             if (-not $?) {
                 $failures.Add("Execution-preflight scorer rejected the self-test preflight: $($scoreOutput | Out-String)")
             }
+            $filteredScoreOutput = & $scorer -RunInputRoot $runInputRoot -PreflightPath $filteredPreflightPath 2>&1
+            if (-not $?) {
+                $failures.Add("Execution-preflight scorer rejected the requested-task self-test preflight: $($filteredScoreOutput | Out-String)")
+            }
+            $multiTaskScoreOutput = & $scorer -RunInputRoot $runInputRoot -PreflightPath $multiTaskPreflightPath 2>&1
+            if (-not $?) {
+                $failures.Add("Execution-preflight scorer rejected the comma-separated requested-task self-test preflight: $($multiTaskScoreOutput | Out-String)")
+            }
         }
         $info.Add('Built a 9-record execution preflight from the generated run-input package.')
+        $info.Add('Built requested-task execution preflights with one TaskIds entry and a comma-separated multi-task TaskIds entry without calling a model or API.')
         $info.Add('Recorded provider, model, runtime surface, budget, source hashes, and no-results boundary.')
+        try {
+            New-ExecutionPreflight -InputRoot $runInputRoot -Path (Join-Path $tempBase 'execution-preflight-missing-task.json') -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runtime' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @('missing-task-id') -AllowOverwrite $false | Out-Null
+            $failures.Add('Expected unknown TaskIds self-test to fail, but it succeeded.')
+        } catch {
+            if ($_.Exception.Message -notlike '*unknown task id*') {
+                $failures.Add("Expected unknown TaskIds failure, got: $($_.Exception.Message)")
+            }
+        }
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force
@@ -246,7 +336,7 @@ if ($SelfTest) {
         if (-not $RunInputRoot -or -not $OutputPath) {
             throw 'Provide -RunInputRoot and -OutputPath, or use -SelfTest.'
         }
-        $summary = New-ExecutionPreflight -InputRoot $RunInputRoot -Path $OutputPath -ModelProvider $Provider -ModelAlias $ModelNameOrAlias -RuntimeName $RuntimeSurface -BudgetUsd $MaxBudgetUsd -PerCondition $RecordsPerCondition -AllowOverwrite ([bool]$Force)
+        $summary = New-ExecutionPreflight -InputRoot $RunInputRoot -Path $OutputPath -ModelProvider $Provider -ModelAlias $ModelNameOrAlias -RuntimeName $RuntimeSurface -BudgetUsd $MaxBudgetUsd -PerCondition $RecordsPerCondition -RequestedTaskIds $TaskIds -AllowOverwrite ([bool]$Force)
         $info.Add('Built empirical execution preflight record without calling a model or API.')
     } catch {
         $failures.Add($_.Exception.Message)

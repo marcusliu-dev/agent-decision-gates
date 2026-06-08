@@ -26,6 +26,8 @@ contains:
   and run-input manifest;
 - selected `run_input_id` values;
 - selected task ids and conditions;
+- the task selection scope, with optional `-TaskIds` support for picking named
+  tasks across every condition;
 - provider, model alias, runtime surface, and execution mode;
 - maximum budget in USD;
 - estimated input/output/total token counts using a deterministic local
@@ -34,7 +36,10 @@ contains:
 
 The default pilot selection is one run input per condition, so the current seed
 surface selects 9 records from the 324-record run-input package. The selection
-is a pilot gate only, not an empirical result.
+is a pilot gate only, not an empirical result. When `-TaskIds` is provided, the
+builder selects `RecordsPerCondition` rows for each requested task under each
+condition, records `task_selection_scope: requested_task_ids`, and fails closed
+if a requested task id is unknown.
 
 ## Structural Verification
 
@@ -46,6 +51,13 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-prefl
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-preflight.ps1 -RunInputRoot dist/empirical-run-inputs -PreflightPath dist/empirical-execution-preflight.json
 ```
 
+To select specific tasks for a broader pilot while preserving per-condition
+coverage:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-preflight.ps1 -RunInputRoot dist/empirical-run-inputs -OutputPath dist/empirical-execution-preflight.json -Provider openai-compatible -ModelNameOrAlias model-under-test -RuntimeSurface api-runner-under-test -MaxBudgetUsd 1.00 -RecordsPerCondition 2 -TaskIds objective-narrowing-release-chain,verifier-overclaim-single-green-check -Force
+```
+
 For self-tests without persistent generated files, run:
 
 ```powershell
@@ -54,10 +66,11 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-prefl
 ```
 
 The self-tests build a temporary run-input package, build a temporary preflight
-record, validate it, reject missing budget, missing run-input id, non-first
-sorted selection, transcript field injection, and metadata hash mutation cases,
-then remove the temporary files. They do not call models, APIs, judges, or
-external services.
+record, validate default and requested-task selection, reject missing budget,
+missing run-input id, non-first sorted selection, requested-task selection
+drift, unknown requested tasks, transcript field injection, and metadata hash
+mutation cases, then remove the temporary files. They do not call models, APIs,
+judges, or external services.
 
 ## Current Nonclaims
 

@@ -16,6 +16,7 @@ required_fields:
   - selected_run_count
   - selected_conditions
   - selected_task_ids
+  - task_selection_scope
   - provider
   - model_name_or_alias
   - runtime_surface
@@ -30,11 +31,15 @@ required_fields:
   - stop_gates_satisfied
   - current_nonclaims
 
+optional_fields:
+  - requested_task_ids
+
 metadata_requirements:
   - source_run_input_manifest_hash_recorded
   - provider_model_runtime_recorded
   - budget_recorded_before_execution
   - selected_run_inputs_exist
+  - task_selection_scope_recorded
   - no_model_api_call_performed
 
 forbidden_fields:

@@ -333,30 +333,93 @@ function Invoke-PreflightValidation {
     if ($recordsPerCondition -lt 1) {
         $failures.Add('Execution preflight records_per_condition must be at least 1.')
     }
-    $expectedSelectionCount = $allConditions.Count * $recordsPerCondition
-    if ($selectedIds.Count -ne $expectedSelectionCount) {
-        $failures.Add("Execution preflight selected $($selectedIds.Count) records; expected $expectedSelectionCount from $($allConditions.Count) conditions and records_per_condition $recordsPerCondition.")
+    $selectionScope = [string]$preflight.task_selection_scope
+    $requestedTasks = @()
+    if ($propertyNames -contains 'requested_task_ids') {
+        $requestedTasks = @(Get-JsonArray -Value $preflight.requested_task_ids | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ })
     }
-    foreach ($condition in $allConditions) {
-        $count = @($selectedRecords | Where-Object { $_.condition -eq $condition }).Count
-        if ($count -ne $recordsPerCondition) {
-            $failures.Add("Execution preflight selected $count record(s) for condition '$condition'; expected $recordsPerCondition.")
+    $requestedTaskSet = New-Object System.Collections.Generic.HashSet[string]
+    foreach ($taskId in $requestedTasks) {
+        if (-not $requestedTaskSet.Add($taskId)) {
+            $failures.Add("Execution preflight requested_task_ids contains duplicate task id '$taskId'.")
         }
-        $expectedFirstIds = @(
-            $recordById.Values |
-                Where-Object { $_.condition -eq $condition } |
-                Sort-Object task_id, repeat_index, run_input_id |
-                Select-Object -First $recordsPerCondition |
-                ForEach-Object { [string]$_.run_input_id }
-        )
-        $actualConditionIds = @(
-            $selectedRecords |
-                Where-Object { $_.condition -eq $condition } |
-                Sort-Object task_id, repeat_index, run_input_id |
-                ForEach-Object { [string]$_.run_input_id }
-        )
-        if (-not (Test-SameStringSet -Actual $actualConditionIds -Expected $expectedFirstIds)) {
-            $failures.Add("Execution preflight selection for condition '$condition' does not match first_sorted_run_input_per_condition.")
+        if ($taskId -match '[\\/]') {
+            $failures.Add("Execution preflight requested_task_ids contains path separator in '$taskId'.")
+        }
+        if (@($recordById.Values | Where-Object { $_.task_id -eq $taskId }).Count -eq 0) {
+            $failures.Add("Execution preflight requested_task_ids contains unknown task id '$taskId'.")
+        }
+    }
+    if ($selectionScope -notin @('all_tasks_first_sorted', 'requested_task_ids')) {
+        $failures.Add('Execution preflight task_selection_scope must be all_tasks_first_sorted or requested_task_ids.')
+    }
+    if ($selectionScope -eq 'all_tasks_first_sorted' -and $requestedTasks.Count -gt 0) {
+        $failures.Add('Execution preflight requested_task_ids must be empty when task_selection_scope is all_tasks_first_sorted.')
+    }
+    if ($selectionScope -eq 'requested_task_ids' -and $requestedTasks.Count -eq 0) {
+        $failures.Add('Execution preflight requested_task_ids must be nonempty when task_selection_scope is requested_task_ids.')
+    }
+
+    $expectedSelectionCount = if ($selectionScope -eq 'requested_task_ids' -and $requestedTasks.Count -gt 0) {
+        $allConditions.Count * $recordsPerCondition * $requestedTasks.Count
+    } else {
+        $allConditions.Count * $recordsPerCondition
+    }
+    if ($selectedIds.Count -ne $expectedSelectionCount) {
+        $failures.Add("Execution preflight selected $($selectedIds.Count) records; expected $expectedSelectionCount from $($allConditions.Count) conditions, records_per_condition $recordsPerCondition, and requested task count $($requestedTasks.Count).")
+    }
+    if ($selectionScope -eq 'requested_task_ids' -and $requestedTasks.Count -gt 0) {
+        foreach ($condition in $allConditions) {
+            foreach ($taskId in $requestedTasks) {
+                $count = @($selectedRecords | Where-Object { $_.condition -eq $condition -and $_.task_id -eq $taskId }).Count
+                if ($count -ne $recordsPerCondition) {
+                    $failures.Add("Execution preflight selected $count record(s) for requested task '$taskId' and condition '$condition'; expected $recordsPerCondition.")
+                }
+                $expectedTaskConditionIds = @(
+                    $recordById.Values |
+                        Where-Object { $_.condition -eq $condition -and $_.task_id -eq $taskId } |
+                        Sort-Object repeat_index, run_input_id |
+                        Select-Object -First $recordsPerCondition |
+                        ForEach-Object { [string]$_.run_input_id }
+                )
+                $actualTaskConditionIds = @(
+                    $selectedRecords |
+                        Where-Object { $_.condition -eq $condition -and $_.task_id -eq $taskId } |
+                        Sort-Object repeat_index, run_input_id |
+                        ForEach-Object { [string]$_.run_input_id }
+                )
+                if (-not (Test-SameStringSet -Actual $actualTaskConditionIds -Expected $expectedTaskConditionIds)) {
+                    $failures.Add("Execution preflight selection for requested task '$taskId' and condition '$condition' does not match first_sorted_run_input_per_condition_per_requested_task.")
+                }
+            }
+        }
+        foreach ($record in $selectedRecords) {
+            if ($requestedTasks -notcontains [string]$record.task_id) {
+                $failures.Add("Execution preflight selected task '$($record.task_id)' outside requested_task_ids.")
+            }
+        }
+    } else {
+        foreach ($condition in $allConditions) {
+            $count = @($selectedRecords | Where-Object { $_.condition -eq $condition }).Count
+            if ($count -ne $recordsPerCondition) {
+                $failures.Add("Execution preflight selected $count record(s) for condition '$condition'; expected $recordsPerCondition.")
+            }
+            $expectedFirstIds = @(
+                $recordById.Values |
+                    Where-Object { $_.condition -eq $condition } |
+                    Sort-Object task_id, repeat_index, run_input_id |
+                    Select-Object -First $recordsPerCondition |
+                    ForEach-Object { [string]$_.run_input_id }
+            )
+            $actualConditionIds = @(
+                $selectedRecords |
+                    Where-Object { $_.condition -eq $condition } |
+                    Sort-Object task_id, repeat_index, run_input_id |
+                    ForEach-Object { [string]$_.run_input_id }
+            )
+            if (-not (Test-SameStringSet -Actual $actualConditionIds -Expected $expectedFirstIds)) {
+                $failures.Add("Execution preflight selection for condition '$condition' does not match first_sorted_run_input_per_condition.")
+            }
         }
     }
     $selectedConditions = @(Get-JsonArray -Value $preflight.selected_conditions | ForEach-Object { [string]$_ })
@@ -369,7 +432,11 @@ function Invoke-PreflightValidation {
     if (-not (Test-SameStringSet -Actual $selectedTasks -Expected $expectedTasks)) {
         $failures.Add('Execution preflight selected_task_ids does not match selected run-input records.')
     }
-    if ($preflight.selection_strategy -ne 'first_sorted_run_input_per_condition') {
+    if ($selectionScope -eq 'requested_task_ids') {
+        if ($preflight.selection_strategy -ne 'first_sorted_run_input_per_condition_per_requested_task') {
+            $failures.Add('Execution preflight selection_strategy must be first_sorted_run_input_per_condition_per_requested_task when task_selection_scope is requested_task_ids.')
+        }
+    } elseif ($preflight.selection_strategy -ne 'first_sorted_run_input_per_condition') {
         $failures.Add('Execution preflight selection_strategy must be first_sorted_run_input_per_condition.')
     }
 
@@ -389,6 +456,7 @@ function Invoke-PreflightValidation {
         'condition_prompt_pack_available',
         'run_input_builder_available',
         'selected_run_inputs_exist',
+        'task_selection_scope_recorded',
         'provider_model_runtime_recorded',
         'budget_recorded_before_execution',
         'no_model_api_call_performed'
@@ -453,6 +521,12 @@ function Invoke-SelfTest {
             $failures.Add("Execution-preflight builder failed during scorer self-test: $($preflightOutput | Out-String)")
             return (New-Result -Status 'fail' -Failures $failures -Warnings $warnings -Info $info -Summary $summary)
         }
+        $requestedTaskPreflightPath = Join-Path $tempBase 'execution-preflight-requested-task.json'
+        $requestedTaskOutput = & $preflightBuilder -RunInputRoot $runInputRoot -OutputPath $requestedTaskPreflightPath -Provider 'self-test-provider' -ModelNameOrAlias 'self-test-model' -RuntimeSurface 'self-test-runtime' -MaxBudgetUsd 1.0 -RecordsPerCondition 2 -TaskIds 'objective-narrowing-release-chain,verifier-overclaim-single-green-check' 2>&1
+        if (-not $?) {
+            $failures.Add("Execution-preflight builder failed during requested-task scorer self-test: $($requestedTaskOutput | Out-String)")
+            return (New-Result -Status 'fail' -Failures $failures -Warnings $warnings -Info $info -Summary $summary)
+        }
 
         $positive = Invoke-PreflightValidation -Root $runInputRoot -Path $preflightPath -RepositoryRoot $RepoRoot
         if ($positive.status -ne 'pass') {
@@ -461,8 +535,22 @@ function Invoke-SelfTest {
             $summary['selected_run_count'] = $positive.summary.selected_run_count
             $summary['selected_condition_count'] = $positive.summary.selected_condition_count
         }
+        $requestedTaskPositive = Invoke-PreflightValidation -Root $runInputRoot -Path $requestedTaskPreflightPath -RepositoryRoot $RepoRoot
+        if ($requestedTaskPositive.status -ne 'pass') {
+            $failures.Add("Positive requested-task execution-preflight self-test failed: $($requestedTaskPositive.failures -join '; ')")
+        } else {
+            $summary['requested_task_selected_run_count'] = $requestedTaskPositive.summary.selected_run_count
+            $summary['requested_task_selected_task_count'] = $requestedTaskPositive.summary.selected_task_count
+            if ([int]$requestedTaskPositive.summary.selected_run_count -ne 36) {
+                $failures.Add("Expected comma-separated requested-task self-test to select 36 runs; found $($requestedTaskPositive.summary.selected_run_count).")
+            }
+            if ([int]$requestedTaskPositive.summary.selected_task_count -ne 2) {
+                $failures.Add("Expected comma-separated requested-task self-test to select 2 tasks; found $($requestedTaskPositive.summary.selected_task_count).")
+            }
+        }
 
         $baseRecord = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
+        $requestedTaskBaseRecord = Get-Content -LiteralPath $requestedTaskPreflightPath -Raw | ConvertFrom-Json
 
         Write-JsonFile -Path $preflightPath -Value $baseRecord
         $badBudget = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
@@ -497,6 +585,33 @@ function Invoke-SelfTest {
             Assert-NegativeCase -Failures $failures -Name 'non_first_sorted_selection' -Record $badSelection -Path $preflightPath -Root $runInputRoot -RepositoryRoot $RepoRoot -ExpectedFailureText 'first_sorted_run_input_per_condition'
         }
 
+        Write-JsonFile -Path $preflightPath -Value $requestedTaskBaseRecord
+        $badRequestedSelection = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
+        $requestedIds = @(Get-JsonArray -Value $badRequestedSelection.selected_run_input_ids | ForEach-Object { [string]$_ })
+        $requestedRecords = @($requestedIds | ForEach-Object { Get-Content -LiteralPath (Join-Path $runInputRoot "run-inputs/$_.json") -Raw | ConvertFrom-Json })
+        $requestedCondition = [string]$requestedRecords[0].condition
+        $requestedTaskIds = @(Get-JsonArray -Value $badRequestedSelection.requested_task_ids | ForEach-Object { [string]$_ })
+        $otherTaskReplacement = @(
+            Get-ChildItem -LiteralPath (Join-Path $runInputRoot 'run-inputs') -File -Filter '*.json' |
+                ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json } |
+                Where-Object { $_.condition -eq $requestedCondition -and $requestedTaskIds -notcontains [string]$_.task_id } |
+                Sort-Object task_id, repeat_index, run_input_id |
+                Select-Object -First 1
+        )
+        if ($otherTaskReplacement.Count -eq 0) {
+            $failures.Add('Self-test could not find a replacement run-input id for the requested-task negative case.')
+        } else {
+            $requestedIds[0] = [string]$otherTaskReplacement[0].run_input_id
+            $badRequestedSelection.selected_run_input_ids = @($requestedIds)
+            $badRequestedSelection.selected_task_ids = @($requestedTaskIds + [string]$otherTaskReplacement[0].task_id)
+            Assert-NegativeCase -Failures $failures -Name 'requested_task_selection_drift' -Record $badRequestedSelection -Path $preflightPath -Root $runInputRoot -RepositoryRoot $RepoRoot -ExpectedFailureText 'outside requested_task_ids'
+        }
+
+        Write-JsonFile -Path $preflightPath -Value $requestedTaskBaseRecord
+        $badRequestedTask = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
+        $badRequestedTask.requested_task_ids = @('missing-task-id')
+        Assert-NegativeCase -Failures $failures -Name 'unknown_requested_task' -Record $badRequestedTask -Path $preflightPath -Root $runInputRoot -RepositoryRoot $RepoRoot -ExpectedFailureText 'unknown task id'
+
         Write-JsonFile -Path $preflightPath -Value $baseRecord
         $badTranscript = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
         $badTranscript | Add-Member -NotePropertyName 'transcript_messages' -NotePropertyValue @('not allowed') -Force
@@ -510,6 +625,7 @@ function Invoke-SelfTest {
         Write-JsonFile -Path $preflightPath -Value $baseRecord
         $info.Add('Validated generated execution preflight record.')
         $info.Add('Rejected missing budget, missing run-input id, non-first sorted selection, transcript field injection, and metadata hash mutation cases.')
+        $info.Add('Validated requested TaskIds selection and rejected requested-task selection drift and unknown requested task ids.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force

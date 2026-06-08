@@ -7,6 +7,7 @@ param(
     [string]$RuntimeSurface = 'explicit-local-runner-chain',
     [double]$MaxBudgetUsd = 1.0,
     [int]$RecordsPerCondition = 1,
+    [string[]]$TaskIds,
     [switch]$AllowRunnerScript,
     [switch]$SelfTest,
     [switch]$Force,
@@ -210,6 +211,7 @@ function New-PilotRunChain {
         [string]$RuntimeName,
         [double]$BudgetUsd,
         [int]$PerCondition,
+        [string[]]$RequestedTaskIds,
         [bool]$AllowRunner,
         [bool]$AllowOverwrite
     )
@@ -247,7 +249,20 @@ function New-PilotRunChain {
     $runInputs = Convert-ToolOutput -ScriptName 'build-empirical-run-inputs.ps1' -Output $output -InvocationSucceeded $?
     $output = & $runInputScorer -PackageRoot $runInputRoot -RepoRoot $repoRoot -Json 2>&1
     $runInputScore = Convert-ToolOutput -ScriptName 'score-empirical-run-inputs.ps1' -Output $output -InvocationSucceeded $?
-    $output = & $preflightBuilder -RunInputRoot $runInputRoot -OutputPath $preflightPath -Provider $ModelProvider -ModelNameOrAlias $ModelAlias -RuntimeSurface $RuntimeName -MaxBudgetUsd $BudgetUsd -RecordsPerCondition $PerCondition -Json 2>&1
+    $preflightArgs = @{
+        RunInputRoot = $runInputRoot
+        OutputPath = $preflightPath
+        Provider = $ModelProvider
+        ModelNameOrAlias = $ModelAlias
+        RuntimeSurface = $RuntimeName
+        MaxBudgetUsd = $BudgetUsd
+        RecordsPerCondition = $PerCondition
+        Json = $true
+    }
+    if (@($RequestedTaskIds).Count -gt 0) {
+        $preflightArgs['TaskIds'] = @($RequestedTaskIds)
+    }
+    $output = & $preflightBuilder @preflightArgs 2>&1
     $preflight = Convert-ToolOutput -ScriptName 'build-empirical-execution-preflight.ps1' -Output $output -InvocationSucceeded $?
     $output = & $preflightScorer -RunInputRoot $runInputRoot -PreflightPath $preflightPath -RepoRoot $repoRoot -Json 2>&1
     $preflightScore = Convert-ToolOutput -ScriptName 'score-empirical-execution-preflight.ps1' -Output $output -InvocationSucceeded $?
@@ -265,6 +280,7 @@ function New-PilotRunChain {
     $templateScore = Convert-ToolOutput -ScriptName 'score-empirical-label-template-package.ps1' -Output $output -InvocationSucceeded $?
 
     $runnerHash = Get-FileHashHex -Path $ScriptPath
+    $preflightRecord = Get-Content -LiteralPath $preflightPath -Raw | ConvertFrom-Json
     $manifest = [ordered]@{
         package_type = 'empirical_pilot_run_chain'
         claim_boundary = 'pilot_run_chain_executed_no_labels_no_metrics'
@@ -273,6 +289,8 @@ function New-PilotRunChain {
         model_name_or_alias = $ModelAlias
         runtime_surface = $RuntimeName
         records_per_condition = $PerCondition
+        task_selection_scope = [string]$preflightRecord.task_selection_scope
+        requested_task_ids = @(Get-JsonArray -Value $preflightRecord.requested_task_ids)
         runner_script_label = $ScriptLabel
         runner_script_sha256 = $runnerHash
         artifacts = [ordered]@{
@@ -298,6 +316,8 @@ function New-PilotRunChain {
         run_input_records = Get-SummaryValue -Result $runInputs -Name 'record_count'
         selected_run_count = Get-SummaryValue -Result $preflight -Name 'selected_run_count'
         selected_condition_count = Get-SummaryValue -Result $preflight -Name 'selected_condition_count'
+        selected_task_count = Get-SummaryValue -Result $preflight -Name 'selected_task_count'
+        task_selection_scope = [string]$preflightRecord.task_selection_scope
         pilot_transcript_count = Get-SummaryValue -Result $pilot -Name 'transcript_count'
         pilot_cost_latency_count = Get-SummaryValue -Result $pilot -Name 'cost_latency_count'
         annotation_work_item_count = Get-SummaryValue -Result $worklist -Name 'generated_work_item_count'
@@ -309,6 +329,19 @@ function New-PilotRunChain {
         worklist_score_status = [string]$worklistScore.status
         template_score_status = [string]$templateScore.status
     }
+}
+
+function Get-JsonArray {
+    param(
+        [object]$Value
+    )
+    if ($null -eq $Value) {
+        return @()
+    }
+    if ($Value -is [array]) {
+        return @($Value)
+    }
+    return @($Value)
 }
 
 function New-FixtureRunner {
@@ -349,7 +382,7 @@ function Invoke-SelfTest {
         $runnerPath = Join-Path $tempBase 'fixture-runner.ps1'
         New-FixtureRunner -Path $runnerPath
         $positiveRoot = Join-Path $tempBase 'positive-chain'
-        $positive = New-PilotRunChain -Root $positiveRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -AllowRunner $true -AllowOverwrite $false
+        $positive = New-PilotRunChain -Root $positiveRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowRunner $true -AllowOverwrite $false
         if ([int]$positive.selected_run_count -ne 9) {
             $failures.Add("Expected 9 selected pilot runs; found $($positive.selected_run_count).")
         }
@@ -366,13 +399,31 @@ function Invoke-SelfTest {
         if ($manifestRaw.Contains($tempBase)) {
             $failures.Add('Pilot-run-chain manifest exposed the temporary local package path.')
         }
-        $forcePositive = New-PilotRunChain -Root $positiveRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -AllowRunner $true -AllowOverwrite $true
+        $forcePositive = New-PilotRunChain -Root $positiveRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowRunner $true -AllowOverwrite $true
         if ([int]$forcePositive.selected_run_count -ne 9) {
             $failures.Add("Expected -Force overwrite of generated chain to preserve 9 selected runs; found $($forcePositive.selected_run_count).")
         }
+        $requestedTaskRoot = Join-Path $tempBase 'positive-requested-task-chain'
+        $requestedTaskPositive = New-PilotRunChain -Root $requestedTaskRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 2 -RequestedTaskIds @('objective-narrowing-release-chain,verifier-overclaim-single-green-check') -AllowRunner $true -AllowOverwrite $false
+        if ([int]$requestedTaskPositive.selected_run_count -ne 36) {
+            $failures.Add("Expected requested-task chain to select 36 runs; found $($requestedTaskPositive.selected_run_count).")
+        }
+        if ([int]$requestedTaskPositive.selected_task_count -ne 2) {
+            $failures.Add("Expected requested-task chain to select 2 tasks; found $($requestedTaskPositive.selected_task_count).")
+        }
+        if ([string]$requestedTaskPositive.task_selection_scope -ne 'requested_task_ids') {
+            $failures.Add("Expected requested-task chain to record task_selection_scope requested_task_ids; found $($requestedTaskPositive.task_selection_scope).")
+        }
+        $requestedManifest = Get-Content -LiteralPath (Join-Path $requestedTaskRoot 'metadata/pilot-run-chain-manifest.json') -Raw | ConvertFrom-Json
+        if ([string]$requestedManifest.task_selection_scope -ne 'requested_task_ids') {
+            $failures.Add("Expected requested-task chain manifest to record task_selection_scope requested_task_ids; found $($requestedManifest.task_selection_scope).")
+        }
+        if (@(Get-JsonArray -Value $requestedManifest.requested_task_ids).Count -ne 2) {
+            $failures.Add('Expected requested-task chain manifest to record two requested_task_ids entries.')
+        }
 
         try {
-            New-PilotRunChain -Root (Join-Path $tempBase 'negative-no-allow') -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -AllowRunner $false -AllowOverwrite $false | Out-Null
+            New-PilotRunChain -Root (Join-Path $tempBase 'negative-no-allow') -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowRunner $false -AllowOverwrite $false | Out-Null
             $failures.Add('Expected pilot run chain to require -AllowRunnerScript, but it executed without the gate.')
         } catch {
             if ($_.Exception.Message -notlike '*AllowRunnerScript*') {
@@ -384,7 +435,7 @@ function Invoke-SelfTest {
         New-Item -ItemType Directory -Force -Path $overwriteRoot | Out-Null
         Set-Content -LiteralPath (Join-Path $overwriteRoot 'manual-note.txt') -Value 'not generated by the pilot run chain' -Encoding UTF8
         try {
-            New-PilotRunChain -Root $overwriteRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -AllowRunner $true -AllowOverwrite $true | Out-Null
+            New-PilotRunChain -Root $overwriteRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowRunner $true -AllowOverwrite $true | Out-Null
             $failures.Add('Expected -Force to reject non-generated files, but overwrite succeeded.')
         } catch {
             if ($_.Exception.Message -notlike '*non-generated file*') {
@@ -396,7 +447,7 @@ function Invoke-SelfTest {
         New-Item -ItemType Directory -Force -Path (Join-Path $nestedOverwriteRoot 'metadata') | Out-Null
         Set-Content -LiteralPath (Join-Path $nestedOverwriteRoot 'metadata/manual-note.txt') -Value 'not generated by the pilot run chain' -Encoding UTF8
         try {
-            New-PilotRunChain -Root $nestedOverwriteRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -AllowRunner $true -AllowOverwrite $true | Out-Null
+            New-PilotRunChain -Root $nestedOverwriteRoot -ScriptPath $runnerPath -ScriptLabel 'fixture-chain-runner-v0' -ModelProvider 'self-test-provider' -ModelAlias 'self-test-model' -RuntimeName 'self-test-runner-chain' -BudgetUsd 1.0 -PerCondition 1 -RequestedTaskIds @() -AllowRunner $true -AllowOverwrite $true | Out-Null
             $failures.Add('Expected -Force to reject nested non-generated files, but overwrite succeeded.')
         } catch {
             if ($_.Exception.Message -notlike '*metadata/manual-note.txt*') {
@@ -406,6 +457,7 @@ function Invoke-SelfTest {
 
         $summary = $forcePositive
         $info.Add('Built a fixture pilot run chain through run inputs, preflight, explicit runner execution, pilot package, annotation worklist, and label templates.')
+        $info.Add('Built a requested TaskIds fixture pilot run chain without labels, agreement metrics, or aggregate metrics.')
         $info.Add('Required -AllowRunnerScript and refused non-generated files when -Force was used.')
         $info.Add('Rejected root-level and nested non-generated files when -Force was used.')
         $info.Add('Generated no completed labels, agreement metrics, aggregate metrics, or paper-readiness claim.')
@@ -429,7 +481,7 @@ if ($SelfTest) {
         if (-not $OutputRoot -or -not $RunnerScriptPath) {
             throw 'Provide -OutputRoot, -RunnerScriptPath, and -AllowRunnerScript, or use -SelfTest.'
         }
-        $summary = New-PilotRunChain -Root $OutputRoot -ScriptPath $RunnerScriptPath -ScriptLabel $RunnerLabel -ModelProvider $Provider -ModelAlias $ModelNameOrAlias -RuntimeName $RuntimeSurface -BudgetUsd $MaxBudgetUsd -PerCondition $RecordsPerCondition -AllowRunner ([bool]$AllowRunnerScript) -AllowOverwrite ([bool]$Force)
+        $summary = New-PilotRunChain -Root $OutputRoot -ScriptPath $RunnerScriptPath -ScriptLabel $RunnerLabel -ModelProvider $Provider -ModelAlias $ModelNameOrAlias -RuntimeName $RuntimeSurface -BudgetUsd $MaxBudgetUsd -PerCondition $RecordsPerCondition -RequestedTaskIds $TaskIds -AllowRunner ([bool]$AllowRunnerScript) -AllowOverwrite ([bool]$Force)
         $info.Add('Built empirical pilot run chain at the requested OutputRoot.')
         $info.Add('Generated pilot transcripts, cost-latency records, annotation work items, and label templates through an explicit local runner script.')
     } catch {

@@ -17,7 +17,7 @@ pilot run chain makes the first real-execution path reproducible as one command:
 
 1. materialize fixed task-condition-repeat run inputs;
 2. freeze a first pilot selection, provider, model alias, runtime surface, and
-   budget;
+   budget, optionally constrained with explicit `TaskIds`;
 3. call only a user-supplied local runner script after `-AllowRunnerScript`;
 4. validate transcript and cost/latency joins;
 5. derive unlabeled annotation work items;
@@ -51,6 +51,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain
   -RuntimeSurface private-runner-script `
   -MaxBudgetUsd 1.00 `
   -RecordsPerCondition 1 `
+  -TaskIds objective-narrowing-release-chain `
   -AllowRunnerScript `
   -Force
 ```
@@ -71,6 +72,9 @@ The builder:
 - requires `-AllowRunnerScript` before executing any runner;
 - uses the existing run-input, execution-preflight, pilot-package,
   annotation-worklist, and label-template builders and scorers;
+- passes optional `TaskIds` through the execution preflight so broader pilots
+  can cover named tasks across every condition instead of always selecting the
+  first sorted task;
 - records the runner script hash and label without copying the runner script;
 - records relative artifact paths, counts, and nonclaims without local source
   paths in the chain manifest;
