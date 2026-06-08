@@ -69,6 +69,7 @@ $paths = [ordered]@{
     MockExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/mock-execution-package-schema.yaml'
     RunnerResponseSchema = Join-Path $RepoRoot 'evals/empirical/runner-response-schema.yaml'
     PilotExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-package-schema.yaml'
+    PilotExecutionReadinessSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-readiness-schema.yaml'
     AnnotationWorklistSchema = Join-Path $RepoRoot 'evals/empirical/annotation-worklist-schema.yaml'
     LabelTemplatePackageSchema = Join-Path $RepoRoot 'evals/empirical/label-template-package-schema.yaml'
     AnnotationIntakeSchema = Join-Path $RepoRoot 'evals/empirical/annotation-intake-schema.yaml'
@@ -80,6 +81,7 @@ $paths = [ordered]@{
     RunnerContractDoc = Join-Path $RepoRoot 'docs/empirical-runner-contract.md'
     PilotExecutionRunnerDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-runner.md'
     PilotRunChainDoc = Join-Path $RepoRoot 'docs/empirical-pilot-run-chain.md'
+    PilotExecutionReadinessDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-readiness.md'
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
     LabelTemplatePackageDoc = Join-Path $RepoRoot 'docs/empirical-label-template-package.md'
     AnnotationIntakeDoc = Join-Path $RepoRoot 'docs/empirical-annotation-intake.md'
@@ -98,6 +100,7 @@ $paths = [ordered]@{
     PilotExecutionPackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-execution-package.ps1'
     PilotExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-pilot-execution-package.ps1'
     PilotRunChainBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-run-chain.ps1'
+    PilotExecutionReadinessChecker = Join-Path $RepoRoot 'scripts/check-empirical-pilot-execution-readiness.ps1'
     AnnotationWorklistBuilder = Join-Path $RepoRoot 'scripts/build-empirical-annotation-worklist.ps1'
     AnnotationWorklistScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-worklist.ps1'
     LabelTemplatePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-label-template-package.ps1'
@@ -140,6 +143,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'runner_response_contract',
         'pilot_execution_package',
         'pilot_run_chain',
+        'pilot_execution_readiness_record',
         'annotation_worklist',
         'label_template_package',
         'annotation_intake_package',
@@ -167,6 +171,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'runner_response_contract_available',
         'pilot_execution_runner_available',
         'pilot_run_chain_builder_available',
+        'pilot_execution_readiness_checker_available',
+        'required_environment_variables_checked_before_execution',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -211,6 +217,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'runner_response_contract: docs/empirical-runner-contract.md',
         'pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml',
         'pilot_run_chain_builder: docs/empirical-pilot-run-chain.md',
+        'pilot_execution_readiness_schema: evals/empirical/pilot-execution-readiness-schema.yaml',
+        'pilot_execution_readiness_checker: docs/empirical-pilot-execution-readiness.md',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
         'label_template_package_schema: evals/empirical/label-template-package-schema.yaml',
         'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml',
@@ -878,6 +886,87 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageScorer) {
     }
 }
 
+if (Test-Path -LiteralPath $paths.PilotExecutionReadinessSchema) {
+    $schema = Get-Content -LiteralPath $paths.PilotExecutionReadinessSchema -Raw
+    if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'pilot_execution_readiness_schema_only_no_model_api_calls') {
+        $failures.Add('Pilot execution readiness schema must declare pilot_execution_readiness_schema_only_no_model_api_calls.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_inputs') -Required @(
+        'run_input_root',
+        'execution_preflight_path',
+        'runner_script_path',
+        'runner_label',
+        'required_environment_variable_names'
+    ) -Label 'pilot execution readiness required_inputs'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'readiness_requirements') -Required @(
+        'run_input_package_scores_before_execution',
+        'execution_preflight_scores_before_execution',
+        'runner_script_exists_before_execution',
+        'runner_script_stays_outside_public_repo',
+        'runner_label_has_no_path_separator',
+        'at_least_one_required_environment_variable_name_is_provided',
+        'required_environment_variable_names_are_valid',
+        'required_environment_variables_are_present_without_value_logging',
+        'readiness_checker_does_not_execute_runner',
+        'readiness_checker_does_not_call_model_api'
+    ) -Label 'pilot execution readiness readiness_requirements'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'forbidden_outputs') -Required @(
+        'environment_variable_values',
+        'credential_values',
+        'raw_runner_response',
+        'transcript_record',
+        'cost_latency_record',
+        'aggregate_metrics',
+        'paper_ready',
+        'production_ready'
+    ) -Label 'pilot execution readiness forbidden_outputs'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'current_nonclaims') -Required @(
+        'no_runner_execution',
+        'no_model_api_eval_execution',
+        'no_secret_values_reported',
+        'no_real_transcripts',
+        'no_real_cost_latency_results',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'pilot execution readiness current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.PilotExecutionReadinessDoc) {
+    $doc = Get-Content -LiteralPath $paths.PilotExecutionReadinessDoc -Raw
+    foreach ($check in @(
+        'check-empirical-pilot-execution-readiness.ps1 -SelfTest',
+        'does not execute the runner',
+        'requires at least one required environment variable name',
+        'print environment variable values',
+        'does not execute model/API evals',
+        'Current Nonclaims',
+        'paper readiness'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical pilot execution readiness doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.PilotExecutionReadinessChecker) {
+    $checker = Get-Content -LiteralPath $paths.PilotExecutionReadinessChecker -Raw
+    foreach ($check in @(
+        'Empirical pilot execution readiness',
+        'Validated empirical pilot execution readiness self-test',
+        'Rejected missing required environment variable lists, missing required environment variables, invalid environment variable names, repo-local runner scripts, and bad runner labels',
+        'Did not execute the fixture runner or call model/API routes',
+        'RunnerScriptPath must stay outside the public repository',
+        'At least one required environment variable name must be provided',
+        'Environment variable values were not printed or written',
+        'Invalid required environment variable name',
+        'Required environment variable'
+    )) {
+        if (-not $checker.Contains($check)) {
+            $failures.Add("Empirical pilot execution readiness checker is missing invariant '$check'.")
+        }
+    }
+}
+
 if (Test-Path -LiteralPath $paths.PilotRunChainDoc) {
     $doc = Get-Content -LiteralPath $paths.PilotRunChainDoc -Raw
     foreach ($check in @(
@@ -1534,6 +1623,10 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'pilot_run_chain_builder_available',
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
+        'pilot_execution_readiness_checker_available',
+        'pilot-execution-readiness-schema.yaml',
+        'check-empirical-pilot-execution-readiness.ps1 -SelfTest',
+        'pilot execution readiness',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',

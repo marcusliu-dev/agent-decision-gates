@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_budget_gate_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_execution_readiness_checker_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -24,7 +24,10 @@ evidence-package builder for assembling future pilot transcripts, cost/latency
 records, and completed annotations into a validation-ready evidence package,
 plus a pilot run chain builder for connecting run inputs, execution preflight,
 explicit local-runner execution, pilot package validation, annotation worklist
-generation, and label-template generation.
+generation, and label-template generation, plus a pilot execution readiness
+checker for validating run inputs, execution preflight, private runner path,
+runner label, and required environment variable presence before any explicit
+local runner invocation.
 
 ## Purpose
 
@@ -63,6 +66,7 @@ The current repository surface includes:
 - `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/runner-response-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
+- `evals/empirical/pilot-execution-readiness-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
 - `evals/empirical/annotation-intake-schema.yaml`
@@ -83,6 +87,7 @@ The current repository surface includes:
 - `docs/empirical-runner-contract.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-pilot-run-chain.md`
+- `docs/empirical-pilot-execution-readiness.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
@@ -116,6 +121,7 @@ The current repository surface includes:
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-pilot-run-chain.ps1`
+- `scripts/check-empirical-pilot-execution-readiness.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -172,7 +178,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_budget_gate_present_and_self_tested`.
+`empirical_pilot_execution_readiness_checker_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -215,6 +221,12 @@ system.
   join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata
   hash tampering, non-JSON sensitive files, unsupported result/readiness claim
   cases, and `-Force` overwrite attempts over non-generated files;
+- the deterministic empirical pilot execution readiness checker self-test
+  validates generated run inputs, execution preflight, a temporary private
+  runner path, runner label, and required environment variable presence, and
+  rejects missing required environment variables, invalid environment variable
+  names, repo-local runner scripts, and bad runner labels without executing the
+  fixture runner or printing secret values;
 - the deterministic empirical annotation worklist builder and scorer
   self-tests pass for a generated 9-item unlabeled worklist derived from a
   temporary local fixture pilot execution package and reject missing work
@@ -304,6 +316,10 @@ These are intentionally outside the current release scope:
   real transcript, annotation, cost/latency result, or empirical finding;
 - any claim that the pilot execution runner self-test is itself a completed
   public model/API study, annotation set, metric result, agreement result, or
+  empirical finding;
+- any claim that the pilot execution readiness checker is itself a completed
+  model/API run, proof of credential validity, runner-quality result, real cost
+  accuracy result, transcript, annotation, metric result, agreement result, or
   empirical finding;
 - any claim that the annotation worklist self-test is itself a completed
   annotation set, human-label result, LLM-judge result, agreement measurement,

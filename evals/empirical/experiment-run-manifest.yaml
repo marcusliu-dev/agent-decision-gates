@@ -27,6 +27,7 @@ required_artifacts:
   - runner_response_contract
   - pilot_execution_package
   - pilot_run_chain
+  - pilot_execution_readiness_record
   - annotation_worklist
   - label_template_package
   - annotation_intake_package
@@ -59,6 +60,8 @@ schemas:
   runner_response_contract: docs/empirical-runner-contract.md
   pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml
   pilot_run_chain_builder: docs/empirical-pilot-run-chain.md
+  pilot_execution_readiness_schema: evals/empirical/pilot-execution-readiness-schema.yaml
+  pilot_execution_readiness_checker: docs/empirical-pilot-execution-readiness.md
   annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
   label_template_package_schema: evals/empirical/label-template-package-schema.yaml
   annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml
@@ -74,6 +77,8 @@ stop_gates:
   - runner_response_contract_available
   - pilot_execution_runner_available
   - pilot_run_chain_builder_available
+  - pilot_execution_readiness_checker_available
+  - required_environment_variables_checked_before_execution
   - annotation_worklist_builder_available
   - label_template_package_builder_available
   - annotation_intake_validator_available

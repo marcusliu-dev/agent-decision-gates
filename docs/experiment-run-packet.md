@@ -67,6 +67,12 @@ The current structural run packet contains:
   annotation worklist generation, and label-template generation before
   completed labels, agreement measurements, aggregate metrics, or paper
   readiness are claimed;
+- [`pilot-execution-readiness-schema.yaml`](../evals/empirical/pilot-execution-readiness-schema.yaml),
+  [`empirical-pilot-execution-readiness.md`](empirical-pilot-execution-readiness.md),
+  and [`check-empirical-pilot-execution-readiness.ps1`](../scripts/check-empirical-pilot-execution-readiness.ps1)
+  for the pre-run pilot execution readiness gate that checks run inputs,
+  execution preflight, private runner path, runner label, and required
+  environment variable presence without executing the runner;
 - [`annotation-worklist-schema.yaml`](../evals/empirical/annotation-worklist-schema.yaml),
   [`empirical-annotation-worklist.md`](empirical-annotation-worklist.md),
   [`build-empirical-annotation-worklist.ps1`](../scripts/build-empirical-annotation-worklist.ps1),
@@ -155,6 +161,8 @@ Stop before execution if:
 - the runner response contract is needed but the runner_response_contract_available stop gate is not satisfied;
 - the pilot execution runner route is needed but the pilot_execution_runner_available stop gate is not satisfied;
 - the first-pilot chain is needed but the pilot_run_chain_builder_available stop gate is not satisfied;
+- pilot execution readiness is needed but the pilot_execution_readiness_checker_available stop gate is not satisfied;
+- required environment variables are not checked before execution;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
@@ -183,6 +191,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/check-empirical-pilot-execution-readiness.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
@@ -200,7 +209,8 @@ self-tests, execution preflight builder/scorer self-tests, evidence-package
 validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the runner response contract scorer
 self-test, the pilot execution runner package builder/scorer self-tests, the
-pilot run chain builder self-test, the
+pilot run chain builder self-test, the pilot execution readiness checker
+self-test, the
 annotation worklist builder/scorer self-tests, the label-template package
 builder/scorer self-tests, the annotation-intake scorer self-test, the
 evidence-package builder self-test, and the synthetic

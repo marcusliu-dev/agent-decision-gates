@@ -15,8 +15,10 @@ variance summaries, a pilot execution package builder/scorer for explicitly
 allowed local runner scripts with required runner-reported token, API cost, and
 retry telemetry before package wrapping, an empirical pilot run chain builder for
 connecting run inputs, preflight, explicit local-runner execution, pilot package
-scoring, annotation worklist generation, and label-template generation, an
-annotation worklist builder/scorer for deriving
+scoring, annotation worklist generation, and label-template generation, a pilot
+execution readiness checker for validating run inputs, execution preflight,
+private runner path, runner label, and required environment variable presence
+without executing the runner, an annotation worklist builder/scorer for deriving
 unlabeled future-labeling work items from pilot transcripts, a label-template
 package builder/scorer for deriving fillable placeholder templates from
 annotation work items, an annotation intake scorer for validating future
@@ -28,7 +30,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_budget_gate_present_and_self_tested`
+`empirical_pilot_execution_readiness_checker_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -46,8 +48,8 @@ run-input schema, guide, builder, and scorer exist, that an execution preflight
 schema, guide, builder, and scorer exist, that a mock execution package schema,
 guide, builder, and scorer exist, that a runner response contract schema, guide,
 and scorer exist, that a pilot execution package schema, guide, builder, and
-scorer exist, that an annotation worklist guide, builder, and
-scorer exist, that a synthetic dry-run package guide and builder exist,
+scorer exist, that a pilot execution readiness schema, guide, and checker exist,
+that an annotation worklist guide, builder, and scorer exist, that a synthetic dry-run package guide and builder exist,
 that a label-template package guide, builder, and scorer exist, that an
 annotation-intake guide and scorer exist, that an evidence-package builder
 guide and builder exist,
@@ -59,7 +61,8 @@ annotation-guidelines, agreement-check, dry-run package-builder, and condition
 prompt-pack surfaces, that the run-input builder/scorer and execution
 preflight builder/scorer self-tests pass, that the mock execution package
 builder/scorer self-tests pass, that the pilot execution package builder/scorer
-self-tests pass through a local fixture runner, that the annotation worklist
+and pilot execution readiness checker self-tests pass through local fixture
+runners without real model/API calls, that the annotation worklist
 builder/scorer self-tests pass for an unlabeled 9-item worklist derived from a
 temporary local fixture pilot execution package,
 that the label-template package builder/scorer self-tests pass for a
@@ -98,7 +101,10 @@ budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
 validation, and the runner response contract claim is bounded to single-response
 schema/scorer self-tests, and the pilot execution runner claim is bounded to local-runner
-package builder/scorer self-tests with required telemetry gating, and the annotation worklist claim is bounded
+package builder/scorer self-tests with required telemetry gating, and the pilot
+execution readiness claim is bounded to pre-run local structure, runner path,
+runner label, and environment-variable presence checks without runner execution
+or secret-value output, and the annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
@@ -152,6 +158,7 @@ guarantees.
 - `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/runner-response-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
+- `evals/empirical/pilot-execution-readiness-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
 - `evals/empirical/annotation-intake-schema.yaml`
@@ -172,6 +179,7 @@ guarantees.
 - `docs/empirical-runner-contract.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-pilot-run-chain.md`
+- `docs/empirical-pilot-execution-readiness.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
@@ -205,6 +213,7 @@ guarantees.
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-pilot-run-chain.ps1`
+- `scripts/check-empirical-pilot-execution-readiness.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -237,6 +246,9 @@ guarantees.
   telemetry checks, and optional request/run-input matching;
 - no pilot execution runner claim beyond local-fixture self-test and
   transcript/cost-latency package validation;
+- no pilot execution readiness claim beyond pre-run structure, runner path,
+  runner label, and required environment variable presence checks without
+  executing the runner or printing secret values;
 - no annotation worklist claim beyond unlabeled work-item generation and
   scoring from pilot transcripts;
 - no label-template package claim beyond placeholder template generation and
@@ -291,6 +303,11 @@ guarantees.
   mismatches, metadata hash tampering, non-JSON sensitive files, unsupported
   result/readiness claim cases, and `-Force` overwrite attempts over
   non-generated files;
+- the empirical pilot execution readiness checker self-test validates generated
+  run inputs, execution preflight, a temporary private runner path, runner label,
+  and required environment variable presence, and rejects missing required
+  environment variables, invalid environment variable names, repo-local runner
+  scripts, and bad runner labels without executing the fixture runner;
 - the empirical annotation worklist builder self-test generates 9 unlabeled
   work items from a temporary local fixture pilot execution package and the
   worklist scorer self-test rejects missing work items, injected label fields,

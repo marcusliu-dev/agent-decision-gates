@@ -1,0 +1,45 @@
+id: agent-decision-gates-pilot-execution-readiness-schema
+version: 0.1.0
+claim_boundary: pilot_execution_readiness_schema_only_no_model_api_calls
+description: Required checks for a local pilot execution readiness gate before running an explicit private runner. This schema defines pre-execution readiness only and does not prove model quality, empirical effectiveness, real cost accuracy, or paper readiness.
+
+required_inputs:
+  - run_input_root
+  - execution_preflight_path
+  - runner_script_path
+  - runner_label
+  - required_environment_variable_names
+
+readiness_requirements:
+  - run_input_package_scores_before_execution
+  - execution_preflight_scores_before_execution
+  - runner_script_exists_before_execution
+  - runner_script_stays_outside_public_repo
+  - runner_label_has_no_path_separator
+  - at_least_one_required_environment_variable_name_is_provided
+  - required_environment_variable_names_are_valid
+  - required_environment_variables_are_present_without_value_logging
+  - readiness_checker_does_not_execute_runner
+  - readiness_checker_does_not_call_model_api
+
+forbidden_outputs:
+  - environment_variable_values
+  - credential_values
+  - raw_runner_response
+  - transcript_record
+  - cost_latency_record
+  - annotation_record
+  - aggregate_metrics
+  - pass_rate
+  - win_rate
+  - paper_ready
+  - production_ready
+
+current_nonclaims:
+  - no_runner_execution
+  - no_model_api_eval_execution
+  - no_secret_values_reported
+  - no_real_transcripts
+  - no_real_cost_latency_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

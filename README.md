@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_pilot_budget_gate_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_execution_readiness_checker_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -80,6 +80,10 @@ This repo packages a simple alternative:
   builder for running the reproducible first-pilot chain from run inputs through
   preflight, explicit runner execution, pilot package validation, annotation
   worklist generation, and label-template generation;
+- an [empirical pilot execution readiness guide](docs/empirical-pilot-execution-readiness.md),
+  schema, and checker for validating run inputs, execution preflight, private
+  runner path, runner label, and required environment variable presence before
+  any explicit local runner is invoked;
 - an [empirical annotation worklist guide](docs/empirical-annotation-worklist.md),
   schema, builder, and scorer for deriving unlabeled annotation work items from
   pilot transcripts before any human or LLM-judge labels are claimed;
@@ -214,6 +218,10 @@ requires independent review.
   for the one-command first-pilot chain that executes an explicitly allowed
   local runner and prepares unlabeled annotation work items plus placeholder
   label templates.
+- Read [docs/empirical-pilot-execution-readiness.md](docs/empirical-pilot-execution-readiness.md)
+  for the pre-run gate that checks run inputs, execution preflight, private
+  runner path, runner label, and required environment variable presence without
+  executing the runner or printing secret values.
 - Read [docs/empirical-annotation-worklist.md](docs/empirical-annotation-worklist.md)
   for the unlabeled worklist route that prepares future transcript annotation
   without creating labels, metrics, or paper-readiness evidence.
@@ -273,14 +281,17 @@ local runner scripts, plus an
 empirical pilot run chain builder that connects run inputs, execution preflight,
 explicit runner execution, pilot package validation, annotation worklist
 generation, and label-template generation, plus an
-annotation worklist builder for deriving unlabeled future-labeling work items
-from pilot transcripts, plus a label-template package builder for deriving
-fillable placeholder templates from annotation work items, plus an annotation
-intake validator for future completed label records, plus an evidence-package
-builder that assembles future pilot transcripts, cost/latency records, and
-completed annotation records into a validation-ready package. The current
+pilot execution readiness checker for validating run inputs, execution
+preflight, private runner path, runner label, and required environment variable
+presence before any explicit local runner invocation, plus an annotation
+worklist builder for deriving unlabeled future-labeling work items from pilot
+transcripts, plus a label-template package builder for deriving fillable
+placeholder templates from annotation work items, plus an annotation intake
+validator for future completed label records, plus an evidence-package builder
+that assembles future pilot transcripts, cost/latency records, and completed
+annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_pilot_budget_gate_present_and_self_tested`. The
+`empirical_pilot_execution_readiness_checker_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -289,7 +300,11 @@ logic only and is not a real empirical result. The pilot budget gate requires
 explicit runner-reported token, API cost, and retry telemetry before package
 wrapping and rejects package totals above the preflight budget, but it does not
 prove real cost accuracy, runner quality, or model/API eval results. The dry-run
-package is synthetic evidence-shape exercise only. The
+package is synthetic evidence-shape exercise only. The pilot execution readiness
+checker validates pre-run local structure, private runner path placement, and
+required environment variable presence without executing the runner or printing
+secret values, but it does not prove runner quality, credential validity, real
+cost accuracy, or model/API eval results. The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape

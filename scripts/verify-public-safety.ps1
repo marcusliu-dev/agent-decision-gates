@@ -38,6 +38,7 @@ $requiredPaths = @(
     'evals/empirical/mock-execution-package-schema.yaml',
     'evals/empirical/runner-response-schema.yaml',
     'evals/empirical/pilot-execution-package-schema.yaml',
+    'evals/empirical/pilot-execution-readiness-schema.yaml',
     'evals/empirical/annotation-worklist-schema.yaml',
     'evals/empirical/label-template-package-schema.yaml',
     'evals/empirical/annotation-intake-schema.yaml',
@@ -59,6 +60,7 @@ $requiredPaths = @(
     'docs/empirical-runner-contract.md',
     'docs/empirical-pilot-execution-runner.md',
     'docs/empirical-pilot-run-chain.md',
+    'docs/empirical-pilot-execution-readiness.md',
     'docs/empirical-annotation-worklist.md',
     'docs/empirical-label-template-package.md',
     'docs/empirical-annotation-intake.md',
@@ -92,6 +94,7 @@ $requiredPaths = @(
     'scripts/build-empirical-pilot-execution-package.ps1',
     'scripts/score-empirical-pilot-execution-package.ps1',
     'scripts/build-empirical-pilot-run-chain.ps1',
+    'scripts/check-empirical-pilot-execution-readiness.ps1',
     'scripts/build-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/build-empirical-label-template-package.ps1',
@@ -187,6 +190,7 @@ $ceilingOrder = @{
     'empirical_results_variance_analyzer_present_and_self_tested' = 25
     'empirical_pilot_cost_telemetry_gate_present_and_self_tested' = 26
     'empirical_pilot_budget_gate_present_and_self_tested' = 27
+    'empirical_pilot_execution_readiness_checker_present_and_self_tested' = 28
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -600,6 +604,9 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_execution_package_schema',
         'pilot_run_chain',
         'pilot_run_chain_builder',
+        'pilot_execution_readiness_record',
+        'pilot_execution_readiness_schema',
+        'pilot_execution_readiness_checker',
         'annotation_worklist',
         'annotation_worklist_schema',
         'label_template_package',
@@ -617,6 +624,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
         'pilot_run_chain_builder_available',
+        'pilot_execution_readiness_checker_available',
+        'required_environment_variables_checked_before_execution',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -1054,6 +1063,69 @@ if (Test-Path -LiteralPath $pilotExecutionPackageScorerPath) {
     )) {
         if (-not $pilotExecutionPackageScorerContent.Contains($check)) {
             $failures.Add("Missing empirical pilot execution package budget scorer invariant '$check'.")
+        }
+    }
+}
+
+$pilotExecutionReadinessSchemaPath = Join-Path $RepoRoot 'evals\empirical\pilot-execution-readiness-schema.yaml'
+if (Test-Path -LiteralPath $pilotExecutionReadinessSchemaPath) {
+    $pilotExecutionReadinessSchemaContent = Get-Content -LiteralPath $pilotExecutionReadinessSchemaPath -Raw
+    foreach ($check in @(
+        'pilot_execution_readiness_schema_only_no_model_api_calls',
+        'run_input_package_scores_before_execution',
+        'execution_preflight_scores_before_execution',
+        'runner_script_stays_outside_public_repo',
+        'at_least_one_required_environment_variable_name_is_provided',
+        'required_environment_variables_are_present_without_value_logging',
+        'readiness_checker_does_not_execute_runner',
+        'readiness_checker_does_not_call_model_api',
+        'environment_variable_values',
+        'credential_values',
+        'raw_runner_response',
+        'no_runner_execution',
+        'no_secret_values_reported',
+        'no_paper_readiness'
+    )) {
+        if (-not $pilotExecutionReadinessSchemaContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution readiness schema invariant '$check'.")
+        }
+    }
+}
+
+$pilotExecutionReadinessDocPath = Join-Path $RepoRoot 'docs\empirical-pilot-execution-readiness.md'
+if (Test-Path -LiteralPath $pilotExecutionReadinessDocPath) {
+    $pilotExecutionReadinessDocContent = Get-Content -LiteralPath $pilotExecutionReadinessDocPath -Raw
+    foreach ($check in @(
+        'check-empirical-pilot-execution-readiness.ps1 -SelfTest',
+        'does not execute the runner',
+        'requires at least one required environment variable name',
+        'print environment variable values',
+        'does not execute model/API evals',
+        'Current Nonclaims',
+        'paper readiness'
+    )) {
+        if (-not $pilotExecutionReadinessDocContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution readiness doc boundary '$check'.")
+        }
+    }
+}
+
+$pilotExecutionReadinessCheckerPath = Join-Path $RepoRoot 'scripts\check-empirical-pilot-execution-readiness.ps1'
+if (Test-Path -LiteralPath $pilotExecutionReadinessCheckerPath) {
+    $pilotExecutionReadinessCheckerContent = Get-Content -LiteralPath $pilotExecutionReadinessCheckerPath -Raw
+    foreach ($check in @(
+        'Empirical pilot execution readiness',
+        'Validated empirical pilot execution readiness self-test',
+        'Rejected missing required environment variable lists, missing required environment variables, invalid environment variable names, repo-local runner scripts, and bad runner labels',
+        'Did not execute the fixture runner or call model/API routes',
+        'RunnerScriptPath must stay outside the public repository',
+        'At least one required environment variable name must be provided',
+        'Environment variable values were not printed or written',
+        'Invalid required environment variable name',
+        'Required environment variable'
+    )) {
+        if (-not $pilotExecutionReadinessCheckerContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution readiness checker invariant '$check'.")
         }
     }
 }
