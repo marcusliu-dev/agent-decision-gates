@@ -38,6 +38,7 @@ $requiredPaths = @(
     'evals/empirical/mock-execution-package-schema.yaml',
     'evals/empirical/pilot-execution-package-schema.yaml',
     'evals/empirical/annotation-worklist-schema.yaml',
+    'evals/empirical/label-template-package-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -55,6 +56,7 @@ $requiredPaths = @(
     'docs/empirical-mock-execution-package.md',
     'docs/empirical-pilot-execution-runner.md',
     'docs/empirical-annotation-worklist.md',
+    'docs/empirical-label-template-package.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -84,6 +86,8 @@ $requiredPaths = @(
     'scripts/score-empirical-pilot-execution-package.ps1',
     'scripts/build-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-annotation-worklist.ps1',
+    'scripts/build-empirical-label-template-package.ps1',
+    'scripts/score-empirical-label-template-package.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -165,6 +169,7 @@ $ceilingOrder = @{
     'empirical_mock_execution_package_builder_present_and_self_tested' = 17
     'empirical_pilot_execution_runner_present_and_self_tested' = 18
     'empirical_annotation_worklist_builder_present_and_self_tested' = 19
+    'empirical_label_template_package_builder_present_and_self_tested' = 20
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -431,10 +436,19 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-execution-preflight.ps1 -SelfTest',
         'build-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-mock-execution-package.ps1 -SelfTest',
+        'build-empirical-pilot-execution-package.ps1 -SelfTest',
+        'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'build-empirical-annotation-worklist.ps1 -SelfTest',
+        'score-empirical-annotation-worklist.ps1 -SelfTest',
+        'build-empirical-label-template-package.ps1 -SelfTest',
+        'score-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'mock execution package route',
+        'pilot execution runner route',
+        'annotation worklist route',
+        'label-template package route',
         'dry-run package builder'
     )) {
         if (-not $empiricalPlanContent.Contains($check)) {
@@ -497,6 +511,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
         'annotation_worklist_builder_available',
+        'label_template_package_builder_available',
         'score-empirical-prompt-pack.ps1',
         'score-empirical-run-inputs.ps1',
         'build-empirical-execution-preflight.ps1 -SelfTest',
@@ -507,6 +522,8 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
+        'build-empirical-label-template-package.ps1 -SelfTest',
+        'score-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -516,6 +533,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'synthetic mock execution package',
         'annotation worklist',
+        'label-template package',
         'synthetic dry-run package builder self-test'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
@@ -545,6 +563,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_execution_package_schema',
         'annotation_worklist',
         'annotation_worklist_schema',
+        'label_template_package',
+        'label_template_package_schema',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
@@ -554,6 +574,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
         'annotation_worklist_builder_available',
+        'label_template_package_builder_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -565,6 +586,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'empirical_effectiveness_proven',
         'no_transcripts',
         'no_annotations',
+        'no_completed_annotations',
         'no_paper_readiness'
     )) {
         if ($runManifestContent -notlike "*$check*") {
@@ -931,6 +953,97 @@ if (Test-Path -LiteralPath $annotationWorklistScorerPath) {
     )) {
         if (-not $annotationWorklistScorerContent.Contains($check)) {
             $failures.Add("Missing empirical annotation worklist scorer invariant '$check'.")
+        }
+    }
+}
+
+$labelTemplateSchemaPath = Join-Path $RepoRoot 'evals\empirical\label-template-package-schema.yaml'
+if (Test-Path -LiteralPath $labelTemplateSchemaPath) {
+    $labelTemplateSchemaContent = Get-Content -LiteralPath $labelTemplateSchemaPath -Raw
+    if ($labelTemplateSchemaContent -notmatch 'claim_boundary:\s*label_template_package_schema_only_no_real_labels') {
+        $failures.Add('Label-template package schema must declare label_template_package_schema_only_no_real_labels claim boundary.')
+    }
+    foreach ($check in @(
+        'annotation-templates',
+        'label-template-package-manifest.json',
+        'source-annotation-worklist-manifest-hash.json',
+        'annotation-schema-hash.json',
+        'annotation-guidelines-hash.json',
+        'annotation_template_id',
+        'annotation_work_item_id',
+        'label_placeholders',
+        'rationale_span_placeholders',
+        'confidence_placeholder',
+        'every_annotation_work_item_has_label_template',
+        'label_values_remain_unlabeled_placeholders',
+        'annotation_record',
+        'annotator_id',
+        'human_label',
+        'llm_judge_label',
+        'aggregate_metrics',
+        'empirical_effectiveness_proven',
+        'no_completed_annotations',
+        'no_human_labels',
+        'no_llm_judge_labels',
+        'no_paper_readiness'
+    )) {
+        if ($labelTemplateSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing label-template package schema requirement '$check'.")
+        }
+    }
+}
+
+$labelTemplateDocPath = Join-Path $RepoRoot 'docs\empirical-label-template-package.md'
+if (Test-Path -LiteralPath $labelTemplateDocPath) {
+    $labelTemplateDocContent = Get-Content -LiteralPath $labelTemplateDocPath -Raw
+    foreach ($check in @(
+        'does not create human labels',
+        'Run after producing an annotation worklist',
+        'build-empirical-label-template-package.ps1 -SelfTest',
+        'score-empirical-label-template-package.ps1 -SelfTest',
+        'reject non-placeholder label',
+        'metadata hash tampering',
+        'non-JSON sensitive',
+        'Current Nonclaims'
+    )) {
+        if (-not $labelTemplateDocContent.Contains($check)) {
+            $failures.Add("Missing empirical label-template package doc boundary '$check' in docs/empirical-label-template-package.md")
+        }
+    }
+}
+
+$labelTemplateBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-label-template-package.ps1'
+if (Test-Path -LiteralPath $labelTemplateBuilderPath) {
+    $labelTemplateBuilderContent = Get-Content -LiteralPath $labelTemplateBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical label-template package builder',
+        'label_template_package_unlabeled_no_completed_annotations',
+        'Built a 9-template label-template package',
+        'Refused non-generated files when -Force was used',
+        'annotation-schema-hash.json',
+        'source-annotation-worklist-manifest-hash.json'
+    )) {
+        if (-not $labelTemplateBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical label-template package builder invariant '$check'.")
+        }
+    }
+}
+
+$labelTemplateScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-label-template-package.ps1'
+if (Test-Path -LiteralPath $labelTemplateScorerPath) {
+    $labelTemplateScorerContent = Get-Content -LiteralPath $labelTemplateScorerPath -Raw
+    foreach ($check in @(
+        'Empirical label-template package scoring',
+        'label_template_package_schema_only_no_real_labels',
+        'label_template_package_unlabeled_no_completed_annotations',
+        'Rejected missing templates, non-placeholder label values, mismatched work-item fields, duplicate templates, metadata hash tampering, and non-JSON sensitive files',
+        'non_placeholder_label_value',
+        'must remain __unlabeled__',
+        'annotation-schema-hash.json',
+        'source-annotation-worklist-manifest-hash.json'
+    )) {
+        if (-not $labelTemplateScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical label-template package scorer invariant '$check'.")
         }
     }
 }
@@ -1481,6 +1594,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-annotation-worklist.md'
             Label = 'docs/empirical-annotation-worklist.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-label-template-package.md'
+            Label = 'docs/empirical-label-template-package.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'

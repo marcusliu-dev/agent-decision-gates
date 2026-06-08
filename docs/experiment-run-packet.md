@@ -62,6 +62,12 @@ The current structural run packet contains:
   for deriving unlabeled future-labeling work items from pilot transcripts
   before human labels, LLM-judge labels, agreement measurements, or aggregate
   metrics are claimed;
+- [`label-template-package-schema.yaml`](../evals/empirical/label-template-package-schema.yaml),
+  [`empirical-label-template-package.md`](empirical-label-template-package.md),
+  [`build-empirical-label-template-package.ps1`](../scripts/build-empirical-label-template-package.ps1),
+  and [`score-empirical-label-template-package.ps1`](../scripts/score-empirical-label-template-package.ps1)
+  for deriving fillable placeholder templates from annotation work items before
+  completed labels, agreement measurements, or aggregate metrics are claimed;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -122,6 +128,7 @@ Stop before execution if:
 - the mock_execution_package_builder_available stop gate is not satisfied;
 - the pilot execution runner route is needed but the pilot_execution_runner_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
+- the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -146,6 +153,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-label-template-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
@@ -157,13 +166,15 @@ self-tests, execution preflight builder/scorer self-tests, evidence-package
 validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the pilot execution runner package
 builder/scorer self-tests, the annotation worklist builder/scorer self-tests,
-and the synthetic dry-run package builder self-test. The synthetic mock
-execution package and synthetic dry-run package builder self-test are not real
-experiment outputs. The pilot execution runner self-test uses a temporary local
-fixture runner and does not call hosted model APIs. The annotation worklist
-self-tests produce unlabeled work items only. They do not score annotated
-completed transcripts, measure real agreement, or prove empirical
-effectiveness.
+the label-template package builder/scorer self-tests, and the synthetic dry-run
+package builder self-test. This includes the synthetic dry-run package builder self-test.
+The synthetic mock execution package and synthetic
+dry-run package builder self-test are not real experiment outputs. The pilot
+execution runner self-test uses a temporary local fixture runner and does not
+call hosted model APIs. The annotation worklist self-tests produce unlabeled
+work items only. The label-template package self-tests produce placeholders
+only. They do not score annotated completed transcripts, measure real
+agreement, or prove empirical effectiveness.
 The synthetic mock execution package remains a package-shape exercise only.
 
 ## Current Nonclaims

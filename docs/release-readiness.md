@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_annotation_worklist_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_label_template_package_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -14,7 +14,8 @@ budget records, plus a mock execution package builder/scorer for synthetic
 transcript and cost-latency package joins, plus a pilot execution package
 builder/scorer for explicitly allowed local runner scripts, plus an annotation
 worklist builder/scorer for deriving unlabeled future-labeling work items from
-pilot transcripts.
+pilot transcripts, plus a label-template package builder/scorer for deriving
+fillable placeholder templates from annotation work items.
 
 ## Purpose
 
@@ -53,6 +54,7 @@ The current repository surface includes:
 - `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
+- `evals/empirical/label-template-package-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -69,6 +71,7 @@ The current repository surface includes:
 - `docs/empirical-mock-execution-package.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-annotation-worklist.md`
+- `docs/empirical-label-template-package.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -98,6 +101,8 @@ The current repository surface includes:
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
+- `scripts/build-empirical-label-template-package.ps1`
+- `scripts/score-empirical-label-template-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -130,12 +135,14 @@ The current release claim is narrow and explicit:
   cost-latency package joins, plus a pilot execution package builder/scorer
   self-tested through a local fixture runner, plus an annotation worklist
   builder/scorer self-tested for unlabeled future-labeling work items derived
-  from pilot transcripts;
+  from pilot transcripts, plus a label-template package builder/scorer
+  self-tested for fillable placeholder templates derived from annotation work
+  items;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_annotation_worklist_builder_present_and_self_tested`.
+`empirical_label_template_package_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -184,6 +191,12 @@ system.
   items, injected label fields, transcript mismatches, metadata hash tampering,
   non-JSON sensitive files, and `-Force` overwrite attempts over
   non-generated files;
+- the deterministic empirical label-template package builder and scorer
+  self-tests pass for a generated 9-template placeholder package derived from a
+  temporary local fixture annotation worklist and reject missing templates,
+  non-placeholder label values, mismatched work-item fields, duplicate
+  templates, metadata hash tampering, non-JSON sensitive files, and `-Force`
+  overwrite attempts over non-generated files;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
@@ -231,6 +244,9 @@ These are intentionally outside the current release scope:
   public model/API study, annotation set, metric result, agreement result, or
   empirical finding;
 - any claim that the annotation worklist self-test is itself a completed
+  annotation set, human-label result, LLM-judge result, agreement measurement,
+  metric result, annotator-quality claim, or empirical finding;
+- any claim that the label-template package self-test is itself a completed
   annotation set, human-label result, LLM-judge result, agreement measurement,
   metric result, annotator-quality claim, or empirical finding;
 - any claim that the synthetic dry-run package is a real experiment output.

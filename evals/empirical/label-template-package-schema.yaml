@@ -1,0 +1,75 @@
+id: agent-decision-gates-label-template-package-schema
+version: 0.1.0
+claim_boundary: label_template_package_schema_only_no_real_labels
+description: Required shape for label-template packages derived from annotation worklists. This schema defines fillable templates for future annotation and contains no completed labels, agreement metrics, aggregate results, or paper-readiness claim.
+
+required_directories:
+  - annotation-templates
+  - metadata
+
+required_metadata_files:
+  - label-template-package-manifest.json
+  - source-annotation-worklist-manifest-hash.json
+  - annotation-schema-hash.json
+  - annotation-guidelines-hash.json
+
+required_template_fields:
+  - annotation_template_id
+  - annotation_work_item_id
+  - run_id
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - annotation_guideline_version
+  - required_label_fields
+  - label_placeholders
+  - rationale_span_placeholders
+  - confidence_placeholder
+  - transcript_spans_source
+  - redaction_status
+
+join_requirements:
+  - every_annotation_work_item_has_label_template
+  - every_label_template_matches_annotation_work_item
+  - source_annotation_worklist_manifest_hash_recorded
+  - annotation_schema_hash_recorded
+  - annotation_guidelines_hash_recorded
+  - label_values_remain_unlabeled_placeholders
+
+placeholder_value: __unlabeled__
+
+forbidden_fields:
+  - annotation_record
+  - annotation_id
+  - annotator_type
+  - annotator_id
+  - label_timestamp_utc
+  - human_label
+  - llm_judge_label
+  - rule_based_label
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - aggregate_metrics
+  - real_aggregate_metrics
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - paper_readiness
+  - production_ready
+
+current_nonclaims:
+  - no_completed_annotations
+  - no_human_labels
+  - no_llm_judge_labels
+  - no_rule_based_labels
+  - no_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

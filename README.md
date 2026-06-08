@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_annotation_worklist_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_label_template_package_builder_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -75,6 +75,9 @@ This repo packages a simple alternative:
 - an [empirical annotation worklist guide](docs/empirical-annotation-worklist.md),
   schema, builder, and scorer for deriving unlabeled annotation work items from
   pilot transcripts before any human or LLM-judge labels are claimed;
+- an [empirical label-template package guide](docs/empirical-label-template-package.md),
+  schema, builder, and scorer for turning annotation work items into fillable
+  placeholder templates before any completed labels are claimed;
 - an [experiment run packet](docs/experiment-run-packet.md), transcript and
   annotation schemas under [`evals/empirical/`](evals/empirical/), and a
   structural run-packet scorer in
@@ -190,6 +193,9 @@ requires independent review.
 - Read [docs/empirical-annotation-worklist.md](docs/empirical-annotation-worklist.md)
   for the unlabeled worklist route that prepares future transcript annotation
   without creating labels, metrics, or paper-readiness evidence.
+- Read [docs/empirical-label-template-package.md](docs/empirical-label-template-package.md)
+  for the placeholder template route that prepares future human or LLM-judge
+  annotation forms without creating completed labels.
 - Read [docs/experiment-run-packet.md](docs/experiment-run-packet.md) for the
   frozen-artifact contract required before any future model/API eval run.
 - Read [docs/empirical-annotation-guidelines.md](docs/empirical-annotation-guidelines.md)
@@ -232,8 +238,10 @@ runtime surface, and budget before execution, plus a mock execution package
 builder for transcript/cost-latency package joins, plus a pilot execution
 runner package builder for explicitly allowed local runner scripts, plus an
 annotation worklist builder for deriving unlabeled future-labeling work items
-from pilot transcripts. The current ceiling is no higher than
-`empirical_annotation_worklist_builder_present_and_self_tested`. The
+from pilot transcripts, plus a label-template package builder for deriving
+fillable placeholder templates from annotation work items. The current ceiling
+is no higher than
+`empirical_label_template_package_builder_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -244,7 +252,9 @@ pilot run gate only. The mock execution package is synthetic package-shape
 evidence only. The pilot execution runner self-test uses a local fixture runner
 and does not by itself establish real empirical results. The annotation
 worklist self-tests generate unlabeled work items only and do not establish
-labels, agreement, metrics, or annotator quality. The repository
+labels, agreement, metrics, or annotator quality. The label-template self-tests
+generate placeholders only and do not establish completed annotations, labels,
+agreement, metrics, or annotator quality. The repository
 intentionally does not ship CI, deployment automation, application
 source scaffolding, model/API eval results, or a broader framework/runtime
 product surface.

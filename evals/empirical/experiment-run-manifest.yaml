@@ -26,6 +26,7 @@ required_artifacts:
   - mock_execution_package
   - pilot_execution_package
   - annotation_worklist
+  - label_template_package
   - raw_transcript
   - annotation_record
   - annotation_guidelines
@@ -52,6 +53,7 @@ schemas:
   mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml
   pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml
   annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
+  label_template_package_schema: evals/empirical/label-template-package-schema.yaml
 
 stop_gates:
   - no_private_repository_material
@@ -62,6 +64,7 @@ stop_gates:
   - mock_execution_package_builder_available
   - pilot_execution_runner_available
   - annotation_worklist_builder_available
+  - label_template_package_builder_available
   - task_suite_hash_recorded
   - budget_recorded_before_execution
   - transcript_schema_available
@@ -90,4 +93,5 @@ current_nonclaims:
   - no_human_llm_judge_agreement_results
   - no_transcripts
   - no_annotations
+  - no_completed_annotations
   - no_paper_readiness

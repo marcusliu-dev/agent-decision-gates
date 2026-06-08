@@ -11,13 +11,14 @@ selection, runtime, and budget records, a mock execution package builder/scorer
 for transcript and cost-latency package joins, a pilot execution package
 builder/scorer for explicitly allowed local runner scripts, an annotation
 worklist builder/scorer for deriving unlabeled future-labeling work items from
-pilot transcripts, and a
+pilot transcripts, a label-template package builder/scorer for deriving
+fillable placeholder templates from annotation work items, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_annotation_worklist_builder_present_and_self_tested`
+`empirical_label_template_package_builder_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -25,7 +26,8 @@ repository surface contains a reusable skill package under `skills/consult/`,
 that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
-annotation schema, annotation worklist schema, evidence-package schema,
+annotation schema, annotation worklist schema, label-template package schema,
+evidence-package schema,
 evidence-package validation guide, results-summary schema, results-analysis
 guide, annotation guidelines, agreement-summary schema, agreement-checks guide,
 and condition prompt pack exist under `docs/` and `evals/empirical/`, that a
@@ -34,6 +36,7 @@ schema, guide, builder, and scorer exist, that a mock execution package schema,
 guide, builder, and scorer exist, that a pilot execution package schema, guide,
 builder, and scorer exist, that an annotation worklist guide, builder, and
 scorer exist, that a synthetic dry-run package guide and builder exist,
+that a label-template package guide, builder, and scorer exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
@@ -43,6 +46,9 @@ builder/scorer self-tests pass, that the pilot execution package builder/scorer
 self-tests pass through a local fixture runner, that the annotation worklist
 builder/scorer self-tests pass for an unlabeled 9-item worklist derived from a
 temporary local fixture pilot execution package,
+that the label-template package builder/scorer self-tests pass for a
+placeholder 9-template package derived from a temporary local fixture
+annotation worklist,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -60,8 +66,10 @@ budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
 validation, and the pilot execution runner claim is bounded to local-runner
 package builder/scorer self-tests, and the annotation worklist claim is bounded
-to unlabeled work-item generation and scoring, not annotations, agreement,
-metrics, empirical proof, or paper readiness. No broader claim is made for
+to unlabeled work-item generation and scoring, and the label-template package
+claim is bounded to placeholder template generation and scoring, not completed
+annotations, agreement, metrics, empirical proof, or paper readiness. No
+broader claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
 CI coverage, deployment safety, empirical effectiveness, or production runtime
@@ -106,6 +114,7 @@ guarantees.
 - `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
+- `evals/empirical/label-template-package-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -122,6 +131,7 @@ guarantees.
 - `docs/empirical-mock-execution-package.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-annotation-worklist.md`
+- `docs/empirical-label-template-package.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -151,6 +161,8 @@ guarantees.
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
+- `scripts/build-empirical-label-template-package.ps1`
+- `scripts/score-empirical-label-template-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -176,6 +188,8 @@ guarantees.
   transcript/cost-latency package validation;
 - no annotation worklist claim beyond unlabeled work-item generation and
   scoring from pilot transcripts;
+- no label-template package claim beyond placeholder template generation and
+  scoring from annotation work items;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -224,6 +238,12 @@ guarantees.
   worklist scorer self-test rejects missing work items, injected label fields,
   transcript mismatches, metadata hash tampering, non-JSON sensitive files, and
   `-Force` overwrite attempts over non-generated files;
+- the empirical label-template package builder self-test generates 9
+  placeholder templates from a temporary local fixture annotation worklist and
+  the label-template package scorer self-test rejects missing templates,
+  non-placeholder label values, mismatched work-item fields, duplicate
+  templates, metadata hash tampering, non-JSON sensitive files, and `-Force`
+  overwrite attempts over non-generated files;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as
