@@ -109,8 +109,8 @@ A paper-ready evidence package should include:
   before that response is wrapped into a pilot transcript and cost-latency
   record;
 - pilot runner request package with selected request JSON files, source hashes,
-  and runner label, used only to freeze runner input before private runner
-  invocation;
+  runner label, and request-package scorer output, used only to freeze and
+  validate runner input before private runner invocation;
 - pilot execution package generated through an explicitly allowed local runner
   script, used only as transcript/cost-latency evidence before annotation and
   metric claims;
@@ -164,8 +164,9 @@ Before any model/API eval run:
    cost-latency package joins without model/API calls.
 8. Score a sample runner response against the runner response contract before
    spending budget on the full pilot route.
-9. Satisfy the pilot_runner_request_package_builder_available stop gate by
-   building and self-testing selected runner request JSON files before private
+9. Satisfy the pilot_runner_request_package_builder_available and
+   pilot_runner_request_package_scorer_available stop gates by building,
+   scoring, and self-testing selected runner request JSON files before private
    runner invocation.
 10. Build and score a pilot execution package through an explicitly allowed
    local runner script only after the preflight and mock package routes pass.
@@ -212,6 +213,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-runner-requests.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
@@ -238,8 +240,9 @@ aggregator's synthetic self-tests, the agreement
 checker's synthetic self-test, and the dry-run package builder synthetic
 self-test. The mock execution package route is a package-shape check only. The
 runner response contract self-test validates fixture response JSON only and does
-not call hosted model APIs. The pilot runner request self-test freezes request
-JSON files only and does not execute a runner or call model/API routes. The pilot execution runner self-test uses a
+not call hosted model APIs. The pilot runner request self-tests freeze and
+validate request JSON files only and do not execute a runner or call model/API
+routes. No runner script was executed by this scorer. The pilot execution runner self-test uses a
 temporary local fixture runner and is not a completed empirical study. The annotation worklist self-tests create
 unlabeled future-labeling work items only. The label-template self-tests create
 placeholders only, not completed labels. The annotation-intake scorer self-test
@@ -253,7 +256,7 @@ It also includes the runner response contract route, pilot runner request route,
 pilot execution runner route, pilot run chain route, annotation worklist route, label-template package route,
 annotation intake route, and evidence package builder route.
 
-Verification sync terms: runner response contract route; score-empirical-runner-response.ps1 -SelfTest; pilot_runner_request_package_builder_available; build-empirical-pilot-runner-requests.ps1 -SelfTest; pilot run chain route; build-empirical-pilot-run-chain.ps1 -SelfTest.
+Verification sync terms: runner response contract route; score-empirical-runner-response.ps1 -SelfTest; pilot_runner_request_package_builder_available; pilot_runner_request_package_scorer_available; build-empirical-pilot-runner-requests.ps1 -SelfTest; score-empirical-pilot-runner-requests.ps1 -SelfTest; pilot run chain route; build-empirical-pilot-run-chain.ps1 -SelfTest.
 They do not execute hosted model/API evals, score annotated completed
 transcripts, report real aggregate metrics, measure real human/LLM-judge
 agreement, or prove empirical effectiveness.

@@ -98,6 +98,7 @@ $requiredPaths = @(
     'scripts/build-empirical-pilot-run-chain.ps1',
     'scripts/check-empirical-pilot-execution-readiness.ps1',
     'scripts/build-empirical-pilot-runner-requests.ps1',
+    'scripts/score-empirical-pilot-runner-requests.ps1',
     'scripts/build-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/build-empirical-label-template-package.ps1',
@@ -195,6 +196,7 @@ $ceilingOrder = @{
     'empirical_pilot_budget_gate_present_and_self_tested' = 27
     'empirical_pilot_execution_readiness_checker_present_and_self_tested' = 28
     'empirical_pilot_runner_request_package_builder_present_and_self_tested' = 29
+    'empirical_pilot_runner_request_package_scorer_present_and_self_tested' = 30
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -467,7 +469,9 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'pilot runner request package with selected request JSON files',
         'pilot_runner_request_package_builder_available',
+        'pilot_runner_request_package_scorer_available',
         'build-empirical-pilot-runner-requests.ps1 -SelfTest',
+        'score-empirical-pilot-runner-requests.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
@@ -617,6 +621,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_runner_request_package',
         'pilot_runner_request_schema',
         'pilot_runner_request_builder',
+        'pilot_runner_request_scorer',
         'annotation_worklist',
         'annotation_worklist_schema',
         'label_template_package',
@@ -637,6 +642,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'pilot_execution_readiness_checker_available',
         'required_environment_variables_checked_before_execution',
         'pilot_runner_request_package_builder_available',
+        'pilot_runner_request_package_scorer_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -1150,6 +1156,15 @@ if (Test-Path -LiteralPath $pilotRunnerRequestSchemaPath) {
         'selected_run_input_ids_exist_in_run_input_package',
         'request_package_does_not_execute_runner',
         'request_package_does_not_call_model_api',
+        'scorer_validates_manifest_request_hashes',
+        'scorer_validates_request_source_alignment',
+        'scorer_validates_request_preflight_alignment',
+        'scorer_rejects_forbidden_response_fields',
+        'scorer_rejects_unexpected_request_fields',
+        'scorer_rejects_malformed_metadata_json',
+        'scorer_rejects_sensitive_non_json_files',
+        'scorer_does_not_execute_runner',
+        'scorer_does_not_call_model_api',
         'raw_runner_response',
         'transcript_record',
         'cost_latency_record',
@@ -1169,15 +1184,38 @@ if (Test-Path -LiteralPath $pilotRunnerRequestDocPath) {
     $pilotRunnerRequestDocContent = Get-Content -LiteralPath $pilotRunnerRequestDocPath -Raw
     foreach ($check in @(
         'build-empirical-pilot-runner-requests.ps1 -SelfTest',
+        'score-empirical-pilot-runner-requests.ps1 -SelfTest',
         'does not execute the runner',
         'request package',
-        'No runner script was executed',
+        'No runner script was executed by this scorer',
         'Current Nonclaims',
         'credential validity',
         'paper readiness'
     )) {
         if (-not $pilotRunnerRequestDocContent.Contains($check)) {
             $failures.Add("Missing empirical pilot runner request doc boundary '$check'.")
+        }
+    }
+}
+
+$pilotRunnerRequestScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-pilot-runner-requests.ps1'
+if (Test-Path -LiteralPath $pilotRunnerRequestScorerPath) {
+    $pilotRunnerRequestScorerContent = Get-Content -LiteralPath $pilotRunnerRequestScorerPath -Raw
+    foreach ($check in @(
+        'Empirical pilot runner request package scorer',
+        'Validated a 9-request pilot runner request package',
+        'Rejected missing request files, request/source mismatches, metadata hash tampering, forbidden response fields, and sensitive non-JSON files',
+        'Rejected rehashed unexpected request fields and malformed metadata JSON',
+        'No runner script was executed and no model/API calls were made by this request scorer',
+        'source-preflight-hash.json value',
+        'does not match source run input field',
+        'unexpected field',
+        'Could not parse JSON file',
+        'forbidden field',
+        'blocked sensitive pattern'
+    )) {
+        if (-not $pilotRunnerRequestScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot runner request scorer invariant '$check'.")
         }
     }
 }

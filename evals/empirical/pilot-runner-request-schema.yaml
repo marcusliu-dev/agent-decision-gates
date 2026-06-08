@@ -47,6 +47,17 @@ request_requirements:
   - request_package_does_not_execute_runner
   - request_package_does_not_call_model_api
 
+scorer_requirements:
+  - scorer_validates_manifest_request_hashes
+  - scorer_validates_request_source_alignment
+  - scorer_validates_request_preflight_alignment
+  - scorer_rejects_forbidden_response_fields
+  - scorer_rejects_unexpected_request_fields
+  - scorer_rejects_malformed_metadata_json
+  - scorer_rejects_sensitive_non_json_files
+  - scorer_does_not_execute_runner
+  - scorer_does_not_call_model_api
+
 forbidden_outputs:
   - raw_runner_response
   - transcript_record

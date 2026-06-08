@@ -19,7 +19,10 @@ scoring, annotation worklist generation, and label-template generation, a pilot
 execution readiness checker for validating run inputs, execution preflight,
 private runner path, runner label, and required environment variable presence
 without executing the runner, a pilot runner request package builder for
-freezing selected request JSON files without executing the runner, an annotation
+freezing selected request JSON files without executing the runner, a pilot
+runner request package scorer for validating generated request files, source
+hashes, manifest entries, source run-input joins, and preflight runtime joins
+without executing the runner, an annotation
 worklist builder/scorer for deriving
 unlabeled future-labeling work items from pilot transcripts, a label-template
 package builder/scorer for deriving fillable placeholder templates from
@@ -32,7 +35,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_runner_request_package_builder_present_and_self_tested`
+`empirical_pilot_runner_request_package_scorer_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -51,7 +54,7 @@ schema, guide, builder, and scorer exist, that a mock execution package schema,
 guide, builder, and scorer exist, that a runner response contract schema, guide,
 and scorer exist, that a pilot execution package schema, guide, builder, and
 scorer exist, that a pilot execution readiness schema, guide, and checker exist,
-that a pilot runner request schema, guide, and builder exist, that an annotation
+that a pilot runner request schema, guide, builder, and scorer exist, that an annotation
 worklist guide, builder, and scorer exist, that a synthetic dry-run package guide and builder exist,
 that a label-template package guide, builder, and scorer exist, that an
 annotation-intake guide and scorer exist, that an evidence-package builder
@@ -66,7 +69,10 @@ preflight builder/scorer self-tests pass, that the mock execution package
 builder/scorer self-tests pass, that the pilot execution package builder/scorer
 and pilot execution readiness checker self-tests pass through local fixture
 runners without real model/API calls, that the pilot runner request package
-builder self-test passes without executing a runner, that the annotation worklist
+builder self-test passes without executing a runner, that the pilot runner
+request package scorer self-test validates request files, source hashes,
+manifest entries, source run-input joins, and preflight runtime joins without
+executing a runner, that the annotation worklist
 builder/scorer self-tests pass for an unlabeled 9-item worklist derived from a
 temporary local fixture pilot execution package,
 that the label-template package builder/scorer self-tests pass for a
@@ -109,9 +115,10 @@ package builder/scorer self-tests with required telemetry gating, and the pilot
 execution readiness claim is bounded to pre-run local structure, runner path,
 runner label, and environment-variable presence checks without runner execution
 or secret-value output, and the pilot runner request claim is bounded to
-selected request JSON materialization without runner execution, runner responses,
-transcripts, cost/latency records, labels, metrics, credential-validity evidence,
-or paper-readiness evidence, and the annotation worklist claim is bounded
+selected request JSON materialization plus request-package scoring without
+runner execution, runner responses, transcripts, cost/latency records, labels,
+metrics, credential-validity evidence, or paper-readiness evidence, and the
+annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
@@ -224,6 +231,7 @@ guarantees.
 - `scripts/build-empirical-pilot-run-chain.ps1`
 - `scripts/check-empirical-pilot-execution-readiness.ps1`
 - `scripts/build-empirical-pilot-runner-requests.ps1`
+- `scripts/score-empirical-pilot-runner-requests.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -260,8 +268,9 @@ guarantees.
   runner label, and required environment variable presence checks without
   executing the runner or printing secret values;
 - no pilot runner request package claim beyond selected request JSON
-  materialization, source-hash recording, and generated-file overwrite
-  protection without executing the runner or creating responses/transcripts;
+  materialization, source-hash recording, generated-file overwrite protection,
+  request/source/preflight alignment scoring, and sensitive-file rejection
+  without executing the runner or creating responses/transcripts;
 - no annotation worklist claim beyond unlabeled work-item generation and
   scoring from pilot transcripts;
 - no label-template package claim beyond placeholder template generation and
@@ -321,6 +330,12 @@ guarantees.
   and required environment variable presence, and rejects missing required
   environment variables, invalid environment variable names, repo-local runner
   scripts, and bad runner labels without executing the fixture runner;
+- the empirical pilot runner request package scorer self-test validates a
+  9-request package against source run inputs, execution preflight, manifest
+  request hashes, and source hash sidecars, rejects missing request files,
+  request/source mismatches, metadata hash tampering, forbidden response fields,
+  and sensitive non-JSON files, and does not execute a runner or call model/API
+  routes;
 - the empirical annotation worklist builder self-test generates 9 unlabeled
   work items from a temporary local fixture pilot execution package and the
   worklist scorer self-test rejects missing work items, injected label fields,

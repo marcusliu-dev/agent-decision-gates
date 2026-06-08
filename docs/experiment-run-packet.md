@@ -75,9 +75,10 @@ The current structural run packet contains:
   environment variable presence without executing the runner;
 - [`pilot-runner-request-schema.yaml`](../evals/empirical/pilot-runner-request-schema.yaml),
   [`empirical-pilot-runner-requests.md`](empirical-pilot-runner-requests.md),
-  and [`build-empirical-pilot-runner-requests.ps1`](../scripts/build-empirical-pilot-runner-requests.ps1)
-  for freezing selected pilot request JSON files before private runner
-  invocation, without creating runner responses or transcripts;
+  [`build-empirical-pilot-runner-requests.ps1`](../scripts/build-empirical-pilot-runner-requests.ps1),
+  and [`score-empirical-pilot-runner-requests.ps1`](../scripts/score-empirical-pilot-runner-requests.ps1)
+  for freezing and validating selected pilot request JSON files before private
+  runner invocation, without creating runner responses or transcripts;
 - [`annotation-worklist-schema.yaml`](../evals/empirical/annotation-worklist-schema.yaml),
   [`empirical-annotation-worklist.md`](empirical-annotation-worklist.md),
   [`build-empirical-annotation-worklist.ps1`](../scripts/build-empirical-annotation-worklist.ps1),
@@ -126,7 +127,7 @@ Before running model/API evals, freeze:
 3. execution preflight record with selected run-input ids, model/provider/runtime
    identifiers, source hashes, and budget;
 4. pilot runner request package with selected request JSON files, source
-   hashes, and runner label;
+   hashes, runner label, and request-package scorer output;
 5. repeat count and randomization strategy;
 6. transcript schema;
 7. annotation schema;
@@ -171,6 +172,7 @@ Stop before execution if:
 - pilot execution readiness is needed but the pilot_execution_readiness_checker_available stop gate is not satisfied;
 - required environment variables are not checked before execution;
 - selected runner requests are needed but the pilot_runner_request_package_builder_available stop gate is not satisfied;
+- selected runner requests are needed but the pilot_runner_request_package_scorer_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
@@ -201,6 +203,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/check-empirical-pilot-execution-readiness.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-runner-requests.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
@@ -219,7 +222,7 @@ validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the runner response contract scorer
 self-test, the pilot execution runner package builder/scorer self-tests, the
 pilot run chain builder self-test, the pilot execution readiness checker
-self-test, the pilot runner request package builder self-test, the
+self-test, the pilot runner request package builder/scorer self-tests, the
 annotation worklist builder/scorer self-tests, the label-template package
 builder/scorer self-tests, the annotation-intake scorer self-test, the
 evidence-package builder self-test, and the synthetic
@@ -228,7 +231,9 @@ includes the synthetic dry-run package builder self-test.
 The synthetic mock execution package and synthetic
 dry-run package builder self-test are not real experiment outputs. The runner
 response scorer self-test validates fixture response JSON only and does not call
-hosted model APIs. The pilot execution runner self-test uses a temporary local
+hosted model APIs. The pilot runner request scorer self-test validates request
+JSON files and source joins only. No runner script was executed by this scorer.
+The pilot execution runner self-test uses a temporary local
 fixture runner and does not call hosted model APIs. The pilot run chain self-test
 also uses a temporary local fixture runner and prepares downstream unlabeled
 work items and placeholder templates only. The annotation worklist self-tests produce unlabeled

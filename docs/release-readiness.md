@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_runner_request_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_runner_request_package_scorer_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -28,7 +28,10 @@ generation, and label-template generation, plus a pilot execution readiness
 checker for validating run inputs, execution preflight, private runner path,
 runner label, and required environment variable presence before any explicit
 local runner invocation, plus a pilot runner request package builder for
-freezing selected request JSON files before any private runner invocation.
+freezing selected request JSON files before any private runner invocation, plus
+a pilot runner request package scorer for validating generated request files,
+source hashes, manifest entries, source run-input joins, and preflight runtime
+joins before runner execution.
 
 ## Purpose
 
@@ -126,6 +129,7 @@ The current repository surface includes:
 - `scripts/build-empirical-pilot-run-chain.ps1`
 - `scripts/check-empirical-pilot-execution-readiness.ps1`
 - `scripts/build-empirical-pilot-runner-requests.ps1`
+- `scripts/score-empirical-pilot-runner-requests.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -178,11 +182,14 @@ The current release claim is narrow and explicit:
   generation through preflight, explicit runner execution, pilot package
   scoring, annotation worklist generation/scoring, and label-template
   generation/scoring;
+  plus a pilot runner request package builder/scorer self-tested for selected
+  request JSON materialization and source/preflight/package validation before
+  runner execution;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_runner_request_package_builder_present_and_self_tested`.
+`empirical_pilot_runner_request_package_scorer_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -236,6 +243,12 @@ system.
   execution preflight, records source hashes, rejects missing selected
   run-input ids, bad runner labels, and non-generated overwrite attempts, and
   does not execute a runner or call model/API routes;
+- the deterministic empirical pilot runner request package scorer self-test
+  validates a 9-request package against source run inputs, execution preflight,
+  manifest request hashes, and source hash sidecars, rejects missing request
+  files, request/source mismatches, metadata hash tampering, forbidden response
+  fields, and sensitive non-JSON files, and does not execute a runner or call
+  model/API routes;
 - the deterministic empirical annotation worklist builder and scorer
   self-tests pass for a generated 9-item unlabeled worklist derived from a
   temporary local fixture pilot execution package and reject missing work
@@ -330,7 +343,7 @@ These are intentionally outside the current release scope:
   model/API run, proof of credential validity, runner-quality result, real cost
   accuracy result, transcript, annotation, metric result, agreement result, or
   empirical finding;
-- any claim that the pilot runner request package is itself a completed
+- any claim that the pilot runner request package builder or scorer is itself a completed
   model/API run, validated runner response, transcript, cost/latency result,
   proof of credential validity, runner-quality result, annotation, metric
   result, agreement result, or empirical finding;

@@ -65,6 +65,7 @@ schemas:
   pilot_execution_readiness_checker: docs/empirical-pilot-execution-readiness.md
   pilot_runner_request_schema: evals/empirical/pilot-runner-request-schema.yaml
   pilot_runner_request_builder: docs/empirical-pilot-runner-requests.md
+  pilot_runner_request_scorer: scripts/score-empirical-pilot-runner-requests.ps1
   annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
   label_template_package_schema: evals/empirical/label-template-package-schema.yaml
   annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml
@@ -83,6 +84,7 @@ stop_gates:
   - pilot_execution_readiness_checker_available
   - required_environment_variables_checked_before_execution
   - pilot_runner_request_package_builder_available
+  - pilot_runner_request_package_scorer_available
   - annotation_worklist_builder_available
   - label_template_package_builder_available
   - annotation_intake_validator_available

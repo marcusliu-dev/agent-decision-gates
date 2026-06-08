@@ -1,11 +1,13 @@
 # Empirical Pilot Runner Requests
 
-<!-- claim_ceiling: empirical_pilot_runner_request_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_runner_request_package_scorer_present_and_self_tested -->
 
-Status: Pre-execution request-package builder for future private/local pilot
-runner execution. It materializes the exact JSON request files selected by the
-run-input package and execution preflight so a private runner can consume a
-stable request package later.
+Status: Pre-execution request-package builder and scorer for future
+private/local pilot runner execution. The builder materializes the exact JSON
+request files selected by the run-input package and execution preflight so a
+private runner can consume a stable request package later. The scorer validates
+that generated package against the source run inputs, execution preflight,
+manifest hashes, and no-results boundary before any runner is invoked.
 
 It does not execute the runner, call hosted model APIs, read credentials, print
 environment variable values, create runner responses, create transcripts, create
@@ -31,10 +33,32 @@ The request builder therefore:
 - refuses non-generated files when `-Force` is used;
 - exits before runner execution.
 
+The request scorer therefore:
+
+- reruns the run-input and execution-preflight scorers before checking the
+  request package;
+- validates generated request files, manifest records, and source hash sidecar
+  files;
+- checks that each request matches the source run input and execution preflight
+  runtime fields;
+- rejects request JSON fields outside the exact request schema, even if the
+  manifest request hash is updated;
+- rejects malformed package metadata JSON as a structured scorer failure;
+- rejects forbidden response, transcript, cost, annotation, metric, readiness,
+  and result fields;
+- rejects unexpected package files and sensitive non-JSON files;
+- exits before runner execution.
+
 ## Command
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -RunInputRoot dist/empirical-run-inputs -PreflightPath dist/empirical-execution-preflight.json -OutputRoot dist/empirical-pilot-runner-requests -RunnerLabel private-runner-v0
+```
+
+Score the generated request package before invoking any private runner:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-runner-requests.ps1 -PackageRoot dist/empirical-pilot-runner-requests -RunInputRoot dist/empirical-run-inputs -PreflightPath dist/empirical-execution-preflight.json
 ```
 
 For deterministic self-tests without persistent generated files, runner
@@ -42,9 +66,11 @@ execution, model/API calls, or secret output, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-runner-requests.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-runner-requests.ps1 -SelfTest
 ```
 
 No runner script was executed by this builder.
+No runner script was executed by this scorer.
 
 ## Output Shape
 
@@ -59,6 +85,10 @@ Each request includes the selected run id, source run-input id, task id,
 condition, repeat index, prompt versions, input prompt, expected failure modes,
 required conditions, forbidden claims, preflight id, provider, model alias,
 runtime surface, and runner label.
+
+The scorer rejects package files outside this shape, including runner response
+fields, transcript fields, cost/latency result fields, annotation labels,
+aggregate metric fields, paper-readiness fields, and sensitive non-JSON files.
 
 ## Current Nonclaims
 
