@@ -37,6 +37,7 @@ $requiredPaths = @(
     'evals/empirical/execution-preflight-schema.yaml',
     'evals/empirical/mock-execution-package-schema.yaml',
     'evals/empirical/pilot-execution-package-schema.yaml',
+    'evals/empirical/annotation-worklist-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -53,6 +54,7 @@ $requiredPaths = @(
     'docs/empirical-execution-preflight.md',
     'docs/empirical-mock-execution-package.md',
     'docs/empirical-pilot-execution-runner.md',
+    'docs/empirical-annotation-worklist.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -80,6 +82,8 @@ $requiredPaths = @(
     'scripts/score-empirical-mock-execution-package.ps1',
     'scripts/build-empirical-pilot-execution-package.ps1',
     'scripts/score-empirical-pilot-execution-package.ps1',
+    'scripts/build-empirical-annotation-worklist.ps1',
+    'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -160,6 +164,7 @@ $ceilingOrder = @{
     'empirical_execution_preflight_present_and_self_tested' = 16
     'empirical_mock_execution_package_builder_present_and_self_tested' = 17
     'empirical_pilot_execution_runner_present_and_self_tested' = 18
+    'empirical_annotation_worklist_builder_present_and_self_tested' = 19
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -490,12 +495,18 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'run_input_builder_available',
         'execution_preflight_available',
         'mock_execution_package_builder_available',
+        'pilot_execution_runner_available',
+        'annotation_worklist_builder_available',
         'score-empirical-prompt-pack.ps1',
         'score-empirical-run-inputs.ps1',
         'build-empirical-execution-preflight.ps1 -SelfTest',
         'score-empirical-execution-preflight.ps1',
         'build-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-mock-execution-package.ps1 -SelfTest',
+        'build-empirical-pilot-execution-package.ps1 -SelfTest',
+        'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'build-empirical-annotation-worklist.ps1 -SelfTest',
+        'score-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -504,6 +515,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'synthetic mock execution package',
+        'annotation worklist',
         'synthetic dry-run package builder self-test'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
@@ -529,6 +541,10 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'execution_preflight_schema',
         'mock_execution_package',
         'mock_execution_package_schema',
+        'pilot_execution_package',
+        'pilot_execution_package_schema',
+        'annotation_worklist',
+        'annotation_worklist_schema',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
@@ -536,6 +552,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'run_input_builder_available',
         'execution_preflight_available',
         'mock_execution_package_builder_available',
+        'pilot_execution_runner_available',
+        'annotation_worklist_builder_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -827,6 +845,92 @@ if (Test-Path -LiteralPath $mockExecutionPackageScorerPath) {
     )) {
         if (-not $mockExecutionPackageScorerContent.Contains($check)) {
             $failures.Add("Missing empirical mock execution package scorer invariant '$check'.")
+        }
+    }
+}
+
+$annotationWorklistSchemaPath = Join-Path $RepoRoot 'evals\empirical\annotation-worklist-schema.yaml'
+if (Test-Path -LiteralPath $annotationWorklistSchemaPath) {
+    $annotationWorklistSchemaContent = Get-Content -LiteralPath $annotationWorklistSchemaPath -Raw
+    if ($annotationWorklistSchemaContent -notmatch 'claim_boundary:\s*annotation_worklist_schema_only_no_labels') {
+        $failures.Add('Annotation worklist schema must declare annotation_worklist_schema_only_no_labels claim boundary.')
+    }
+    foreach ($check in @(
+        'annotation-work-items',
+        'annotation-worklist-manifest.json',
+        'source-pilot-execution-manifest-hash.json',
+        'annotation-guidelines-hash.json',
+        'annotation_work_item_id',
+        'transcript_message_count',
+        'transcript_spans_source',
+        'required_label_fields',
+        'every_pilot_transcript_has_annotation_work_item',
+        'work_item_contains_no_labels',
+        'false_readiness_label',
+        'llm_judge_label',
+        'aggregate_metrics',
+        'empirical_effectiveness_proven',
+        'no_human_labels',
+        'no_llm_judge_labels',
+        'no_paper_readiness'
+    )) {
+        if ($annotationWorklistSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing annotation worklist schema requirement '$check'.")
+        }
+    }
+}
+
+$annotationWorklistDocPath = Join-Path $RepoRoot 'docs\empirical-annotation-worklist.md'
+if (Test-Path -LiteralPath $annotationWorklistDocPath) {
+    $annotationWorklistDocContent = Get-Content -LiteralPath $annotationWorklistDocPath -Raw
+    foreach ($check in @(
+        'does not create labels',
+        'Run after producing a pilot execution package',
+        'build-empirical-annotation-worklist.ps1 -SelfTest',
+        'score-empirical-annotation-worklist.ps1 -SelfTest',
+        'reject injected label',
+        'metadata hash tampering',
+        'non-JSON sensitive',
+        'Current Nonclaims'
+    )) {
+        if (-not $annotationWorklistDocContent.Contains($check)) {
+            $failures.Add("Missing empirical annotation worklist doc boundary '$check' in docs/empirical-annotation-worklist.md")
+        }
+    }
+}
+
+$annotationWorklistBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-annotation-worklist.ps1'
+if (Test-Path -LiteralPath $annotationWorklistBuilderPath) {
+    $annotationWorklistBuilderContent = Get-Content -LiteralPath $annotationWorklistBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical annotation worklist builder',
+        'annotation_worklist_unlabeled_no_annotations',
+        'Built a 9-item annotation worklist',
+        'Refused non-generated files when -Force was used',
+        'annotation-guidelines-hash.json',
+        'source-pilot-execution-manifest-hash.json'
+    )) {
+        if (-not $annotationWorklistBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical annotation worklist builder invariant '$check'.")
+        }
+    }
+}
+
+$annotationWorklistScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-annotation-worklist.ps1'
+if (Test-Path -LiteralPath $annotationWorklistScorerPath) {
+    $annotationWorklistScorerContent = Get-Content -LiteralPath $annotationWorklistScorerPath -Raw
+    foreach ($check in @(
+        'Empirical annotation worklist scoring',
+        'annotation_worklist_schema_only_no_labels',
+        'annotation_worklist_unlabeled_no_annotations',
+        'Rejected missing work items, injected label fields, transcript mismatches, metadata hash tampering, and non-JSON sensitive files',
+        'mismatched_checked_evidence',
+        'must not contain forbidden field',
+        'annotation-guidelines-hash.json',
+        'source-pilot-execution-manifest-hash.json'
+    )) {
+        if (-not $annotationWorklistScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical annotation worklist scorer invariant '$check'.")
         }
     }
 }
@@ -1373,6 +1477,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-pilot-execution-runner.md'
             Label = 'docs/empirical-pilot-execution-runner.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-annotation-worklist.md'
+            Label = 'docs/empirical-annotation-worklist.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'

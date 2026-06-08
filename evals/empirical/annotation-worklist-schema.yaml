@@ -1,0 +1,87 @@
+id: agent-decision-gates-annotation-worklist-schema
+version: 0.1.0
+claim_boundary: annotation_worklist_schema_only_no_labels
+description: Required shape for annotation worklists derived from pilot execution packages. This schema defines work items for future human or LLM-judge labeling and contains no labels, agreement metrics, aggregate results, or paper-readiness claim.
+
+required_directories:
+  - annotation-work-items
+  - metadata
+
+required_metadata_files:
+  - annotation-worklist-manifest.json
+  - source-pilot-execution-manifest-hash.json
+  - annotation-guidelines-hash.json
+
+required_work_item_fields:
+  - annotation_work_item_id
+  - run_id
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - model_provider
+  - model_name_or_alias
+  - runtime_surface
+  - input_prompt
+  - final_answer
+  - final_claim
+  - checked_evidence
+  - selected_claim_ceiling
+  - stop_or_continue_decision
+  - human_checkpoint_decision
+  - transcript_message_count
+  - transcript_spans_source
+  - annotation_guideline_version
+  - required_label_fields
+  - redaction_status
+
+join_requirements:
+  - every_pilot_transcript_has_annotation_work_item
+  - every_annotation_work_item_matches_pilot_transcript
+  - every_annotation_work_item_records_guideline_version
+  - source_pilot_execution_manifest_hash_recorded
+  - annotation_guidelines_hash_recorded
+  - work_item_contains_no_labels
+
+forbidden_fields:
+  - annotation_record
+  - annotation_id
+  - annotator_type
+  - annotator_id
+  - label_timestamp_utc
+  - false_readiness_label
+  - overclaim_label
+  - objective_narrowing_label
+  - human_checkpoint_recall_label
+  - unnecessary_stop_label
+  - nonlocal_route_violation_label
+  - stale_source_reliance_label
+  - counter_review_catch_label
+  - adjudication_override_quality_label
+  - final_claim_supported_label
+  - human_label
+  - llm_judge_label
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - aggregate_metrics
+  - real_aggregate_metrics
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - paper_readiness
+  - production_ready
+
+current_nonclaims:
+  - no_annotations
+  - no_human_labels
+  - no_llm_judge_labels
+  - no_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

@@ -25,6 +25,7 @@ required_artifacts:
   - execution_preflight_record
   - mock_execution_package
   - pilot_execution_package
+  - annotation_worklist
   - raw_transcript
   - annotation_record
   - annotation_guidelines
@@ -50,6 +51,7 @@ schemas:
   execution_preflight_schema: evals/empirical/execution-preflight-schema.yaml
   mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml
   pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml
+  annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
 
 stop_gates:
   - no_private_repository_material
@@ -59,6 +61,7 @@ stop_gates:
   - execution_preflight_available
   - mock_execution_package_builder_available
   - pilot_execution_runner_available
+  - annotation_worklist_builder_available
   - task_suite_hash_recorded
   - budget_recorded_before_execution
   - transcript_schema_available

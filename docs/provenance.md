@@ -37,6 +37,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/empirical/execution-preflight-schema.yaml` | Written locally as a public execution-preflight schema for recording future pilot selection, runtime, and budget metadata before model/API execution, with no model/API calls or results. |
 | `evals/empirical/mock-execution-package-schema.yaml` | Written locally as a public mock execution package schema for synthetic transcript and cost-latency package joins before model/API execution, with no real model results. |
 | `evals/empirical/pilot-execution-package-schema.yaml` | Written locally as a public pilot execution package schema for explicit local-runner transcript and cost-latency packages, with no labels, metrics, or paper-readiness claim. |
+| `evals/empirical/annotation-worklist-schema.yaml` | Written locally as a public annotation worklist schema for deriving unlabeled future-labeling work items from pilot execution packages, with no labels, agreement metrics, aggregate results, or paper-readiness claim. |
 | `evals/empirical/transcript-schema.yaml` | Written locally as a public transcript schema for future experiment runs, with no transcripts. |
 | `evals/empirical/annotation-schema.yaml` | Written locally as a public annotation schema for future human or judge labels, with no labels. |
 | `evals/empirical/evidence-package-schema.yaml` | Written locally as a public evidence-package schema for future experiment outputs, with no transcripts, labels, or results. |
@@ -53,6 +54,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/empirical-execution-preflight.md` | Written locally as public documentation for execution preflight records that freeze pilot selection, provider/model/runtime, and budget before model/API execution, with no model/API calls or results. |
 | `docs/empirical-mock-execution-package.md` | Written locally as public documentation for synthetic mock transcript and cost-latency package generation, with no model/API calls or real results. |
 | `docs/empirical-pilot-execution-runner.md` | Written locally as public documentation for an explicit local-runner route that keeps private runner code and credentials outside this public repository. |
+| `docs/empirical-annotation-worklist.md` | Written locally as public documentation for unlabeled annotation worklist generation from pilot execution packages, with no human labels, LLM-judge labels, agreement measurements, or aggregate metrics. |
 | `docs/empirical-annotation-guidelines.md` | Written locally as public annotation rubric guidance for future human, LLM-judge, and rule-based labels, with no real labels or agreement results. |
 | `docs/empirical-evidence-package.md` | Written locally as a public evidence-package validation guide for future post-run completeness checks, with no executed experiment evidence. |
 | `docs/empirical-results-analysis.md` | Written locally as a public results-analysis guide for future metric aggregation after evidence-package validation, with no real experiment results. |
@@ -78,6 +80,8 @@ repository and the source boundaries used to keep the public surface generic.
 | `scripts/score-empirical-mock-execution-package.ps1` | Written locally as a dependency-free deterministic structural scorer for synthetic mock execution packages and their no-results boundary. |
 | `scripts/build-empirical-pilot-execution-package.ps1` | Written locally as a dependency-free builder for transcript and cost-latency packages produced through explicitly allowed local runner scripts, with no embedded credentials or provider-specific public adapter. |
 | `scripts/score-empirical-pilot-execution-package.ps1` | Written locally as a dependency-free structural scorer for pilot execution packages and their no-labels/no-metrics/no-paper-readiness boundary. |
+| `scripts/build-empirical-annotation-worklist.ps1` | Written locally as a dependency-free builder for unlabeled annotation worklists derived from pilot execution packages and the public annotation guidelines. |
+| `scripts/score-empirical-annotation-worklist.ps1` | Written locally as a dependency-free structural scorer for annotation worklists and their no-labels/no-metrics/no-paper-readiness boundary. |
 | `scripts/score-empirical-evidence-package.ps1` | Written locally as a dependency-free deterministic validator and synthetic self-test route for future empirical evidence packages. |
 | `scripts/score-empirical-results.ps1` | Written locally as a dependency-free deterministic results aggregator and synthetic self-test route for future validated empirical evidence packages. |
 | `scripts/score-empirical-agreement.ps1` | Written locally as a dependency-free deterministic human-vs-LLM-judge agreement checker and synthetic self-test route for future validated empirical evidence packages. |

@@ -55,6 +55,13 @@ The current structural run packet contains:
   for executing selected pilot inputs through an explicitly allowed local
   runner script and validating the resulting transcript/cost-latency package
   before annotation or metric claims;
+- [`annotation-worklist-schema.yaml`](../evals/empirical/annotation-worklist-schema.yaml),
+  [`empirical-annotation-worklist.md`](empirical-annotation-worklist.md),
+  [`build-empirical-annotation-worklist.ps1`](../scripts/build-empirical-annotation-worklist.ps1),
+  and [`score-empirical-annotation-worklist.ps1`](../scripts/score-empirical-annotation-worklist.ps1)
+  for deriving unlabeled future-labeling work items from pilot transcripts
+  before human labels, LLM-judge labels, agreement measurements, or aggregate
+  metrics are claimed;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -114,6 +121,7 @@ Stop before execution if:
 - the execution_preflight_available stop gate is not satisfied;
 - the mock_execution_package_builder_available stop gate is not satisfied;
 - the pilot execution runner route is needed but the pilot_execution_runner_available stop gate is not satisfied;
+- the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -136,6 +144,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
@@ -146,18 +156,22 @@ Those commands check only the packet structure, run-input builder/scorer
 self-tests, execution preflight builder/scorer self-tests, evidence-package
 validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the pilot execution runner package
-builder/scorer self-tests, and the synthetic dry-run package builder self-test.
-The synthetic mock execution package and synthetic dry-run package builder
-self-test are not real experiment outputs. The pilot execution runner self-test
-uses a temporary local fixture runner and does not call hosted model APIs.
-They do not score annotated completed transcripts, measure real agreement, or
-prove empirical effectiveness.
+builder/scorer self-tests, the annotation worklist builder/scorer self-tests,
+and the synthetic dry-run package builder self-test. The synthetic mock
+execution package and synthetic dry-run package builder self-test are not real
+experiment outputs. The pilot execution runner self-test uses a temporary local
+fixture runner and does not call hosted model APIs. The annotation worklist
+self-tests produce unlabeled work items only. They do not score annotated
+completed transcripts, measure real agreement, or prove empirical
+effectiveness.
+The synthetic mock execution package remains a package-shape exercise only.
 
 ## Current Nonclaims
 
 This packet does not prove:
 
 - model/API eval execution;
+- human or LLM-judge annotation labels;
 - false-readiness or overclaim rates;
 - cost/latency measurements;
 - human/LLM-judge agreement;

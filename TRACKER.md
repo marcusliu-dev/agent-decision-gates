@@ -9,13 +9,15 @@ prompt pack for future empirical runs, a pre-execution run-input package
 builder, an empirical execution preflight builder/scorer for future pilot
 selection, runtime, and budget records, a mock execution package builder/scorer
 for transcript and cost-latency package joins, a pilot execution package
-builder/scorer for explicitly allowed local runner scripts, and a
+builder/scorer for explicitly allowed local runner scripts, an annotation
+worklist builder/scorer for deriving unlabeled future-labeling work items from
+pilot transcripts, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_execution_runner_present_and_self_tested`
+`empirical_annotation_worklist_builder_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -23,13 +25,14 @@ repository surface contains a reusable skill package under `skills/consult/`,
 that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
-annotation schema, evidence-package schema, evidence-package validation guide,
-results-summary schema, results-analysis guide, annotation guidelines,
-agreement-summary schema, agreement-checks guide, and condition prompt pack
-exist under `docs/` and `evals/empirical/`, that a run-input schema, guide,
-builder, and scorer exist, that an execution preflight schema, guide, builder,
-and scorer exist, that a mock execution package schema, guide, builder, and
-scorer exist, that a pilot execution package schema, guide, builder, and
+annotation schema, annotation worklist schema, evidence-package schema,
+evidence-package validation guide, results-summary schema, results-analysis
+guide, annotation guidelines, agreement-summary schema, agreement-checks guide,
+and condition prompt pack exist under `docs/` and `evals/empirical/`, that a
+run-input schema, guide, builder, and scorer exist, that an execution preflight
+schema, guide, builder, and scorer exist, that a mock execution package schema,
+guide, builder, and scorer exist, that a pilot execution package schema, guide,
+builder, and scorer exist, that an annotation worklist guide, builder, and
 scorer exist, that a synthetic dry-run package guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
@@ -37,7 +40,9 @@ annotation-guidelines, agreement-check, dry-run package-builder, and condition
 prompt-pack surfaces, that the run-input builder/scorer and execution
 preflight builder/scorer self-tests pass, that the mock execution package
 builder/scorer self-tests pass, that the pilot execution package builder/scorer
-self-tests pass through a local fixture runner,
+self-tests pass through a local fixture runner, that the annotation worklist
+builder/scorer self-tests pass for an unlabeled 9-item worklist derived from a
+temporary local fixture pilot execution package,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -54,9 +59,9 @@ preflight claim is bounded to pre-execution pilot-selection, runtime, and
 budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
 validation, and the pilot execution runner claim is bounded to local-runner
-package builder/scorer self-tests, not empirical proof or paper
-readiness. No broader
-claim is made for
+package builder/scorer self-tests, and the annotation worklist claim is bounded
+to unlabeled work-item generation and scoring, not annotations, agreement,
+metrics, empirical proof, or paper readiness. No broader claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
 CI coverage, deployment safety, empirical effectiveness, or production runtime
@@ -100,6 +105,7 @@ guarantees.
 - `evals/empirical/execution-preflight-schema.yaml`
 - `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
+- `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -115,6 +121,7 @@ guarantees.
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
 - `docs/empirical-pilot-execution-runner.md`
+- `docs/empirical-annotation-worklist.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -142,6 +149,8 @@ guarantees.
 - `scripts/score-empirical-mock-execution-package.ps1`
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
+- `scripts/build-empirical-annotation-worklist.ps1`
+- `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -165,6 +174,8 @@ guarantees.
   package-shape validation;
 - no pilot execution runner claim beyond local-fixture self-test and
   transcript/cost-latency package validation;
+- no annotation worklist claim beyond unlabeled work-item generation and
+  scoring from pilot transcripts;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -208,6 +219,11 @@ guarantees.
   mismatches, metadata hash tampering, non-JSON sensitive files, unsupported
   result/readiness claim cases, and `-Force` overwrite attempts over
   non-generated files;
+- the empirical annotation worklist builder self-test generates 9 unlabeled
+  work items from a temporary local fixture pilot execution package and the
+  worklist scorer self-test rejects missing work items, injected label fields,
+  transcript mismatches, metadata hash tampering, non-JSON sensitive files, and
+  `-Force` overwrite attempts over non-generated files;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as
