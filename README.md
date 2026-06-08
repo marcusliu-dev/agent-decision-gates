@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_evidence_package_empty_tool_calls_self_tested -->
+<!-- claim_ceiling: ci_verification_workflow_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -130,6 +130,10 @@ This repo packages a simple alternative:
 - a fictional [stage-gate example](examples/consult-stage-gate.md);
 - a lightweight public-surface integrity verifier in
   [`scripts/verify-public-safety.ps1`](scripts/verify-public-safety.ps1);
+- a GitHub Actions workflow in
+  [`.github/workflows/verify.yml`](.github/workflows/verify.yml) that runs the
+  deterministic public verifier and core scorer self-tests on Windows
+  PowerShell;
 - a small [tracker](TRACKER.md) and [release record](docs/release-readiness.md)
   for keeping state honest.
 
@@ -301,11 +305,12 @@ transcripts, plus a label-template package builder for deriving fillable
 placeholder templates from annotation work items, plus an annotation intake
 validator for future completed label records, plus an evidence-package builder
 that assembles future pilot transcripts, cost/latency records, and completed
-annotation records into a validation-ready package. The evidence-package
-validator now treats `tool_calls` as a required transcript field while allowing
-an empty array when a chat run made no tool calls. The current ceiling is no
-higher than
-`empirical_evidence_package_empty_tool_calls_self_tested`. The
+annotation records into a validation-ready package, plus a GitHub Actions
+workflow that runs the public verifier and core scorer self-tests. The
+evidence-package validator now treats `tool_calls` as a required transcript
+field while allowing an empty array when a chat run made no tool calls. The
+current ceiling is no higher than
+`ci_verification_workflow_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -342,10 +347,11 @@ synthetic completed-label fixtures only and does not establish real labels,
 agreement, metrics, judge validity, or annotator quality. The evidence-package
 builder self-test uses synthetic fixture packages only and does not establish
 real transcripts, real labels, real agreement, real metrics, model quality, or
-paper readiness. The repository
-intentionally does not ship CI, deployment automation, application
-source scaffolding, model/API eval results, or a broader framework/runtime
-product surface.
+paper readiness. The CI workflow is a deterministic verification route only; it
+does not run model/API evals, publish releases, deploy anything, or prove
+production runtime safety. The repository intentionally does not ship deployment
+automation, application source scaffolding, model/API eval results, or a broader
+framework/runtime product surface.
 
 If this pattern is useful in your own agent workflows, adapt it, improve it,
 and make the decision boundaries explicit in your own systems.

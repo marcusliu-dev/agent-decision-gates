@@ -7,6 +7,9 @@ $ErrorActionPreference = 'Stop'
 $requiredPaths = @(
     'README.md',
     '.gitignore',
+    '.github',
+    '.github/workflows',
+    '.github/workflows/verify.yml',
     'TRACKER.md',
     'skills',
     'skills/consult',
@@ -199,6 +202,7 @@ $ceilingOrder = @{
     'empirical_pilot_runner_request_package_scorer_present_and_self_tested' = 30
     'empirical_claim_phrase_preservation_for_annotation_self_tested' = 31
     'empirical_evidence_package_empty_tool_calls_self_tested' = 32
+    'ci_verification_workflow_present_and_self_tested' = 33
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -327,6 +331,44 @@ foreach ($relativePath in $requiredPaths) {
     $fullPath = Join-Path $RepoRoot $relativePath
     if (-not (Test-Path -LiteralPath $fullPath)) {
         $failures.Add("Missing required path: $relativePath")
+    }
+}
+
+$ciWorkflowPath = Join-Path $RepoRoot '.github\workflows\verify.yml'
+if (Test-Path -LiteralPath $ciWorkflowPath) {
+    $ciWorkflowContent = Get-Content -LiteralPath $ciWorkflowPath -Raw
+    foreach ($check in @(
+        'name: Public surface verification',
+        'permissions:',
+        'contents: read',
+        'runs-on: windows-latest',
+        'actions/checkout@v4',
+        'scripts\verify-public-safety.ps1',
+        'scripts\score-eval-fixtures.ps1 -Json',
+        'scripts\score-empirical-run-packet.ps1 -Json',
+        'scripts\score-empirical-evidence-package.ps1 -SelfTest -Json',
+        'scripts\score-empirical-results.ps1 -SelfTest -Json',
+        'scripts\score-empirical-agreement.ps1 -SelfTest -Json'
+    )) {
+        if (-not $ciWorkflowContent.Contains($check)) {
+            $failures.Add(".github/workflows/verify.yml is missing CI invariant '$check'.")
+        }
+    }
+    foreach ($forbidden in @(
+        'secrets.',
+        'GITHUB_TOKEN:',
+        'write-all',
+        'contents: write',
+        'pull-requests: write',
+        'gh release',
+        'publish',
+        'deploy',
+        'OPENAI_API_KEY',
+        'DEEPSEEK_API_KEY'
+    )) {
+        if ($ciWorkflowContent.Contains($forbidden)) {
+            $failures.Add(".github/workflows/verify.yml contains forbidden CI token or release/deploy surface '$forbidden'.")
+        }
     }
 }
 

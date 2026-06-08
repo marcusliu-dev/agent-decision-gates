@@ -31,11 +31,12 @@ completed annotation records, an evidence package builder for assembling future
 pilot transcripts, cost/latency records, and completed annotations before
 downstream validation, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
-workflows.
+workflows, and a GitHub Actions workflow for deterministic public-surface
+verification and core scorer self-tests.
 
 ## Current Claim Ceiling
 
-`empirical_evidence_package_empty_tool_calls_self_tested`
+`ci_verification_workflow_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -98,6 +99,9 @@ explicit runner token, API cost, and retry telemetry before package wrapping,
 that the evidence-package validator self-test now accepts transcript records
 with a present-but-empty `tool_calls` array while still rejecting missing
 required fields and incomplete nested tool-call records,
+that `.github/workflows/verify.yml` is present and structurally checked to run
+the deterministic public verifier and core scorer self-tests with read-only
+repository permissions,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -134,8 +138,8 @@ readiness. No
 broader claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
-CI coverage, deployment safety, empirical effectiveness, or production runtime
-guarantees.
+live GitHub Actions run history, branch protection, deployment safety,
+empirical effectiveness, or production runtime guarantees.
 
 ## Publication Snapshot
 
@@ -152,6 +156,7 @@ guarantees.
 
 - `README.md`
 - `.gitignore`
+- `.github/workflows/verify.yml`
 - `skills/consult/SKILL.md`
 - `skills/consult/agents/openai.yaml`
 - `evals/consult/consult-public-happy-path.yaml`
@@ -255,7 +260,7 @@ guarantees.
 - no application source tree;
 - no `src/` or application runtime surface;
 - no `tests/` surface;
-- no CI automation yet;
+- no live GitHub Actions run-history or branch-protection claim;
 - no claim that the deterministic verifier proves production safety;
 - no model/API eval results or empirical paper claim;
 - no real dry-run package claim beyond synthetic generated examples;
@@ -295,6 +300,10 @@ guarantees.
 
 - the deterministic public-surface integrity verifier passes for the current doc, skill,
   and eval surface;
+- `.github/workflows/verify.yml` is present and structurally checked to run the
+  deterministic public verifier, consult fixture scorer, empirical run-packet
+  scorer, evidence-package validator self-test, results analyzer self-test, and
+  agreement checker self-test with read-only repository permissions;
 - required public files, directories, skill files, and eval fixtures are
   present;
 - adoption docs for glossary, runtime-neutral protocol, Codex adapter notes,

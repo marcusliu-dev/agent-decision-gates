@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_evidence_package_empty_tool_calls_self_tested -->
+<!-- claim_ceiling: ci_verification_workflow_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -31,7 +31,8 @@ local runner invocation, plus a pilot runner request package builder for
 freezing selected request JSON files before any private runner invocation, plus
 a pilot runner request package scorer for validating generated request files,
 source hashes, manifest entries, source run-input joins, and preflight runtime
-joins before runner execution.
+joins before runner execution, plus a GitHub Actions workflow for deterministic
+public-surface verification and core scorer self-tests.
 
 ## Purpose
 
@@ -45,6 +46,7 @@ The current repository surface includes:
 
 - `README.md`
 - `.gitignore`
+- `.github/workflows/verify.yml`
 - `TRACKER.md`
 - `skills/consult/SKILL.md`
 - `skills/consult/agents/openai.yaml`
@@ -144,8 +146,10 @@ The current repository surface includes:
 - `LICENSE`
 
 This repository is intentionally documentation-first plus a lightweight skill
-package. It does not currently include application source code, CI automation,
-or a broader framework/runtime distribution surface.
+package. It now includes a GitHub Actions verification workflow for the
+deterministic public verifier and core scorer self-tests, but it does not
+include application source code or a broader framework/runtime distribution
+surface.
 
 ## Current Release Claim
 
@@ -184,12 +188,13 @@ The current release claim is narrow and explicit:
   generation/scoring;
   plus a pilot runner request package builder/scorer self-tested for selected
   request JSON materialization and source/preflight/package validation before
-  runner execution;
+  runner execution, plus a GitHub Actions workflow that runs the deterministic
+  public verifier and core scorer self-tests on Windows PowerShell;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_evidence_package_empty_tool_calls_self_tested`.
+`ci_verification_workflow_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -198,6 +203,10 @@ system.
 
 - the deterministic public-surface integrity verifier passes for the current public
   doc-plus-skill surface;
+- `.github/workflows/verify.yml` is present and structurally checked to run the
+  deterministic public verifier, consult fixture scorer, empirical run-packet
+  scorer, evidence-package validator self-test, results analyzer self-test, and
+  agreement checker self-test with read-only repository permissions;
 - required public files, directories, skill files, and eval fixtures are
   present;
 - adoption docs for glossary, runtime-neutral protocol, Codex adapter notes,
@@ -327,7 +336,7 @@ system.
 
 These are intentionally outside the current release scope:
 
-- CI setup;
+- live GitHub Actions run-history or branch-protection claim;
 - executable product scaffolding beyond the current skill package;
 - a package or framework distribution surface;
 - deployment automation;
