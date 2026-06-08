@@ -27,6 +27,7 @@ required_artifacts:
   - annotation_guidelines
   - agreement_check_record
   - condition_prompt_pack
+  - run_input_record
   - model_runtime_record
   - cost_latency_record
   - prompt_version_record
@@ -42,11 +43,13 @@ schemas:
   agreement_summary_schema: evals/empirical/agreement-summary-schema.yaml
   annotation_guidelines: docs/empirical-annotation-guidelines.md
   condition_prompt_pack: evals/empirical/condition-prompt-pack.yaml
+  run_input_schema: evals/empirical/run-input-schema.yaml
 
 stop_gates:
   - no_private_repository_material
   - prompts_frozen_before_execution
   - condition_prompt_pack_available
+  - run_input_builder_available
   - task_suite_hash_recorded
   - budget_recorded_before_execution
   - transcript_schema_available
@@ -64,6 +67,7 @@ forbidden_result_fields:
   - confidence_interval
   - statistical_significance
   - effectiveness_claim
+  - empirical_effectiveness_proven
   - paper_ready
   - production_ready
 

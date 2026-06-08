@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_condition_prompt_pack_present_and_structurally_scored -->
+<!-- claim_ceiling: empirical_run_input_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -8,7 +8,7 @@ evidence-package validator, a results aggregator, an installable `$consult`
 skill package, public eval fixtures, a seed empirical task suite, empirical
 annotation guidelines, an agreement checker, and deterministic structural
 checks, plus a synthetic dry-run evidence-package builder and versioned
-condition prompt pack.
+condition prompt pack, and a pre-execution run-input package builder.
 
 ## Purpose
 
@@ -42,6 +42,7 @@ The current repository surface includes:
 - `evals/empirical/agent-decision-gates-task-suite.yaml`
 - `evals/empirical/experiment-run-manifest.yaml`
 - `evals/empirical/condition-prompt-pack.yaml`
+- `evals/empirical/run-input-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -53,6 +54,7 @@ The current repository surface includes:
 - `docs/deep-dive-report.md`
 - `docs/empirical-evaluation-plan.md`
 - `docs/condition-prompt-pack.md`
+- `docs/empirical-run-inputs.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -72,6 +74,8 @@ The current repository surface includes:
 - `scripts/score-eval-fixtures.ps1`
 - `scripts/score-empirical-task-suite.ps1`
 - `scripts/score-empirical-prompt-pack.ps1`
+- `scripts/build-empirical-run-inputs.ps1`
+- `scripts/score-empirical-run-inputs.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -97,12 +101,13 @@ The current release claim is narrow and explicit:
   structurally validated or self-tested, and the agreement-check route is
   synthetic-self-tested, with a synthetic dry-run package builder self-tested
   against the validator chain and a versioned condition prompt pack
-  structurally scored;
+  structurally scored, plus a pre-execution run-input builder and scorer
+  self-tested;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_condition_prompt_pack_present_and_structurally_scored`.
+`empirical_run_input_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -125,6 +130,9 @@ system.
 - the deterministic empirical prompt-pack scorer passes for the current
   versioned condition prompt surface and explicitly does not report model
   results;
+- the deterministic empirical run-input builder and scorer self-tests pass for
+  a generated 324-record pre-execution input package and explicitly do not call
+  model/API routes;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as

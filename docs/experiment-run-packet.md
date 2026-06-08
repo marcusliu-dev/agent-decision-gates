@@ -31,6 +31,11 @@ The current structural run packet contains:
 - [`condition-prompt-pack.yaml`](../evals/empirical/condition-prompt-pack.yaml)
   and [`condition-prompt-pack.md`](condition-prompt-pack.md) for the frozen
   condition prompt surface;
+- [`run-input-schema.yaml`](../evals/empirical/run-input-schema.yaml),
+  [`empirical-run-inputs.md`](empirical-run-inputs.md),
+  [`build-empirical-run-inputs.ps1`](../scripts/build-empirical-run-inputs.ps1),
+  and [`score-empirical-run-inputs.ps1`](../scripts/score-empirical-run-inputs.ps1)
+  for materializing and checking pre-execution run-input records;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -85,6 +90,7 @@ Stop before execution if:
 - private repository material is required for reproduction;
 - task prompts or condition prompts are not frozen;
 - the condition_prompt_pack_available stop gate is not satisfied;
+- the run_input_builder_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -99,14 +105,17 @@ Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-prompt-pack.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-run-inputs.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-inputs.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package.ps1 -SelfTest
 ```
 
-Those commands check only the packet structure, evidence-package validator
-self-test, agreement-checker self-test, and the synthetic dry-run package builder self-test.
+Those commands check only the packet structure, run-input builder/scorer
+self-tests, evidence-package validator self-test, agreement-checker self-test,
+and the synthetic dry-run package builder self-test.
 They do not run models, call APIs, score real completed transcripts,
 measure real agreement, or prove empirical effectiveness.
 

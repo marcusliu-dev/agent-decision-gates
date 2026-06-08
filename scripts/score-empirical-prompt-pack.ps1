@@ -201,6 +201,7 @@ $blockedResultFields = @(
     'confidence_interval',
     'statistical_significance',
     'effectiveness_claim',
+    'empirical_effectiveness_proven',
     'paper_ready',
     'production_ready'
 )

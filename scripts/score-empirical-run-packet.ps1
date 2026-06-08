@@ -64,12 +64,16 @@ $paths = [ordered]@{
     ResultsSummarySchema = Join-Path $RepoRoot 'evals/empirical/results-summary-schema.yaml'
     AgreementSummarySchema = Join-Path $RepoRoot 'evals/empirical/agreement-summary-schema.yaml'
     ConditionPromptPack = Join-Path $RepoRoot 'evals/empirical/condition-prompt-pack.yaml'
+    RunInputSchema = Join-Path $RepoRoot 'evals/empirical/run-input-schema.yaml'
     AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
     ConditionPromptDoc = Join-Path $RepoRoot 'docs/condition-prompt-pack.md'
+    RunInputDoc = Join-Path $RepoRoot 'docs/empirical-run-inputs.md'
     EmpiricalPlan = Join-Path $RepoRoot 'docs/empirical-evaluation-plan.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
     DryRunDoc = Join-Path $RepoRoot 'docs/empirical-dry-run-package.md'
     PromptPackScorer = Join-Path $RepoRoot 'scripts/score-empirical-prompt-pack.ps1'
+    RunInputBuilder = Join-Path $RepoRoot 'scripts/build-empirical-run-inputs.ps1'
+    RunInputScorer = Join-Path $RepoRoot 'scripts/score-empirical-run-inputs.ps1'
     DryRunBuilder = Join-Path $RepoRoot 'scripts/build-empirical-dry-run-package.ps1'
 }
 
@@ -106,6 +110,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'annotation_guidelines',
         'agreement_check_record',
         'condition_prompt_pack',
+        'run_input_record',
         'model_runtime_record',
         'cost_latency_record',
         'prompt_version_record',
@@ -117,6 +122,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'no_private_repository_material',
         'prompts_frozen_before_execution',
         'condition_prompt_pack_available',
+        'run_input_builder_available',
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
         'agreement_checker_available',
@@ -133,6 +139,12 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'no_annotations',
         'no_paper_readiness'
     ) -Label 'current_nonclaims'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'forbidden_result_fields') -Required @(
+        'effectiveness_claim',
+        'empirical_effectiveness_proven',
+        'paper_ready',
+        'production_ready'
+    ) -Label 'manifest forbidden_result_fields'
     foreach ($schemaLink in @(
         'transcript_schema: evals/empirical/transcript-schema.yaml',
         'annotation_schema: evals/empirical/annotation-schema.yaml',
@@ -140,7 +152,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'results_summary_schema: evals/empirical/results-summary-schema.yaml',
         'agreement_summary_schema: evals/empirical/agreement-summary-schema.yaml',
         'annotation_guidelines: docs/empirical-annotation-guidelines.md',
-        'condition_prompt_pack: evals/empirical/condition-prompt-pack.yaml'
+        'condition_prompt_pack: evals/empirical/condition-prompt-pack.yaml',
+        'run_input_schema: evals/empirical/run-input-schema.yaml'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
@@ -163,6 +176,12 @@ if (Test-Path -LiteralPath $paths.ConditionPromptPack) {
         'stop_or_continue_decision',
         'human_checkpoint_decision'
     ) -Label 'condition prompt pack required_record_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $promptPack -Field 'forbidden_result_fields') -Required @(
+        'effectiveness_claim',
+        'empirical_effectiveness_proven',
+        'paper_ready',
+        'production_ready'
+    ) -Label 'condition prompt pack forbidden_result_fields'
     foreach ($condition in @(
         'no_gate',
         'checklist_only',
@@ -206,6 +225,91 @@ if (Test-Path -LiteralPath $paths.PromptPackScorer) {
     )) {
         if (-not $promptPackScorer.Contains($check)) {
             $failures.Add("Empirical prompt-pack scorer is missing invariant '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.RunInputSchema) {
+    $schema = Get-Content -LiteralPath $paths.RunInputSchema -Raw
+    if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'run_input_schema_only_no_model_execution') {
+        $failures.Add('Run-input schema must declare run_input_schema_only_no_model_execution.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_fields') -Required @(
+        'run_input_id',
+        'task_id',
+        'condition',
+        'repeat_index',
+        'task_suite_version',
+        'prompt_pack_version',
+        'manifest_version',
+        'task_prompt',
+        'condition_instruction',
+        'input_prompt',
+        'task_suite_sha256',
+        'prompt_pack_sha256',
+        'manifest_sha256',
+        'redaction_status'
+    ) -Label 'run-input schema required_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_transcripts',
+        'no_annotations',
+        'no_cost_latency_results',
+        'no_human_llm_judge_agreement_results',
+        'no_empirical_results',
+        'no_paper_readiness'
+    ) -Label 'run-input schema current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.RunInputDoc) {
+    $doc = Get-Content -LiteralPath $paths.RunInputDoc -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'dist/empirical-run-inputs',
+        'build-empirical-run-inputs.ps1 -SelfTest',
+        'score-empirical-run-inputs.ps1 -SelfTest',
+        '324',
+        'Current Nonclaims'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical run-input doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.RunInputBuilder) {
+    $builder = Get-Content -LiteralPath $paths.RunInputBuilder -Raw
+    foreach ($check in @(
+        'Empirical run-input builder',
+        'record_count',
+        'task_suite_hash',
+        'prompt_pack_hash',
+        'manifest_hash',
+        'no_model_api_eval_execution',
+        '324'
+    )) {
+        if (-not $builder.Contains($check)) {
+            $failures.Add("Empirical run-input builder is missing invariant '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.RunInputScorer) {
+    $scorer = Get-Content -LiteralPath $paths.RunInputScorer -Raw
+    foreach ($check in @(
+        'Empirical run-input scoring',
+        'run_input_schema_only_no_model_execution',
+        'metadata/run-input-manifest.json',
+        'empirical_effectiveness_proven',
+        'Rejected package after task_id was changed outside the current task suite',
+        'Rejected package after transcript_messages was injected',
+        'Rejected package after empirical_effectiveness_proven was injected',
+        'Rejected metadata after empirical_effectiveness_proven and a private-path pattern were injected',
+        'Rejected package after one run-input record was removed',
+        'expected_records'
+    )) {
+        if (-not $scorer.Contains($check)) {
+            $failures.Add("Empirical run-input scorer is missing invariant '$check'.")
         }
     }
 }
@@ -425,7 +529,9 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'claim paper readiness',
         'No private repository material',
         'condition_prompt_pack_available',
+        'run_input_builder_available',
         'score-empirical-prompt-pack.ps1',
+        'score-empirical-run-inputs.ps1',
         'score-empirical-run-packet.ps1',
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -442,6 +548,8 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
     foreach ($check in @(
         'score-empirical-task-suite.ps1',
         'score-empirical-prompt-pack.ps1',
+        'build-empirical-run-inputs.ps1 -SelfTest',
+        'score-empirical-run-inputs.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-results.ps1 -SelfTest',
@@ -498,6 +606,7 @@ $blockedResultFields = @(
     'confidence_interval',
     'statistical_significance',
     'effectiveness_claim',
+    'empirical_effectiveness_proven',
     'paper_ready',
     'production_ready'
 )

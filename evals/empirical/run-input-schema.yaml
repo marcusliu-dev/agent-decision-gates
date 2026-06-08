@@ -1,0 +1,48 @@
+id: agent-decision-gates-run-input-schema
+version: 0.1.0
+claim_boundary: run_input_schema_only_no_model_execution
+description: Required fields for future model/API run inputs. This schema defines pre-execution input records only and contains no model outputs or results.
+
+required_fields:
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_pack_version
+  - manifest_version
+  - task_family
+  - task_prompt
+  - condition_instruction
+  - input_prompt
+  - expected_failure_modes
+  - required_conditions
+  - forbidden_claims
+  - output_record_fields
+  - privacy_boundary
+  - task_suite_sha256
+  - prompt_pack_sha256
+  - manifest_sha256
+  - redaction_status
+
+metadata_files:
+  - metadata/run-input-manifest.json
+  - metadata/task-suite-hash.json
+  - metadata/prompt-pack-hash.json
+  - metadata/experiment-manifest-hash.json
+  - metadata/builder-version.json
+
+privacy_requirements:
+  - public_synthetic_task_suite_only
+  - no_private_paths
+  - no_credentials
+  - no_unpublished_private_documents
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_transcripts
+  - no_annotations
+  - no_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_empirical_results
+  - no_paper_readiness

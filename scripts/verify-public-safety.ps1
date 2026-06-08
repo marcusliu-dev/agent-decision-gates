@@ -33,6 +33,7 @@ $requiredPaths = @(
     'evals/empirical/agent-decision-gates-task-suite.yaml',
     'evals/empirical/experiment-run-manifest.yaml',
     'evals/empirical/condition-prompt-pack.yaml',
+    'evals/empirical/run-input-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -45,6 +46,7 @@ $requiredPaths = @(
     'docs/deep-dive-report.md',
     'docs/empirical-evaluation-plan.md',
     'docs/condition-prompt-pack.md',
+    'docs/empirical-run-inputs.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -64,6 +66,8 @@ $requiredPaths = @(
     'scripts/score-eval-fixtures.ps1',
     'scripts/score-empirical-task-suite.ps1',
     'scripts/score-empirical-prompt-pack.ps1',
+    'scripts/build-empirical-run-inputs.ps1',
+    'scripts/score-empirical-run-inputs.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -140,6 +144,7 @@ $ceilingOrder = @{
     'empirical_agreement_checker_present_and_self_tested' = 12
     'empirical_dry_run_package_builder_present_and_self_tested' = 13
     'empirical_condition_prompt_pack_present_and_structurally_scored' = 14
+    'empirical_run_input_builder_present_and_self_tested' = 15
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -400,6 +405,8 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'human/LLM-judge agreement',
         'cost/latency',
         'score-empirical-prompt-pack.ps1',
+        'build-empirical-run-inputs.ps1 -SelfTest',
+        'score-empirical-run-inputs.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -460,7 +467,9 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'claim paper readiness',
         'No private repository material',
         'condition_prompt_pack_available',
+        'run_input_builder_available',
         'score-empirical-prompt-pack.ps1',
+        'score-empirical-run-inputs.ps1',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -488,10 +497,12 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'annotation_guidelines',
         'agreement_check_record',
         'condition_prompt_pack',
+        'run_input_record',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
         'condition_prompt_pack_available',
+        'run_input_builder_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -500,12 +511,96 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'budget_recorded_before_execution',
         'no_model_api_eval_execution',
         'no_empirical_results',
+        'empirical_effectiveness_proven',
         'no_transcripts',
         'no_annotations',
         'no_paper_readiness'
     )) {
         if ($runManifestContent -notlike "*$check*") {
             $failures.Add("Missing experiment run manifest requirement '$check'.")
+        }
+    }
+}
+
+$runInputSchemaPath = Join-Path $RepoRoot 'evals\empirical\run-input-schema.yaml'
+if (Test-Path -LiteralPath $runInputSchemaPath) {
+    $runInputSchemaContent = Get-Content -LiteralPath $runInputSchemaPath -Raw
+    if ($runInputSchemaContent -notmatch 'claim_boundary:\s*run_input_schema_only_no_model_execution') {
+        $failures.Add('Run-input schema must declare run_input_schema_only_no_model_execution claim boundary.')
+    }
+    foreach ($check in @(
+        'run_input_id',
+        'task_id',
+        'condition',
+        'repeat_index',
+        'task_suite_sha256',
+        'prompt_pack_sha256',
+        'manifest_sha256',
+        'metadata/run-input-manifest.json',
+        'no_model_api_eval_execution',
+        'no_transcripts',
+        'no_annotations',
+        'no_empirical_results',
+        'no_paper_readiness'
+    )) {
+        if ($runInputSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing run-input schema requirement '$check'.")
+        }
+    }
+}
+
+$runInputDocPath = Join-Path $RepoRoot 'docs\empirical-run-inputs.md'
+if (Test-Path -LiteralPath $runInputDocPath) {
+    $runInputDocContent = Get-Content -LiteralPath $runInputDocPath -Raw
+    foreach ($check in @(
+        'does not execute model/API evals',
+        'dist/empirical-run-inputs',
+        'build-empirical-run-inputs.ps1 -SelfTest',
+        'score-empirical-run-inputs.ps1 -SelfTest',
+        '324',
+        'Current Nonclaims'
+    )) {
+        if (-not $runInputDocContent.Contains($check)) {
+            $failures.Add("Missing empirical run-input doc boundary '$check' in docs/empirical-run-inputs.md")
+        }
+    }
+}
+
+$runInputBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-run-inputs.ps1'
+if (Test-Path -LiteralPath $runInputBuilderPath) {
+    $runInputBuilderContent = Get-Content -LiteralPath $runInputBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical run-input builder',
+        'record_count',
+        'task_suite_hash',
+        'prompt_pack_hash',
+        'manifest_hash',
+        'no_model_api_eval_execution',
+        '324'
+    )) {
+        if (-not $runInputBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical run-input builder invariant '$check'.")
+        }
+    }
+}
+
+$runInputScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-run-inputs.ps1'
+if (Test-Path -LiteralPath $runInputScorerPath) {
+    $runInputScorerContent = Get-Content -LiteralPath $runInputScorerPath -Raw
+    foreach ($check in @(
+        'Empirical run-input scoring',
+        'run_input_schema_only_no_model_execution',
+        'metadata/run-input-manifest.json',
+        'empirical_effectiveness_proven',
+        'Rejected package after task_id was changed outside the current task suite',
+        'Rejected package after transcript_messages was injected',
+        'Rejected package after empirical_effectiveness_proven was injected',
+        'Rejected metadata after empirical_effectiveness_proven and a private-path pattern were injected',
+        'Rejected package after one run-input record was removed',
+        'expected_records'
+    )) {
+        if (-not $runInputScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical run-input scorer invariant '$check'.")
         }
     }
 }
@@ -551,6 +646,7 @@ if (Test-Path -LiteralPath $conditionPromptPackPath) {
         'pass_rate',
         'win_rate',
         'effectiveness_claim',
+        'empirical_effectiveness_proven',
         'paper_ready',
         'production_ready',
         'statistical_significance'
@@ -1035,6 +1131,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\condition-prompt-pack.md'
             Label = 'docs/condition-prompt-pack.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-run-inputs.md'
+            Label = 'docs/empirical-run-inputs.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'

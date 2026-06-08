@@ -99,6 +99,8 @@ A paper-ready evidence package should include:
 
 - task suite version and hash;
 - all prompts and condition instructions;
+- generated run-input records with task, condition, repeat, prompt, and hash
+  metadata;
 - model/provider/runtime versions or identifiers;
 - random seeds or repeat identifiers where applicable;
 - raw transcripts;
@@ -150,6 +152,8 @@ Run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-prompt-pack.ps1
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-run-inputs.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-inputs.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
@@ -158,9 +162,10 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 ```
 
 These scorers verify only the shape of the public task-suite seed, condition
-prompt pack, and run packet plus the evidence-package validator's and results
-aggregator's synthetic self-tests, the agreement checker's synthetic self-test,
-and the dry-run package builder synthetic self-test. They do not execute model/API evals,
+prompt pack, generated run-input package route, and run packet plus the
+evidence-package validator's and results aggregator's synthetic self-tests, the
+agreement checker's synthetic self-test, and the dry-run package builder
+synthetic self-test. They do not execute model/API evals,
 score real completed transcripts, report real aggregate metrics, measure real
 human/LLM-judge agreement, or prove empirical effectiveness.
 
