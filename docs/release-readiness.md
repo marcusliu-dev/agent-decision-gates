@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_budget_gate_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -153,7 +153,8 @@ The current release claim is narrow and explicit:
   execution package builder/scorer self-tested for synthetic transcript and
   cost-latency package joins, plus a runner response contract scorer self-tested
   for single-response shape and boundary checks, plus a pilot execution package builder/scorer
-  self-tested through a local fixture runner and missing cost-telemetry rejection,
+  self-tested through a local fixture runner and missing cost-telemetry plus
+  budget-overrun rejection,
   plus an annotation worklist
   builder/scorer self-tested for unlabeled future-labeling work items derived
   from pilot transcripts, plus a label-template package builder/scorer
@@ -171,7 +172,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_cost_telemetry_gate_present_and_self_tested`.
+`empirical_pilot_budget_gate_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -211,7 +212,7 @@ system.
   self-tests pass for a generated 9-record transcript/cost-latency package
   produced through a temporary local fixture runner, require
   `-AllowRunnerScript`, and reject missing transcript, crossed cost-latency
-  join, credential-like content, provider/model/runtime mismatches, metadata
+  join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata
   hash tampering, non-JSON sensitive files, unsupported result/readiness claim
   cases, and `-Force` overwrite attempts over non-generated files;
 - the deterministic empirical annotation worklist builder and scorer
@@ -263,6 +264,9 @@ system.
 - the deterministic empirical pilot execution package builder rejects runner
   responses that omit required token, API cost, or retry telemetry, and rejects
   blank API cost telemetry, before package wrapping; it explicitly does not
+  prove real cost accuracy, runner quality, or model/API eval results;
+- the deterministic empirical pilot execution package scorer rejects package
+  total API cost above the execution preflight budget; it explicitly does not
   prove real cost accuracy, runner quality, or model/API eval results;
 - the deterministic empirical agreement checker passes its synthetic self-test
   and explicitly does not provide real human/LLM-judge agreement or judge

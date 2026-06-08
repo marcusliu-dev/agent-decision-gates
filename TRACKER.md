@@ -28,7 +28,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_cost_telemetry_gate_present_and_self_tested`
+`empirical_pilot_budget_gate_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -287,7 +287,7 @@ guarantees.
   transcript-shaped records and 9 cost-latency-shaped records through a
   temporary local fixture runner, requires `-AllowRunnerScript`, and the pilot
   execution package scorer self-test rejects missing transcript, crossed
-  cost-latency join, credential-like content, provider/model/runtime
+  cost-latency join, budget overrun, credential-like content, provider/model/runtime
   mismatches, metadata hash tampering, non-JSON sensitive files, unsupported
   result/readiness claim cases, and `-Force` overwrite attempts over
   non-generated files;
@@ -324,6 +324,9 @@ guarantees.
 - the empirical pilot execution package builder self-test rejects runner
   responses that omit required token, API cost, or retry telemetry, and rejects
   blank `api_cost_usd`, before package wrapping;
+- the empirical pilot execution package scorer self-test rejects package total
+  `api_cost_usd` above the execution preflight `max_budget_usd`, without
+  claiming measured cost accuracy or real model/API eval results;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

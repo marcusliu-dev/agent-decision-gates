@@ -763,6 +763,7 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageSchema) {
         'every_cost_latency_record_matches_transcript_run_id',
         'every_pilot_transcript_input_prompt_matches_run_input',
         'every_pilot_transcript_provider_model_runtime_matches_preflight',
+        'total_api_cost_usd_does_not_exceed_preflight_max_budget_usd',
         'source_preflight_hash_recorded',
         'source_run_input_manifest_hash_recorded',
         'runner_script_hash_recorded'
@@ -862,7 +863,9 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageScorer) {
         'pilot_execution_package_schema_only_no_empirical_results',
         'pilot_execution_package_unlabeled_no_empirical_results',
         'public_synthetic_task_no_private_material',
-        'Rejected missing transcript, crossed cost-latency join, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases',
+        'Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases',
+        'aggregate_budget_exceeded',
+        'micro_budget_exceeded',
         'unexpected non-JSON file',
         'runner-script-hash.json',
         'source-run-input-manifest-hash.json',

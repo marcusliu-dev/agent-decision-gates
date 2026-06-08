@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_budget_gate_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -280,16 +280,16 @@ intake validator for future completed label records, plus an evidence-package
 builder that assembles future pilot transcripts, cost/latency records, and
 completed annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_pilot_cost_telemetry_gate_present_and_self_tested`. The
+`empirical_pilot_budget_gate_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
 correctness. The run-to-run variance summary is synthetic-self-tested analyzer
-logic only and is not a real empirical result. The pilot cost telemetry gate
-requires explicit runner-reported token, API cost, and retry telemetry before
-package wrapping, but it does not prove real cost accuracy, runner quality, or
-model/API eval results. The dry-run package is synthetic evidence-shape exercise
-only. The
+logic only and is not a real empirical result. The pilot budget gate requires
+explicit runner-reported token, API cost, and retry telemetry before package
+wrapping and rejects package totals above the preflight budget, but it does not
+prove real cost accuracy, runner quality, or model/API eval results. The dry-run
+package is synthetic evidence-shape exercise only. The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape

@@ -186,6 +186,7 @@ $ceilingOrder = @{
     'empirical_runner_response_contract_present_and_self_tested' = 24
     'empirical_results_variance_analyzer_present_and_self_tested' = 25
     'empirical_pilot_cost_telemetry_gate_present_and_self_tested' = 26
+    'empirical_pilot_budget_gate_present_and_self_tested' = 27
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -1002,10 +1003,11 @@ if (Test-Path -LiteralPath $pilotExecutionPackageSchemaPath) {
         'runner_reports_input_tokens_before_package_wrapping',
         'runner_reports_output_tokens_before_package_wrapping',
         'runner_reports_api_cost_usd_before_package_wrapping',
-        'runner_reports_retry_count_before_package_wrapping'
+        'runner_reports_retry_count_before_package_wrapping',
+        'total_api_cost_usd_does_not_exceed_preflight_max_budget_usd'
     )) {
         if ($pilotExecutionPackageSchemaContent -notlike "*$check*") {
-            $failures.Add("Missing pilot execution package telemetry requirement '$check'.")
+            $failures.Add("Missing pilot execution package telemetry/budget requirement '$check'.")
         }
     }
 }
@@ -1016,10 +1018,11 @@ if (Test-Path -LiteralPath $pilotExecutionRunnerDocPath) {
     foreach ($check in @(
         'does not silently convert missing API cost into zero cost',
         'reject missing runner cost telemetry',
+        'total API cost above the preflight max budget',
         'measured cost accuracy beyond runner-reported telemetry'
     )) {
         if (-not $pilotExecutionRunnerDocContent.Contains($check)) {
-            $failures.Add("Missing empirical pilot execution runner telemetry boundary '$check'.")
+            $failures.Add("Missing empirical pilot execution runner telemetry/budget boundary '$check'.")
         }
     }
 }
@@ -1034,6 +1037,23 @@ if (Test-Path -LiteralPath $pilotExecutionPackageBuilderPath) {
     )) {
         if (-not $pilotExecutionPackageBuilderContent.Contains($check)) {
             $failures.Add("Missing empirical pilot execution package telemetry invariant '$check'.")
+        }
+    }
+}
+
+$pilotExecutionPackageScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-pilot-execution-package.ps1'
+if (Test-Path -LiteralPath $pilotExecutionPackageScorerPath) {
+    $pilotExecutionPackageScorerContent = Get-Content -LiteralPath $pilotExecutionPackageScorerPath -Raw
+    foreach ($check in @(
+        'total_api_cost_usd',
+        'preflight_max_budget_usd',
+        'exceeds preflight max_budget_usd',
+        'aggregate_budget_exceeded',
+        'micro_budget_exceeded',
+        'Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases'
+    )) {
+        if (-not $pilotExecutionPackageScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution package budget scorer invariant '$check'.")
         }
     }
 }

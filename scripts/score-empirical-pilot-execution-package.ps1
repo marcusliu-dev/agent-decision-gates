@@ -391,6 +391,16 @@ function Invoke-PackageValidation {
     }
 
     $preflight = Get-Content -LiteralPath $PreflightFile -Raw | ConvertFrom-Json
+    $maxBudgetUsd = $null
+    if (-not (Test-HasProperty -Record $preflight -Name 'max_budget_usd') -or -not (Test-IsJsonNumber -Value $preflight.max_budget_usd)) {
+        $failures.Add('Execution preflight max_budget_usd must be numeric before pilot execution package scoring.')
+    } else {
+        $maxBudgetUsd = [double]$preflight.max_budget_usd
+        if ([double]::IsNaN($maxBudgetUsd) -or [double]::IsInfinity($maxBudgetUsd) -or $maxBudgetUsd -le 0) {
+            $failures.Add("Execution preflight max_budget_usd '$($preflight.max_budget_usd)' must be greater than zero.")
+            $maxBudgetUsd = $null
+        }
+    }
     $selectedIds = @(Get-JsonArray -Value $preflight.selected_run_input_ids | ForEach-Object { [string]$_ })
     $runInputById = @{}
     foreach ($file in @(Get-ChildItem -LiteralPath (Join-Path $InputRoot 'run-inputs') -File -Filter '*.json')) {
@@ -462,15 +472,25 @@ function Invoke-PackageValidation {
     }
 
     $costById = @{}
+    $totalApiCostUsd = 0.0
     foreach ($cost in $costRecords) {
         Assert-RequiredFields -Failures $failures -Record $cost -Fields $requiredCostFields -Label "cost-latency $($cost.cost_latency_record_id)"
         foreach ($field in @('input_tokens', 'output_tokens', 'tool_call_count', 'wall_time_ms', 'api_cost_usd', 'retry_count')) {
             Assert-JsonNumber -Failures $failures -Label "cost-latency $($cost.cost_latency_record_id)" -Field $field -Value $cost.$field -Minimum 0
         }
+        if (Test-IsJsonNumber -Value $cost.api_cost_usd) {
+            $apiCostUsd = [double]$cost.api_cost_usd
+            if (-not ([double]::IsNaN($apiCostUsd)) -and -not ([double]::IsInfinity($apiCostUsd)) -and $apiCostUsd -ge 0) {
+                $totalApiCostUsd += $apiCostUsd
+            }
+        }
         $costById[[string]$cost.cost_latency_record_id] = $cost
         if (-not $transcriptByRunId.ContainsKey([string]$cost.run_id)) {
             $failures.Add("Cost-latency '$($cost.cost_latency_record_id)' references missing transcript run_id '$($cost.run_id)'.")
         }
+    }
+    if ($null -ne $maxBudgetUsd -and $totalApiCostUsd -gt $maxBudgetUsd) {
+        $failures.Add(("Pilot execution package total api_cost_usd {0} exceeds preflight max_budget_usd {1}." -f $totalApiCostUsd, $maxBudgetUsd))
     }
     foreach ($transcript in $transcripts) {
         $costId = [string]$transcript.cost_latency_record_id
@@ -557,6 +577,10 @@ function Invoke-PackageValidation {
     $summary['selected_run_input_count'] = $selectedIds.Count
     $summary['transcript_count'] = $transcripts.Count
     $summary['cost_latency_count'] = $costRecords.Count
+    $summary['total_api_cost_usd'] = $totalApiCostUsd
+    if ($null -ne $maxBudgetUsd) {
+        $summary['preflight_max_budget_usd'] = $maxBudgetUsd
+    }
     $info.Add('Scored empirical pilot execution package structure.')
     $info.Add("Checked $($transcripts.Count) pilot transcript record(s) and $($costRecords.Count) cost-latency record(s).")
 
@@ -681,6 +705,33 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
         & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
         $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
 
+        Assert-NegativeCase -Failures $failures -Name 'budget_exceeded' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText 'exceeds preflight max_budget_usd' -SkipUpstreamScorers $true -Mutate {
+            $cost = Get-Content -LiteralPath $pilotFiles.Cost.FullName -Raw | ConvertFrom-Json
+            $cost.api_cost_usd = 1.01
+            Write-JsonFile -Path $pilotFiles.Cost.FullName -Value $cost
+        }
+        & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
+        $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
+
+        Assert-NegativeCase -Failures $failures -Name 'aggregate_budget_exceeded' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText 'exceeds preflight max_budget_usd' -SkipUpstreamScorers $true -Mutate {
+            $costFiles = @(Get-ChildItem -LiteralPath (Join-Path $packageRoot 'cost-latency') -File -Filter '*.json' | Sort-Object Name | Select-Object -First 6)
+            foreach ($costFile in $costFiles) {
+                $cost = Get-Content -LiteralPath $costFile.FullName -Raw | ConvertFrom-Json
+                $cost.api_cost_usd = 0.17
+                Write-JsonFile -Path $costFile.FullName -Value $cost
+            }
+        }
+        & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
+        $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
+
+        Assert-NegativeCase -Failures $failures -Name 'micro_budget_exceeded' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText 'exceeds preflight max_budget_usd' -SkipUpstreamScorers $true -Mutate {
+            $cost = Get-Content -LiteralPath $pilotFiles.Cost.FullName -Raw | ConvertFrom-Json
+            $cost.api_cost_usd = 1.00000005
+            Write-JsonFile -Path $pilotFiles.Cost.FullName -Value $cost
+        }
+        & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
+        $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
+
         Assert-NegativeCase -Failures $failures -Name 'credential_like_content' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText 'blocked sensitive pattern' -SkipUpstreamScorers $true -Mutate {
             $transcript = Get-Content -LiteralPath $pilotFiles.Transcript.FullName -Raw | ConvertFrom-Json
             $transcript.final_answer = ('fixture output with bearer-like text ' + 'Bear' + 'er abcdefghijklmnopqrstuvwxyz')
@@ -781,7 +832,7 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
         }
 
         $info.Add('Validated generated pilot execution package.')
-        $info.Add('Rejected missing transcript, crossed cost-latency join, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases.')
+        $info.Add('Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force

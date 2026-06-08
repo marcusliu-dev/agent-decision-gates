@@ -55,6 +55,7 @@ join_requirements:
   - every_cost_latency_record_matches_transcript_run_id
   - every_pilot_transcript_input_prompt_matches_run_input
   - every_pilot_transcript_provider_model_runtime_matches_preflight
+  - total_api_cost_usd_does_not_exceed_preflight_max_budget_usd
   - source_preflight_hash_recorded
   - source_run_input_manifest_hash_recorded
   - runner_script_hash_recorded

@@ -1,6 +1,6 @@
 # Empirical Pilot Execution Runner
 
-<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_budget_gate_present_and_self_tested -->
 
 Status: Explicit local-runner route for future pilot transcript and
 cost-latency package generation. This runner consumes a scored run-input
@@ -73,7 +73,8 @@ The package builder rejects missing required runner telemetry before wrapping.
 The package scorer rejects missing or invalid cost-latency package fields,
 credentials, private paths, non-JSON package files, unsupported result or
 paper-readiness claims, provider/model/runtime mismatch, broken transcript/cost
-joins, and missing selected run inputs.
+joins, missing selected run inputs, and total API cost above the preflight max
+budget.
 It explicitly rejects credentials before any pilot package can support a public
 claim.
 
@@ -100,7 +101,8 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution
 The self-tests build temporary run inputs and an execution preflight, execute a
 temporary local fixture runner, validate the resulting transcript/cost package,
 reject missing runner cost telemetry, missing transcripts, crossed
-cost-latency joins, credential-like content, provider/model/runtime mismatches,
+cost-latency joins, total API cost above the preflight max budget,
+credential-like content, provider/model/runtime mismatches,
 metadata hash tampering, non-JSON sensitive files, unsupported
 result/paper-readiness tokens, and `-Force` overwrite attempts over
 non-generated files, then remove the temporary files.
