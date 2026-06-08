@@ -92,6 +92,13 @@ The current structural run packet contains:
   and [`score-empirical-label-template-package.ps1`](../scripts/score-empirical-label-template-package.ps1)
   for deriving fillable placeholder templates from annotation work items before
   completed labels, agreement measurements, or aggregate metrics are claimed;
+- [`human-annotation-handoff-schema.yaml`](../evals/empirical/human-annotation-handoff-schema.yaml),
+  [`empirical-human-annotation-handoff.md`](empirical-human-annotation-handoff.md),
+  [`build-empirical-human-annotation-handoff.ps1`](../scripts/build-empirical-human-annotation-handoff.ps1),
+  and [`score-empirical-human-annotation-handoff.ps1`](../scripts/score-empirical-human-annotation-handoff.ps1)
+  for deriving unfilled human draft JSON records and transcript readouts before
+  completed human labels, agreement measurements, or aggregate metrics are
+  claimed;
 - [`annotation-intake-schema.yaml`](../evals/empirical/annotation-intake-schema.yaml),
   [`empirical-annotation-intake.md`](empirical-annotation-intake.md),
   and [`score-empirical-annotation-intake.ps1`](../scripts/score-empirical-annotation-intake.ps1)
@@ -175,6 +182,7 @@ Stop before execution if:
 - selected runner requests are needed but the pilot_runner_request_package_scorer_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
+- the human annotation handoff route is needed but the human_annotation_handoff_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
 - an evidence package needs assembly but the evidence_package_builder_available stop gate is not satisfied;
 - budget is not recorded;
@@ -208,6 +216,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-work
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-label-template-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-human-annotation-handoff.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-human-annotation-handoff.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-intake.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
@@ -224,7 +234,8 @@ self-test, the pilot execution runner package builder/scorer self-tests, the
 pilot run chain builder self-test, the pilot execution readiness checker
 self-test, the pilot runner request package builder/scorer self-tests, the
 annotation worklist builder/scorer self-tests, the label-template package
-builder/scorer self-tests, the annotation-intake scorer self-test, the
+builder/scorer self-tests, the human annotation handoff builder/scorer
+self-tests, the annotation-intake scorer self-test, the
 evidence-package builder self-test, and the synthetic
 dry-run package builder self-test. This
 includes the synthetic dry-run package builder self-test.
@@ -238,7 +249,8 @@ fixture runner and does not call hosted model APIs. The pilot run chain self-tes
 also uses a temporary local fixture runner and prepares downstream unlabeled
 work items and placeholder templates only. The annotation worklist self-tests produce unlabeled
 work items only. The label-template package self-tests produce placeholders
-only. The annotation-intake scorer self-test uses synthetic completed-label
+only. The human annotation handoff self-tests produce unfilled human drafts and
+transcript readouts only. The annotation-intake scorer self-test uses synthetic completed-label
 fixtures only. The evidence-package builder self-test assembles synthetic
 source packages only. They do not score real annotated completed transcripts,
 measure real agreement, or prove empirical effectiveness.

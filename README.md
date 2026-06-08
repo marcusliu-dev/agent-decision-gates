@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: related_work_and_limitations_present_and_ci_verified -->
+<!-- claim_ceiling: empirical_human_annotation_handoff_builder_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -98,6 +98,10 @@ This repo packages a simple alternative:
 - an [empirical label-template package guide](docs/empirical-label-template-package.md),
   schema, builder, and scorer for turning annotation work items into fillable
   placeholder templates before any completed labels are claimed;
+- an [empirical human annotation handoff guide](docs/empirical-human-annotation-handoff.md),
+  schema, builder, and scorer for turning label templates into unfilled human
+  draft JSON records and transcript readouts before any human labels are
+  claimed;
 - an [empirical annotation-intake guide](docs/empirical-annotation-intake.md),
   schema, and scorer for validating future completed annotation records against
   label templates, work items, annotation schema, and guideline hashes before
@@ -246,6 +250,9 @@ requires independent review.
 - Read [docs/empirical-label-template-package.md](docs/empirical-label-template-package.md)
   for the placeholder template route that prepares future human or LLM-judge
   annotation forms without creating completed labels.
+- Read [docs/empirical-human-annotation-handoff.md](docs/empirical-human-annotation-handoff.md)
+  for the unfilled human handoff route that prepares draft JSON records and
+  transcript readouts before any human labels are claimed.
 - Read [docs/empirical-annotation-intake.md](docs/empirical-annotation-intake.md)
   for the completed-annotation intake validation route that checks future label
   records before agreement or metric claims.

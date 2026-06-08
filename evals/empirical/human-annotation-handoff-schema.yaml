@@ -1,0 +1,89 @@
+id: agent-decision-gates-human-annotation-handoff-schema
+version: 0.1.0
+claim_boundary: human_annotation_handoff_schema_only_no_completed_labels
+description: Required shape for human-annotation handoff packages derived from label templates. This schema defines unfilled draft records and transcript readouts for future human annotation. It contains no completed human labels, agreement metrics, aggregate results, judge-validity claim, or paper-readiness claim.
+
+required_directories:
+  - annotation-drafts
+  - transcript-readouts
+  - metadata
+
+required_metadata_files:
+  - human-annotation-handoff-manifest.json
+  - source-label-template-package-manifest-hash.json
+  - source-annotation-worklist-manifest-hash.json
+  - source-pilot-execution-manifest-hash.json
+  - annotation-schema-hash.json
+  - annotation-guidelines-hash.json
+
+required_draft_fields:
+  - annotation_id
+  - annotation_template_id
+  - annotation_work_item_id
+  - run_id
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - annotation_guideline_version
+  - annotator_type
+  - annotator_id
+  - label_timestamp_utc
+  - rationale_transcript_spans
+  - confidence
+  - claim_boundary
+  - source_redaction_status
+
+join_requirements:
+  - every_label_template_has_human_draft
+  - every_human_draft_maps_to_label_template
+  - every_human_draft_maps_to_annotation_work_item
+  - every_human_draft_has_transcript_readout
+  - source_label_template_package_manifest_hash_recorded
+  - source_annotation_worklist_manifest_hash_recorded
+  - source_pilot_execution_manifest_hash_recorded
+  - annotation_schema_hash_recorded
+  - annotation_guidelines_hash_recorded
+  - draft_label_values_remain_fill_placeholders
+
+label_placeholder_value: __fill_one_of_pass_fail_partial_not_applicable_insufficient_evidence__
+annotator_id_placeholder: __fill_human_annotator_id__
+timestamp_placeholder: __fill_iso8601_utc_timestamp__
+message_index_placeholder: __fill_message_index__
+start_offset_placeholder: __fill_start_offset__
+end_offset_placeholder: __fill_end_offset__
+confidence_placeholder: __fill_0_to_1__
+
+allowed_future_label_values:
+  - pass
+  - fail
+  - partial
+  - not_applicable
+  - insufficient_evidence
+
+forbidden_fields:
+  - pass_rate
+  - win_rate
+  - agreement_summary
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - aggregate_metrics
+  - real_aggregate_metrics
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - paper_readiness
+  - production_ready
+  - judge_validity_proven
+  - annotator_quality_proven
+
+current_nonclaims:
+  - no_completed_human_labels
+  - no_human_llm_agreement
+  - no_aggregate_metrics
+  - no_judge_validity_claim
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

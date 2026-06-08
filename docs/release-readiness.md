@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: related_work_and_limitations_present_and_ci_verified -->
+<!-- claim_ceiling: empirical_human_annotation_handoff_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -18,8 +18,10 @@ package wrapping, plus a pilot execution package builder/scorer for explicitly
 allowed local runner scripts with required runner token, API cost, and retry
 telemetry before package wrapping, plus an annotation worklist builder/scorer for deriving unlabeled future-labeling work items from
 pilot transcripts, plus a label-template package builder/scorer for deriving
-fillable placeholder templates from annotation work items, plus an annotation
-intake scorer for validating future completed annotation records, plus an
+fillable placeholder templates from annotation work items, plus a human
+annotation handoff builder/scorer for deriving unfilled human draft JSON
+records and transcript readouts from label templates, plus an annotation intake
+scorer for validating future completed annotation records, plus an
 evidence-package builder for assembling future pilot transcripts, cost/latency
 records, and completed annotations into a validation-ready evidence package,
 plus a pilot run chain builder for connecting run inputs, execution preflight,
@@ -77,6 +79,7 @@ The current repository surface includes:
 - `evals/empirical/pilot-runner-request-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
+- `evals/empirical/human-annotation-handoff-schema.yaml`
 - `evals/empirical/annotation-intake-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
@@ -100,6 +103,7 @@ The current repository surface includes:
 - `docs/empirical-pilot-runner-requests.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
+- `docs/empirical-human-annotation-handoff.md`
 - `docs/empirical-annotation-intake.md`
 - `docs/empirical-evidence-package-builder.md`
 - `docs/experiment-run-packet.md`
@@ -138,6 +142,8 @@ The current repository surface includes:
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
 - `scripts/score-empirical-label-template-package.ps1`
+- `scripts/build-empirical-human-annotation-handoff.ps1`
+- `scripts/score-empirical-human-annotation-handoff.ps1`
 - `scripts/score-empirical-annotation-intake.ps1`
 - `scripts/build-empirical-evidence-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
@@ -179,7 +185,9 @@ The current release claim is narrow and explicit:
   builder/scorer self-tested for unlabeled future-labeling work items derived
   from pilot transcripts, plus a label-template package builder/scorer
   self-tested for fillable placeholder templates derived from annotation work
-  items, plus an annotation-intake scorer self-tested for validating synthetic
+  items, plus a human annotation handoff builder/scorer self-tested for
+  unfilled human drafts and transcript readouts derived from label templates,
+  plus an annotation-intake scorer self-tested for validating synthetic
   completed annotation records against templates, work items, schema, and
   guideline hashes, plus an evidence-package builder self-tested for assembling
   synthetic pilot transcripts, cost/latency records, and completed annotation
@@ -196,7 +204,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`ci_verification_workflow_present_and_self_tested`.
+`empirical_human_annotation_handoff_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -273,6 +281,12 @@ system.
   temporary local fixture annotation worklist and reject missing templates,
   non-placeholder label values, mismatched work-item fields, duplicate
   templates, metadata hash tampering, non-JSON sensitive files, and `-Force`
+  overwrite attempts over non-generated files;
+- the deterministic empirical human annotation handoff builder and scorer
+  self-tests pass for a generated 9-draft unfilled human handoff package with
+  transcript readouts derived from a temporary local fixture label-template
+  package and reject completed label values, missing readouts, metadata hash
+  tampering, forbidden aggregate fields, sensitive package text, and `-Force`
   overwrite attempts over non-generated files;
 - the deterministic empirical annotation-intake scorer self-test validates a
   synthetic completed-annotation package against a temporary local fixture
@@ -368,6 +382,9 @@ These are intentionally outside the current release scope:
 - any claim that the label-template package self-test is itself a completed
   annotation set, human-label result, LLM-judge result, agreement measurement,
   metric result, annotator-quality claim, or empirical finding;
+- any claim that the human annotation handoff self-test is itself a completed
+  human-label result, annotation-intake package, agreement measurement, metric
+  result, annotator-quality claim, judge-validity claim, or empirical finding;
 - any claim that the annotation-intake self-test is itself a real completed
   annotation set, human-label result, LLM-judge result, agreement measurement,
   metric result, annotator-quality claim, judge-validity claim, or empirical

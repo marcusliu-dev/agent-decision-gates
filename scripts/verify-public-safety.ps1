@@ -45,6 +45,7 @@ $requiredPaths = @(
     'evals/empirical/pilot-runner-request-schema.yaml',
     'evals/empirical/annotation-worklist-schema.yaml',
     'evals/empirical/label-template-package-schema.yaml',
+    'evals/empirical/human-annotation-handoff-schema.yaml',
     'evals/empirical/annotation-intake-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
@@ -69,6 +70,7 @@ $requiredPaths = @(
     'docs/empirical-pilot-runner-requests.md',
     'docs/empirical-annotation-worklist.md',
     'docs/empirical-label-template-package.md',
+    'docs/empirical-human-annotation-handoff.md',
     'docs/empirical-annotation-intake.md',
     'docs/empirical-evidence-package-builder.md',
     'docs/experiment-run-packet.md',
@@ -107,6 +109,8 @@ $requiredPaths = @(
     'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/build-empirical-label-template-package.ps1',
     'scripts/score-empirical-label-template-package.ps1',
+    'scripts/build-empirical-human-annotation-handoff.ps1',
+    'scripts/score-empirical-human-annotation-handoff.ps1',
     'scripts/score-empirical-annotation-intake.ps1',
     'scripts/build-empirical-evidence-package.ps1',
     'scripts/score-empirical-run-packet.ps1',
@@ -205,6 +209,7 @@ $ceilingOrder = @{
     'empirical_evidence_package_empty_tool_calls_self_tested' = 32
     'ci_verification_workflow_present_and_self_tested' = 33
     'related_work_and_limitations_present_and_ci_verified' = 34
+    'empirical_human_annotation_handoff_builder_present_and_self_tested' = 35
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -522,6 +527,8 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
+        'build-empirical-human-annotation-handoff.ps1 -SelfTest',
+        'score-empirical-human-annotation-handoff.ps1 -SelfTest',
         'score-empirical-annotation-intake.ps1 -SelfTest',
         'build-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
@@ -533,6 +540,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'pilot run chain route',
         'annotation worklist route',
         'label-template package route',
+        'human annotation handoff route',
         'annotation intake route',
         'evidence package builder',
         'dry-run package builder'
@@ -616,6 +624,8 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
+        'build-empirical-human-annotation-handoff.ps1 -SelfTest',
+        'score-empirical-human-annotation-handoff.ps1 -SelfTest',
         'score-empirical-annotation-intake.ps1 -SelfTest',
         'build-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
@@ -630,6 +640,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'pilot run chain',
         'annotation worklist',
         'label-template package',
+        'human annotation handoff',
         'annotation-intake',
         'evidence package builder',
         'synthetic dry-run package builder self-test'
@@ -1514,6 +1525,93 @@ if (Test-Path -LiteralPath $labelTemplateScorerPath) {
     }
 }
 
+$humanHandoffSchemaPath = Join-Path $RepoRoot 'evals\empirical\human-annotation-handoff-schema.yaml'
+if (Test-Path -LiteralPath $humanHandoffSchemaPath) {
+    $humanHandoffSchemaContent = Get-Content -LiteralPath $humanHandoffSchemaPath -Raw
+    if ($humanHandoffSchemaContent -notmatch 'claim_boundary:\s*human_annotation_handoff_schema_only_no_completed_labels') {
+        $failures.Add('Human annotation handoff schema must declare human_annotation_handoff_schema_only_no_completed_labels claim boundary.')
+    }
+    foreach ($check in @(
+        'annotation-drafts',
+        'transcript-readouts',
+        'human-annotation-handoff-manifest.json',
+        'source-label-template-package-manifest-hash.json',
+        'source-annotation-worklist-manifest-hash.json',
+        'source-pilot-execution-manifest-hash.json',
+        'annotation-schema-hash.json',
+        'annotation-guidelines-hash.json',
+        'annotation_id',
+        'annotator_type',
+        'label_timestamp_utc',
+        'rationale_transcript_spans',
+        'every_label_template_has_human_draft',
+        'draft_label_values_remain_fill_placeholders',
+        'pass_rate',
+        'agreement_summary',
+        'empirical_effectiveness_proven',
+        'no_completed_human_labels',
+        'no_human_llm_agreement',
+        'no_paper_readiness'
+    )) {
+        if ($humanHandoffSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing human annotation handoff schema requirement '$check'.")
+        }
+    }
+}
+
+$humanHandoffDocPath = Join-Path $RepoRoot 'docs\empirical-human-annotation-handoff.md'
+if (Test-Path -LiteralPath $humanHandoffDocPath) {
+    $humanHandoffDocContent = Get-Content -LiteralPath $humanHandoffDocPath -Raw
+    foreach ($check in @(
+        'does not create completed human labels',
+        'not an annotation intake package',
+        'build-empirical-human-annotation-handoff.ps1 -SelfTest',
+        'score-empirical-human-annotation-handoff.ps1 -SelfTest',
+        'reject completed label values',
+        'metadata hash tampering',
+        'Current Nonclaims'
+    )) {
+        if (-not $humanHandoffDocContent.Contains($check)) {
+            $failures.Add("Missing empirical human handoff doc boundary '$check' in docs/empirical-human-annotation-handoff.md")
+        }
+    }
+}
+
+$humanHandoffBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-human-annotation-handoff.ps1'
+if (Test-Path -LiteralPath $humanHandoffBuilderPath) {
+    $humanHandoffBuilderContent = Get-Content -LiteralPath $humanHandoffBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical human annotation handoff builder',
+        'human_annotation_handoff_unfilled_no_labels',
+        'Built a 9-draft human annotation handoff',
+        'Refused non-generated files when -Force was used',
+        'source-label-template-package-manifest-hash.json',
+        'source-pilot-execution-manifest-hash.json'
+    )) {
+        if (-not $humanHandoffBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical human handoff builder invariant '$check'.")
+        }
+    }
+}
+
+$humanHandoffScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-human-annotation-handoff.ps1'
+if (Test-Path -LiteralPath $humanHandoffScorerPath) {
+    $humanHandoffScorerContent = Get-Content -LiteralPath $humanHandoffScorerPath -Raw
+    foreach ($check in @(
+        'Empirical human annotation handoff scoring',
+        'human_annotation_handoff_schema_only_no_completed_labels',
+        'human_annotation_handoff_unfilled_no_labels',
+        'Rejected completed label values, metadata hash tampering, missing readouts, forbidden aggregate fields, and sensitive package text',
+        'must remain __fill_one_of_pass_fail_partial_not_applicable_insufficient_evidence__',
+        'source-label-template-package-manifest-hash.json',
+        'source-pilot-execution-manifest-hash.json'
+    )) {
+        if (-not $humanHandoffScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical human handoff scorer invariant '$check'.")
+        }
+    }
+}
+
 $annotationIntakeSchemaPath = Join-Path $RepoRoot 'evals\empirical\annotation-intake-schema.yaml'
 if (Test-Path -LiteralPath $annotationIntakeSchemaPath) {
     $annotationIntakeSchemaContent = Get-Content -LiteralPath $annotationIntakeSchemaPath -Raw
@@ -2217,6 +2315,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-label-template-package.md'
             Label = 'docs/empirical-label-template-package.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-human-annotation-handoff.md'
+            Label = 'docs/empirical-human-annotation-handoff.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-annotation-intake.md'

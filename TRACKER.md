@@ -26,7 +26,9 @@ without executing the runner, an annotation
 worklist builder/scorer for deriving
 unlabeled future-labeling work items from pilot transcripts, a label-template
 package builder/scorer for deriving fillable placeholder templates from
-annotation work items, an annotation intake scorer for validating future
+annotation work items, a human annotation handoff builder/scorer for deriving
+unfilled human draft JSON records and transcript readouts from label templates,
+an annotation intake scorer for validating future
 completed annotation records, an evidence package builder for assembling future
 pilot transcripts, cost/latency records, and completed annotations before
 downstream validation, and a
@@ -37,7 +39,7 @@ map for the future paper path.
 
 ## Current Claim Ceiling
 
-`related_work_and_limitations_present_and_ci_verified`
+`empirical_human_annotation_handoff_builder_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -46,7 +48,7 @@ that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, related-work and limitations map, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, annotation worklist schema, label-template package schema,
-annotation-intake schema, evidence-package schema,
+human annotation handoff schema, annotation-intake schema, evidence-package schema,
 evidence-package validation guide, evidence-package builder guide,
 results-summary schema, results-analysis
 guide, annotation guidelines, agreement-summary schema, agreement-checks guide,
@@ -58,8 +60,9 @@ and scorer exist, that a pilot execution package schema, guide, builder, and
 scorer exist, that a pilot execution readiness schema, guide, and checker exist,
 that a pilot runner request schema, guide, builder, and scorer exist, that an annotation
 worklist guide, builder, and scorer exist, that a synthetic dry-run package guide and builder exist,
-that a label-template package guide, builder, and scorer exist, that an
-annotation-intake guide and scorer exist, that an evidence-package builder
+that a label-template package guide, builder, and scorer exist, that a human
+annotation handoff guide, builder, and scorer exist, that an annotation-intake
+guide and scorer exist, that an evidence-package builder
 guide and builder exist,
 that a pilot run chain guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
@@ -80,6 +83,9 @@ temporary local fixture pilot execution package,
 that the label-template package builder/scorer self-tests pass for a
 placeholder 9-template package derived from a temporary local fixture
 annotation worklist,
+that the human annotation handoff builder/scorer self-tests pass for an
+unfilled 9-draft human handoff package with transcript readouts derived from a
+temporary local fixture label-template package,
 that the annotation-intake scorer self-test passes for a synthetic
 completed-annotation package derived from the temporary local fixture
 label-template package, that the evidence-package builder self-test assembles
@@ -131,7 +137,9 @@ runner execution, runner responses, transcripts, cost/latency records, labels,
 metrics, credential-validity evidence, or paper-readiness evidence, and the
 annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
-claim is bounded to placeholder template generation and scoring, and the
+claim is bounded to placeholder template generation and scoring, and the human
+annotation handoff claim is bounded to unfilled draft/readout generation and
+scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
 validation, and the evidence-package builder claim is bounded to synthetic
 assembly plus validator handoff, and the pilot run chain claim is bounded to a
@@ -188,6 +196,7 @@ empirical effectiveness, or production runtime guarantees.
 - `evals/empirical/pilot-runner-request-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
+- `evals/empirical/human-annotation-handoff-schema.yaml`
 - `evals/empirical/annotation-intake-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
@@ -211,6 +220,7 @@ empirical effectiveness, or production runtime guarantees.
 - `docs/empirical-pilot-runner-requests.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
+- `docs/empirical-human-annotation-handoff.md`
 - `docs/empirical-annotation-intake.md`
 - `docs/empirical-evidence-package-builder.md`
 - `docs/experiment-run-packet.md`
@@ -249,6 +259,8 @@ empirical effectiveness, or production runtime guarantees.
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
 - `scripts/score-empirical-label-template-package.ps1`
+- `scripts/build-empirical-human-annotation-handoff.ps1`
+- `scripts/score-empirical-human-annotation-handoff.ps1`
 - `scripts/score-empirical-annotation-intake.ps1`
 - `scripts/build-empirical-evidence-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
@@ -289,6 +301,8 @@ empirical effectiveness, or production runtime guarantees.
   scoring from pilot transcripts;
 - no label-template package claim beyond placeholder template generation and
   scoring from annotation work items;
+- no human annotation handoff claim beyond unfilled draft/readout generation
+  and scoring from label templates;
 - no annotation-intake claim beyond synthetic completed-annotation package
   validation against templates, work items, schema, and guideline hashes;
 - no evidence-package builder claim beyond synthetic assembly, source scanning,
@@ -366,6 +380,11 @@ empirical effectiveness, or production runtime guarantees.
   non-placeholder label values, mismatched work-item fields, duplicate
   templates, metadata hash tampering, non-JSON sensitive files, and `-Force`
   overwrite attempts over non-generated files;
+- the empirical human annotation handoff builder self-test generates 9
+  unfilled human drafts and 9 transcript readouts from a temporary local
+  fixture label-template package, and the human handoff scorer self-test
+  rejects completed label values, missing readouts, metadata hash tampering,
+  forbidden aggregate fields, and sensitive package text;
 - the empirical annotation-intake scorer self-test validates a synthetic
   completed-annotation package against a temporary local fixture label-template
   package and rejects missing annotations, invalid labels, out-of-range spans,
