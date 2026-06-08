@@ -13,13 +13,15 @@ builder/scorer for explicitly allowed local runner scripts, an annotation
 worklist builder/scorer for deriving unlabeled future-labeling work items from
 pilot transcripts, a label-template package builder/scorer for deriving
 fillable placeholder templates from annotation work items, an annotation
-intake scorer for validating future completed annotation records, and a
+intake scorer for validating future completed annotation records, an evidence
+package builder for assembling future pilot transcripts, cost/latency records,
+and completed annotations before downstream validation, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_annotation_intake_validator_present_and_self_tested`
+`empirical_evidence_package_builder_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -29,7 +31,8 @@ report exists under `docs/deep-dive-report.md`, that an empirical evaluation
 plan, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, annotation worklist schema, label-template package schema,
 annotation-intake schema, evidence-package schema,
-evidence-package validation guide, results-summary schema, results-analysis
+evidence-package validation guide, evidence-package builder guide,
+results-summary schema, results-analysis
 guide, annotation guidelines, agreement-summary schema, agreement-checks guide,
 and condition prompt pack exist under `docs/` and `evals/empirical/`, that a
 run-input schema, guide, builder, and scorer exist, that an execution preflight
@@ -38,7 +41,8 @@ guide, builder, and scorer exist, that a pilot execution package schema, guide,
 builder, and scorer exist, that an annotation worklist guide, builder, and
 scorer exist, that a synthetic dry-run package guide and builder exist,
 that a label-template package guide, builder, and scorer exist, that an
-annotation-intake guide and scorer exist,
+annotation-intake guide and scorer exist, that an evidence-package builder
+guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
@@ -53,7 +57,9 @@ placeholder 9-template package derived from a temporary local fixture
 annotation worklist,
 that the annotation-intake scorer self-test passes for a synthetic
 completed-annotation package derived from the temporary local fixture
-label-template package,
+label-template package, that the evidence-package builder self-test assembles
+a synthetic package from pilot execution and annotation-intake source packages
+and validates the assembled package,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -74,8 +80,9 @@ package builder/scorer self-tests, and the annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
-validation, not real labels, agreement, metrics, empirical proof, or paper
-readiness. No
+validation, and the evidence-package builder claim is bounded to synthetic
+assembly plus validator handoff, not real transcript quality, real labels,
+agreement, metrics, empirical proof, or paper readiness. No
 broader claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
@@ -141,6 +148,7 @@ guarantees.
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
+- `docs/empirical-evidence-package-builder.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -173,6 +181,7 @@ guarantees.
 - `scripts/build-empirical-label-template-package.ps1`
 - `scripts/score-empirical-label-template-package.ps1`
 - `scripts/score-empirical-annotation-intake.ps1`
+- `scripts/build-empirical-evidence-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -202,6 +211,8 @@ guarantees.
   scoring from annotation work items;
 - no annotation-intake claim beyond synthetic completed-annotation package
   validation against templates, work items, schema, and guideline hashes;
+- no evidence-package builder claim beyond synthetic assembly, source scanning,
+  join validation handoff, and generated-file overwrite protection;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -261,6 +272,10 @@ guarantees.
   package and rejects missing annotations, invalid labels, out-of-range spans,
   duplicate annotator records, mismatched task ids, metadata hash tampering,
   forbidden aggregate fields, and non-JSON sensitive files;
+- the empirical evidence-package builder self-test assembles a synthetic
+  evidence package from pilot execution and annotation-intake source packages,
+  validates the assembled package, and rejects missing annotation joins,
+  non-JSON sensitive source material, and non-generated overwrite attempts;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

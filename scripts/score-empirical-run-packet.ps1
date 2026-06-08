@@ -80,6 +80,7 @@ $paths = [ordered]@{
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
     LabelTemplatePackageDoc = Join-Path $RepoRoot 'docs/empirical-label-template-package.md'
     AnnotationIntakeDoc = Join-Path $RepoRoot 'docs/empirical-annotation-intake.md'
+    EvidencePackageBuilderDoc = Join-Path $RepoRoot 'docs/empirical-evidence-package-builder.md'
     EmpiricalPlan = Join-Path $RepoRoot 'docs/empirical-evaluation-plan.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
     DryRunDoc = Join-Path $RepoRoot 'docs/empirical-dry-run-package.md'
@@ -97,6 +98,7 @@ $paths = [ordered]@{
     LabelTemplatePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-label-template-package.ps1'
     LabelTemplatePackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-label-template-package.ps1'
     AnnotationIntakeScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-intake.ps1'
+    EvidencePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-evidence-package.ps1'
     DryRunBuilder = Join-Path $RepoRoot 'scripts/build-empirical-dry-run-package.ps1'
 }
 
@@ -134,6 +136,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'annotation_worklist',
         'label_template_package',
         'annotation_intake_package',
+        'evidence_package',
         'raw_transcript',
         'annotation_record',
         'annotation_guidelines',
@@ -158,6 +161,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
+        'evidence_package_builder_available',
+        'evidence_package_validator_available',
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
         'agreement_checker_available',
@@ -195,7 +200,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
         'label_template_package_schema: evals/empirical/label-template-package-schema.yaml',
-        'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml'
+        'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml',
+        'evidence_package_builder: docs/empirical-evidence-package-builder.md'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
@@ -1095,6 +1101,43 @@ if (Test-Path -LiteralPath $paths.AnnotationIntakeScorer) {
     )) {
         if (-not $scorer.Contains($check)) {
             $failures.Add("Empirical annotation-intake scorer is missing invariant '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.EvidencePackageBuilderDoc) {
+    $doc = Get-Content -LiteralPath $paths.EvidencePackageBuilderDoc -Raw
+    foreach ($check in @(
+        'build-empirical-evidence-package.ps1 -SelfTest',
+        'PilotPackageRoot',
+        'AnnotationIntakeRoot',
+        'RunValidators',
+        'SkipValidators',
+        'runs the evidence-package validator by default',
+        'does not execute model/API evals',
+        'does not prove'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical evidence-package builder doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.EvidencePackageBuilder) {
+    $builder = Get-Content -LiteralPath $paths.EvidencePackageBuilder -Raw
+    foreach ($check in @(
+        'Empirical evidence-package build',
+        'evidence_package_assembled_no_results',
+        'source-pilot-execution-package-hash.json',
+        'source-annotation-intake-package-hash.json',
+        'score-empirical-evidence-package.ps1',
+        'SkipValidators',
+        'validator was skipped by explicit -SkipValidators',
+        'Rejected a missing annotation join',
+        'Rejected non-JSON sensitive source material and non-generated overwrite attempts'
+    )) {
+        if (-not $builder.Contains($check)) {
+            $failures.Add("Empirical evidence-package builder is missing invariant '$check'.")
         }
     }
 }

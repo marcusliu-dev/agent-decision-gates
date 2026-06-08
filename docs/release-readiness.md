@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_annotation_intake_validator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_evidence_package_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -16,7 +16,9 @@ builder/scorer for explicitly allowed local runner scripts, plus an annotation
 worklist builder/scorer for deriving unlabeled future-labeling work items from
 pilot transcripts, plus a label-template package builder/scorer for deriving
 fillable placeholder templates from annotation work items, plus an annotation
-intake scorer for validating future completed annotation records.
+intake scorer for validating future completed annotation records, plus an
+evidence-package builder for assembling future pilot transcripts, cost/latency
+records, and completed annotations into a validation-ready evidence package.
 
 ## Purpose
 
@@ -75,6 +77,7 @@ The current repository surface includes:
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
+- `docs/empirical-evidence-package-builder.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -107,6 +110,7 @@ The current repository surface includes:
 - `scripts/build-empirical-label-template-package.ps1`
 - `scripts/score-empirical-label-template-package.ps1`
 - `scripts/score-empirical-annotation-intake.ps1`
+- `scripts/build-empirical-evidence-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -143,12 +147,14 @@ The current release claim is narrow and explicit:
   self-tested for fillable placeholder templates derived from annotation work
   items, plus an annotation-intake scorer self-tested for validating synthetic
   completed annotation records against templates, work items, schema, and
-  guideline hashes;
+  guideline hashes, plus an evidence-package builder self-tested for assembling
+  synthetic pilot transcripts, cost/latency records, and completed annotation
+  records before downstream validation;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_annotation_intake_validator_present_and_self_tested`.
+`empirical_evidence_package_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -209,6 +215,11 @@ system.
   out-of-range spans, duplicate annotator records, mismatched task ids,
   metadata hash tampering, forbidden aggregate fields, and non-JSON sensitive
   files;
+- the deterministic empirical evidence-package builder self-test assembles a
+  synthetic evidence package from pilot execution and annotation-intake source
+  packages, validates the assembled package, and rejects missing annotation
+  joins, non-JSON sensitive source material, and non-generated overwrite
+  attempts;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
@@ -265,6 +276,9 @@ These are intentionally outside the current release scope:
   annotation set, human-label result, LLM-judge result, agreement measurement,
   metric result, annotator-quality claim, judge-validity claim, or empirical
   finding;
+- any claim that the evidence-package builder self-test is itself a real
+  transcript-quality, annotation-quality, agreement, metric, model-quality,
+  empirical-effectiveness, or paper-readiness finding;
 - any claim that the synthetic dry-run package is a real experiment output.
 
 ## Interpretation Rule

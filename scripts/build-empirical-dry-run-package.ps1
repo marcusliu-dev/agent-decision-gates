@@ -384,16 +384,14 @@ function Invoke-Scorer {
     } else {
         $output = & $scriptPath -PackageRoot $Root -Json 2>&1
     }
-    $exitCode = $LASTEXITCODE
+    $invocationSucceeded = $?
     $text = ($output | Out-String)
     try {
         $parsed = $text | ConvertFrom-Json
     } catch {
         $parsed = $null
     }
-    if ($null -eq $exitCode) {
-        $exitCode = if ($parsed -and $parsed.status -eq 'pass') { 0 } else { 1 }
-    }
+    $exitCode = if ($parsed -and $parsed.status -eq 'pass') { 0 } elseif ($invocationSucceeded) { 0 } else { 1 }
     return [ordered]@{
         script = $ScriptName
         exit_code = $exitCode

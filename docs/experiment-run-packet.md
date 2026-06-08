@@ -74,6 +74,12 @@ The current structural run packet contains:
   for validating future completed annotation records against label templates,
   work items, schema, and guideline hashes before agreement or aggregate
   metrics are claimed;
+- [`empirical-evidence-package-builder.md`](empirical-evidence-package-builder.md)
+  and [`build-empirical-evidence-package.ps1`](../scripts/build-empirical-evidence-package.ps1)
+  for assembling future pilot transcripts, cost/latency records, and completed
+  annotation records into an evidence package before validation, agreement
+  checks, or aggregate metrics are claimed; this evidence package builder is
+  an assembly route, not a result route;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -136,6 +142,7 @@ Stop before execution if:
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
+- an evidence package needs assembly but the evidence_package_builder_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -163,6 +170,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-work
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-label-template-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-intake.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
@@ -175,7 +183,8 @@ validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the pilot execution runner package
 builder/scorer self-tests, the annotation worklist builder/scorer self-tests,
 the label-template package builder/scorer self-tests, the annotation-intake
-scorer self-test, and the synthetic dry-run package builder self-test. This
+scorer self-test, the evidence-package builder self-test, and the synthetic
+dry-run package builder self-test. This
 includes the synthetic dry-run package builder self-test.
 The synthetic mock execution package and synthetic
 dry-run package builder self-test are not real experiment outputs. The pilot
@@ -183,8 +192,9 @@ execution runner self-test uses a temporary local fixture runner and does not
 call hosted model APIs. The annotation worklist self-tests produce unlabeled
 work items only. The label-template package self-tests produce placeholders
 only. The annotation-intake scorer self-test uses synthetic completed-label
-fixtures only. They do not score real annotated completed transcripts, measure
-real agreement, or prove empirical effectiveness.
+fixtures only. The evidence-package builder self-test assembles synthetic
+source packages only. They do not score real annotated completed transcripts,
+measure real agreement, or prove empirical effectiveness.
 The synthetic mock execution package remains a package-shape exercise only.
 
 ## Current Nonclaims

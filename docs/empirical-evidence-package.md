@@ -21,6 +21,14 @@ aggregate results or make a paper claim. This separates three states:
 The current repository is still in the first state plus a validator self-test.
 It has no executed run artifacts and no interpreted empirical results.
 
+The optional assembly route is defined in
+[`empirical-evidence-package-builder.md`](empirical-evidence-package-builder.md)
+and [`build-empirical-evidence-package.ps1`](../scripts/build-empirical-evidence-package.ps1).
+That builder copies future pilot transcripts, cost/latency records, and
+completed annotation records into this package shape after their own source
+package checks pass. Its self-test is synthetic only and does not create real
+experiment evidence.
+
 ## Required Package Shape
 
 A future evidence package should be a directory with:
@@ -60,6 +68,17 @@ For a future real package, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -PackageRoot path\to\evidence-package
+```
+
+To assemble a future package from a pilot execution package and completed
+annotation-intake package before validation, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-evidence-package.ps1 `
+  -PilotPackageRoot dist/empirical-pilot-execution-package `
+  -AnnotationIntakeRoot dist/empirical-annotation-intake `
+  -OutputRoot dist/empirical-evidence-package `
+  -RunValidators
 ```
 
 After this validator passes, the bounded post-package aggregation route is

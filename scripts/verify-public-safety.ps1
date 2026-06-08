@@ -59,6 +59,7 @@ $requiredPaths = @(
     'docs/empirical-annotation-worklist.md',
     'docs/empirical-label-template-package.md',
     'docs/empirical-annotation-intake.md',
+    'docs/empirical-evidence-package-builder.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -91,6 +92,7 @@ $requiredPaths = @(
     'scripts/build-empirical-label-template-package.ps1',
     'scripts/score-empirical-label-template-package.ps1',
     'scripts/score-empirical-annotation-intake.ps1',
+    'scripts/build-empirical-evidence-package.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -174,6 +176,7 @@ $ceilingOrder = @{
     'empirical_annotation_worklist_builder_present_and_self_tested' = 19
     'empirical_label_template_package_builder_present_and_self_tested' = 20
     'empirical_annotation_intake_validator_present_and_self_tested' = 21
+    'empirical_evidence_package_builder_present_and_self_tested' = 22
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -447,6 +450,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-annotation-intake.ps1 -SelfTest',
+        'build-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -455,6 +459,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'annotation worklist route',
         'label-template package route',
         'annotation intake route',
+        'evidence package builder',
         'dry-run package builder'
     )) {
         if (-not $empiricalPlanContent.Contains($check)) {
@@ -519,6 +524,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
+        'evidence_package_builder_available',
         'score-empirical-prompt-pack.ps1',
         'score-empirical-run-inputs.ps1',
         'build-empirical-execution-preflight.ps1 -SelfTest',
@@ -532,6 +538,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-annotation-intake.ps1 -SelfTest',
+        'build-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -543,6 +550,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'annotation worklist',
         'label-template package',
         'annotation-intake',
+        'evidence package builder',
         'synthetic dry-run package builder self-test'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
@@ -576,6 +584,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'label_template_package_schema',
         'annotation_intake_package',
         'annotation_intake_schema',
+        'evidence_package',
+        'evidence_package_builder',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
@@ -587,6 +597,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
+        'evidence_package_builder_available',
+        'evidence_package_validator_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -1124,6 +1136,45 @@ if (Test-Path -LiteralPath $annotationIntakeScorerPath) {
     )) {
         if (-not $annotationIntakeScorerContent.Contains($check)) {
             $failures.Add("Missing empirical annotation-intake scorer invariant '$check'.")
+        }
+    }
+}
+
+$evidencePackageBuilderDocPath = Join-Path $RepoRoot 'docs\empirical-evidence-package-builder.md'
+if (Test-Path -LiteralPath $evidencePackageBuilderDocPath) {
+    $evidencePackageBuilderDocContent = Get-Content -LiteralPath $evidencePackageBuilderDocPath -Raw
+    foreach ($check in @(
+        'build-empirical-evidence-package.ps1 -SelfTest',
+        'PilotPackageRoot',
+        'AnnotationIntakeRoot',
+        'RunValidators',
+        'SkipValidators',
+        'runs the evidence-package validator by default',
+        'does not execute model/API evals',
+        'does not prove'
+    )) {
+        if (-not $evidencePackageBuilderDocContent.Contains($check)) {
+            $failures.Add("Missing empirical evidence-package builder doc boundary '$check' in docs/empirical-evidence-package-builder.md")
+        }
+    }
+}
+
+$evidencePackageBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-evidence-package.ps1'
+if (Test-Path -LiteralPath $evidencePackageBuilderPath) {
+    $evidencePackageBuilderContent = Get-Content -LiteralPath $evidencePackageBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical evidence-package build',
+        'evidence_package_assembled_no_results',
+        'source-pilot-execution-package-hash.json',
+        'source-annotation-intake-package-hash.json',
+        'score-empirical-evidence-package.ps1',
+        'SkipValidators',
+        'validator was skipped by explicit -SkipValidators',
+        'Rejected a missing annotation join',
+        'Rejected non-JSON sensitive source material and non-generated overwrite attempts'
+    )) {
+        if (-not $evidencePackageBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical evidence-package builder invariant '$check'.")
         }
     }
 }
@@ -1682,6 +1733,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-annotation-intake.md'
             Label = 'docs/empirical-annotation-intake.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-evidence-package-builder.md'
+            Label = 'docs/empirical-evidence-package-builder.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'
