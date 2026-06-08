@@ -183,7 +183,9 @@ Before any paper-readiness or submission claim:
 
 1. Run all planned conditions.
 2. Verify transcript and label completeness.
-3. Compute metrics, cost, latency, variance, and agreement.
+3. Compute metrics, cost, latency, variance, and agreement from validated
+   packages whose pilot runner responses include explicit token, API cost, and
+   retry telemetry.
 4. Run ablations and report negative results.
 5. Write related work and limitations.
 6. Run a decision-bearing review of the exact paper packet.

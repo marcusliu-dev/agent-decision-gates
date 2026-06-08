@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_results_variance_analyzer_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -74,7 +74,8 @@ This repo packages a simple alternative:
 - an [empirical pilot execution runner guide](docs/empirical-pilot-execution-runner.md),
   schema, builder, and scorer for routing selected pilot inputs through an
   explicitly allowed local runner script and validating transcript/cost-latency
-  outputs before labels or metrics are claimed;
+  outputs with explicit runner token, API cost, and retry telemetry before
+  labels or metrics are claimed;
 - an [empirical pilot run chain guide](docs/empirical-pilot-run-chain.md) and
   builder for running the reproducible first-pilot chain from run inputs through
   preflight, explicit runner execution, pilot package validation, annotation
@@ -207,8 +208,8 @@ requires independent review.
   runner response before it is wrapped into a pilot execution package.
 - Read [docs/empirical-pilot-execution-runner.md](docs/empirical-pilot-execution-runner.md)
   for the explicit local-runner route that can produce pilot transcript and
-  cost-latency packages without storing credentials or private runner code in
-  this public repository.
+  cost-latency packages with required runner token/cost telemetry, without
+  storing credentials or private runner code in this public repository.
 - Read [docs/empirical-pilot-run-chain.md](docs/empirical-pilot-run-chain.md)
   for the one-command first-pilot chain that executes an explicitly allowed
   local runner and prepares unlabeled annotation work items plus placeholder
@@ -279,13 +280,16 @@ intake validator for future completed label records, plus an evidence-package
 builder that assembles future pilot transcripts, cost/latency records, and
 completed annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_results_variance_analyzer_present_and_self_tested`. The
+`empirical_pilot_cost_telemetry_gate_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
 correctness. The run-to-run variance summary is synthetic-self-tested analyzer
-logic only and is not a real empirical result. The dry-run package is synthetic
-evidence-shape exercise only. The
+logic only and is not a real empirical result. The pilot cost telemetry gate
+requires explicit runner-reported token, API cost, and retry telemetry before
+package wrapping, but it does not prove real cost accuracy, runner quality, or
+model/API eval results. The dry-run package is synthetic evidence-shape exercise
+only. The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape

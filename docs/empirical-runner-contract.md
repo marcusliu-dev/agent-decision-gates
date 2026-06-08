@@ -20,8 +20,8 @@ cost-latency record.
 
 Use this contract as a preflight for a private runner adapter. A runner response
 can pass this scorer and still be low quality; it does not prove runner quality.
-The scorer only proves that the response is structurally safe enough to enter
-the pilot package route.
+The scorer only checks that the response meets the structural and sensitive-
+content preconditions for entering the pilot package route.
 
 ## Response Contract
 
@@ -44,9 +44,16 @@ The scorer rejects:
 - forbidden result/readiness fields such as `paper_ready`,
   `production_ready`, `pass_rate`, and `aggregate_metrics`;
 - unsupported result/readiness claim text in response values;
-- negative or non-finite numeric telemetry fields;
+- null, blank, boolean, negative, or non-finite numeric telemetry fields;
 - non-integer token, latency, or retry fields;
 - optional `run_input_id` values that do not match the request JSON.
+
+The standalone response scorer treats token, cost, latency, and retry fields as
+optional because it can score one response before the final execution route is
+known. The pilot execution package builder is stricter: before package wrapping,
+it requires explicit `input_tokens`, `output_tokens`, `api_cost_usd`, and
+`retry_count` from the runner response so missing API cost cannot be recorded as
+zero cost.
 
 ## Structural Verification
 
@@ -64,7 +71,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response
 
 The self-test validates a fixture runner response, then rejects missing
 `final_answer`, credential-like content, forbidden result/readiness fields,
-unsupported result/readiness claim text, negative numeric fields, and
+unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and
 request/run-input mismatches.
 
 ## Current Nonclaims
@@ -74,6 +81,7 @@ This repository does not yet claim:
 - completed public model/API eval execution;
 - validated real runner responses;
 - pilot transcript quality;
+- measured cost accuracy beyond runner-reported telemetry;
 - annotations or labels;
 - human/LLM-judge agreement;
 - aggregate metrics;

@@ -63,6 +63,10 @@ runner_requirements:
   - local_runner_script_explicitly_allowed
   - runner_script_hash_recorded
   - runner_outputs_json_response
+  - runner_reports_input_tokens_before_package_wrapping
+  - runner_reports_output_tokens_before_package_wrapping
+  - runner_reports_api_cost_usd_before_package_wrapping
+  - runner_reports_retry_count_before_package_wrapping
   - no_credentials_in_package
   - no_private_paths_in_package
 

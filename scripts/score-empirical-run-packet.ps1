@@ -641,6 +641,13 @@ if (Test-Path -LiteralPath $paths.RunnerResponseSchema) {
         'api_cost_usd',
         'retry_count'
     ) -Label 'runner response optional_response_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_for_pilot_package_fields') -Required @(
+        'final_answer',
+        'input_tokens',
+        'output_tokens',
+        'api_cost_usd',
+        'retry_count'
+    ) -Label 'runner response required_for_pilot_package_fields'
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'join_checks') -Required @(
         'optional_run_input_id_matches_request',
         'response_json_parseable_before_package_wrapping',
@@ -694,7 +701,7 @@ if (Test-Path -LiteralPath $paths.RunnerResponseScorer) {
         'Empirical runner response scoring',
         'runner_response_contract_schema_only_no_execution_results',
         'Validated runner response contract self-test',
-        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, negative numeric fields, and request/run_input mismatches',
+        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and request/run_input mismatches',
         'No hosted model/API calls are made by this scorer',
         'does not match request run_input_id',
         'blocked sensitive pattern',
@@ -764,6 +771,10 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageSchema) {
         'local_runner_script_explicitly_allowed',
         'runner_script_hash_recorded',
         'runner_outputs_json_response',
+        'runner_reports_input_tokens_before_package_wrapping',
+        'runner_reports_output_tokens_before_package_wrapping',
+        'runner_reports_api_cost_usd_before_package_wrapping',
+        'runner_reports_retry_count_before_package_wrapping',
         'no_credentials_in_package',
         'no_private_paths_in_package'
     ) -Label 'pilot execution package runner_requirements'
@@ -805,6 +816,7 @@ if (Test-Path -LiteralPath $paths.PilotExecutionRunnerDoc) {
     foreach ($check in @(
         'does not call hosted model APIs',
         'Runner Contract',
+        'does not silently convert missing API cost into zero cost',
         'score-empirical-runner-response.ps1 -SelfTest',
         'dist/empirical-pilot-execution-package',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
@@ -830,6 +842,8 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageBuilder) {
         'Pass -AllowRunnerScript',
         'score-empirical-runner-response.ps1',
         'Built a 9-run pilot execution package',
+        'Required explicit runner token, API cost, and retry telemetry before package wrapping',
+        'missing required telemetry field',
         'refused non-generated files when -Force was used',
         'runner-script-hash.json',
         'source-run-input-manifest-hash.json',

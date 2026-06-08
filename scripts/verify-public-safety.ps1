@@ -185,6 +185,7 @@ $ceilingOrder = @{
     'empirical_pilot_run_chain_builder_present_and_self_tested' = 23
     'empirical_runner_response_contract_present_and_self_tested' = 24
     'empirical_results_variance_analyzer_present_and_self_tested' = 25
+    'empirical_pilot_cost_telemetry_gate_present_and_self_tested' = 26
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -929,6 +930,9 @@ if (Test-Path -LiteralPath $runnerResponseSchemaPath) {
         'run_input_id',
         'transcript_messages',
         'checked_evidence',
+        'required_for_pilot_package_fields',
+        'api_cost_usd',
+        'retry_count',
         'numeric_fields',
         'forbidden_claim_phrases',
         'optional_run_input_id_matches_request',
@@ -957,6 +961,7 @@ if (Test-Path -LiteralPath $runnerContractDocPath) {
         'Response Contract',
         'does not call hosted model APIs',
         'does not prove runner quality',
+        'missing API cost cannot be recorded as',
         'credential-like content',
         'forbidden result/readiness fields',
         'request/run-input mismatches',
@@ -975,7 +980,7 @@ if (Test-Path -LiteralPath $runnerResponseScorerPath) {
         'Empirical runner response scoring',
         'runner_response_contract_schema_only_no_execution_results',
         'Validated runner response contract self-test',
-        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, negative numeric fields, and request/run_input mismatches',
+        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and request/run_input mismatches',
         'Rejected unsupported plain-language readiness/result phrases',
         'Rejected unsupported hyphenated readiness/result phrases',
         'No hosted model/API calls are made by this scorer',
@@ -986,6 +991,49 @@ if (Test-Path -LiteralPath $runnerResponseScorerPath) {
     )) {
         if (-not $runnerResponseScorerContent.Contains($check)) {
             $failures.Add("Missing empirical runner response scorer invariant '$check'.")
+        }
+    }
+}
+
+$pilotExecutionPackageSchemaPath = Join-Path $RepoRoot 'evals\empirical\pilot-execution-package-schema.yaml'
+if (Test-Path -LiteralPath $pilotExecutionPackageSchemaPath) {
+    $pilotExecutionPackageSchemaContent = Get-Content -LiteralPath $pilotExecutionPackageSchemaPath -Raw
+    foreach ($check in @(
+        'runner_reports_input_tokens_before_package_wrapping',
+        'runner_reports_output_tokens_before_package_wrapping',
+        'runner_reports_api_cost_usd_before_package_wrapping',
+        'runner_reports_retry_count_before_package_wrapping'
+    )) {
+        if ($pilotExecutionPackageSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing pilot execution package telemetry requirement '$check'.")
+        }
+    }
+}
+
+$pilotExecutionRunnerDocPath = Join-Path $RepoRoot 'docs\empirical-pilot-execution-runner.md'
+if (Test-Path -LiteralPath $pilotExecutionRunnerDocPath) {
+    $pilotExecutionRunnerDocContent = Get-Content -LiteralPath $pilotExecutionRunnerDocPath -Raw
+    foreach ($check in @(
+        'does not silently convert missing API cost into zero cost',
+        'reject missing runner cost telemetry',
+        'measured cost accuracy beyond runner-reported telemetry'
+    )) {
+        if (-not $pilotExecutionRunnerDocContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution runner telemetry boundary '$check'.")
+        }
+    }
+}
+
+$pilotExecutionPackageBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-pilot-execution-package.ps1'
+if (Test-Path -LiteralPath $pilotExecutionPackageBuilderPath) {
+    $pilotExecutionPackageBuilderContent = Get-Content -LiteralPath $pilotExecutionPackageBuilderPath -Raw
+    foreach ($check in @(
+        'Assert-RequiredRunnerTelemetry',
+        "missing required telemetry field 'api_cost_usd'",
+        'Required explicit runner token, API cost, and retry telemetry before package wrapping'
+    )) {
+        if (-not $pilotExecutionPackageBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot execution package telemetry invariant '$check'.")
         }
     }
 }

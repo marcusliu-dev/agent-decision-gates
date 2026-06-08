@@ -12,7 +12,8 @@ for transcript and cost-latency package joins, a runner response contract
 schema/doc/scorer for validating one private/local runner response before
 package wrapping, a results analyzer with synthetic-self-tested run-to-run
 variance summaries, a pilot execution package builder/scorer for explicitly
-allowed local runner scripts, an empirical pilot run chain builder for
+allowed local runner scripts with required runner-reported token, API cost, and
+retry telemetry before package wrapping, an empirical pilot run chain builder for
 connecting run inputs, preflight, explicit local-runner execution, pilot package
 scoring, annotation worklist generation, and label-template generation, an
 annotation worklist builder/scorer for deriving
@@ -27,7 +28,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_results_variance_analyzer_present_and_self_tested`
+`empirical_pilot_cost_telemetry_gate_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -76,10 +77,10 @@ generation/scoring without producing completed labels, agreement metrics,
 aggregate metrics, or a paper-readiness claim,
 that the runner response scorer self-test validates fixture response JSON and
 rejects missing `final_answer`, credential-like content, forbidden
-result/readiness fields, unsupported result/readiness claim text, negative
-numeric fields, and request/run-input mismatches, and that the pilot execution
-package builder validates each runner response with that scorer before package
-wrapping,
+result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric
+fields, and request/run-input mismatches, and that the pilot execution
+package builder validates each runner response with that scorer and requires
+explicit runner token, API cost, and retry telemetry before package wrapping,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -97,7 +98,7 @@ budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
 validation, and the runner response contract claim is bounded to single-response
 schema/scorer self-tests, and the pilot execution runner claim is bounded to local-runner
-package builder/scorer self-tests, and the annotation worklist claim is bounded
+package builder/scorer self-tests with required telemetry gating, and the annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
@@ -318,8 +319,11 @@ guarantees.
   agreement metrics, aggregate metrics, or paper-readiness claim;
 - the empirical runner response scorer self-test validates fixture response JSON
   and rejects missing `final_answer`, credential-like content, forbidden
-  result/readiness fields, unsupported result/readiness claim text, negative
-  numeric fields, and request/run-input mismatches;
+  result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric
+  fields, and request/run-input mismatches;
+- the empirical pilot execution package builder self-test rejects runner
+  responses that omit required token, API cost, or retry telemetry, and rejects
+  blank `api_cost_usd`, before package wrapping;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

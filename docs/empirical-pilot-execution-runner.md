@@ -1,6 +1,6 @@
 # Empirical Pilot Execution Runner
 
-<!-- claim_ceiling: empirical_pilot_execution_runner_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
 
 Status: Explicit local-runner route for future pilot transcript and
 cost-latency package generation. This runner consumes a scored run-input
@@ -41,7 +41,12 @@ The request JSON includes the selected `run_input_id`, task metadata,
 condition, repeat index, input prompt, preflight provider, model alias, and
 runtime surface. The response JSON must include at least `final_answer`.
 
-Optional response fields include:
+For pilot package generation, the runner must also report explicit telemetry
+before wrapping: `input_tokens`, `output_tokens`, `api_cost_usd`, and
+`retry_count`. The builder measures wall-clock time if `wall_time_ms` is not
+reported, but it does not silently convert missing API cost into zero cost.
+
+Other optional response fields include:
 
 - `transcript_messages`;
 - `tool_calls`;
@@ -64,9 +69,13 @@ unsupported result/readiness fields, numeric telemetry fields, and optional
 request/run-input matching. It does not prove runner quality or model/API eval
 results.
 
-The package scorer rejects credentials, private paths, non-JSON package files,
-unsupported result or paper-readiness claims, provider/model/runtime mismatch,
-broken transcript/cost joins, and missing selected run inputs.
+The package builder rejects missing required runner telemetry before wrapping.
+The package scorer rejects missing or invalid cost-latency package fields,
+credentials, private paths, non-JSON package files, unsupported result or
+paper-readiness claims, provider/model/runtime mismatch, broken transcript/cost
+joins, and missing selected run inputs.
+It explicitly rejects credentials before any pilot package can support a public
+claim.
 
 ## Structural Verification
 
@@ -90,10 +99,11 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution
 
 The self-tests build temporary run inputs and an execution preflight, execute a
 temporary local fixture runner, validate the resulting transcript/cost package,
-reject missing transcripts, crossed cost-latency joins, credential-like content,
-provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive
-files, unsupported result/paper-readiness tokens, and `-Force` overwrite
-attempts over non-generated files, then remove the temporary files.
+reject missing runner cost telemetry, missing transcripts, crossed
+cost-latency joins, credential-like content, provider/model/runtime mismatches,
+metadata hash tampering, non-JSON sensitive files, unsupported
+result/paper-readiness tokens, and `-Force` overwrite attempts over
+non-generated files, then remove the temporary files.
 
 ## Current Nonclaims
 
@@ -103,6 +113,7 @@ This repository does not yet claim:
 - annotations or labels;
 - human/LLM-judge agreement;
 - aggregate metrics;
+- measured cost accuracy beyond runner-reported telemetry;
 - statistical results;
 - empirical effectiveness;
 - paper readiness;

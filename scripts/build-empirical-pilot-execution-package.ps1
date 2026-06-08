@@ -67,6 +67,75 @@ function Get-TokenEstimate {
     return [int][math]::Ceiling(([string]$Text).Length / 4)
 }
 
+function Has-JsonProperty {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+    return ($null -ne $Object -and $null -ne $Object.PSObject.Properties[$Name])
+}
+
+function Assert-RequiredRunnerTelemetry {
+    param(
+        [object]$RunnerResponse,
+        [string]$Field,
+        [string]$RunInputId
+    )
+    if (-not (Has-JsonProperty -Object $RunnerResponse -Name $Field) -or $null -eq $RunnerResponse.PSObject.Properties[$Field].Value) {
+        throw "Runner response for run_input_id '$RunInputId' is missing required telemetry field '$Field'."
+    }
+    $value = $RunnerResponse.PSObject.Properties[$Field].Value
+    if ($value -is [string] -and -not $value.Trim()) {
+        throw "Runner response for run_input_id '$RunInputId' is missing required telemetry field '$Field'."
+    }
+}
+
+function Convert-RunnerTelemetryNumber {
+    param(
+        [object]$RunnerResponse,
+        [string]$Field,
+        [string]$RunInputId,
+        [bool]$RequireInteger,
+        [bool]$Required
+    )
+    if (-not (Has-JsonProperty -Object $RunnerResponse -Name $Field) -or $null -eq $RunnerResponse.PSObject.Properties[$Field].Value) {
+        if ($Required) {
+            throw "Runner response for run_input_id '$RunInputId' is missing required telemetry field '$Field'."
+        }
+        return $null
+    }
+    $rawValue = $RunnerResponse.PSObject.Properties[$Field].Value
+    if ($rawValue -is [bool]) {
+        throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be numeric."
+    }
+    if ($rawValue -is [string] -and -not $rawValue.Trim()) {
+        if ($Required) {
+            throw "Runner response for run_input_id '$RunInputId' is missing required telemetry field '$Field'."
+        }
+        throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be numeric."
+    }
+    $number = 0.0
+    if ($rawValue -is [string]) {
+        if (-not [double]::TryParse($rawValue.Trim(), [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$number)) {
+            throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be numeric."
+        }
+    } elseif ($rawValue -is [byte] -or $rawValue -is [sbyte] -or $rawValue -is [int16] -or $rawValue -is [uint16] -or $rawValue -is [int] -or $rawValue -is [uint32] -or $rawValue -is [long] -or $rawValue -is [uint64] -or $rawValue -is [single] -or $rawValue -is [double] -or $rawValue -is [decimal]) {
+        $number = [double]$rawValue
+    } else {
+        throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be numeric."
+    }
+    if ([double]::IsNaN($number) -or [double]::IsInfinity($number) -or $number -lt 0) {
+        throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be a finite nonnegative number."
+    }
+    if ($RequireInteger -and [math]::Floor($number) -ne $number) {
+        throw "Runner response for run_input_id '$RunInputId' telemetry field '$Field' must be an integer."
+    }
+    if ($RequireInteger) {
+        return [int]$number
+    }
+    return [double]$number
+}
+
 function Get-KnownGeneratedRelativePaths {
     param([string[]]$SelectedRunInputIds)
 
@@ -253,20 +322,29 @@ function New-PilotCostLatencyRecord {
     param(
         [string]$CostId,
         [string]$RunId,
+        [string]$RunInputId,
         [string]$InputPrompt,
         [string]$FinalAnswer,
         [object]$RunnerResponse,
         [int]$MeasuredWallTimeMs
     )
+    foreach ($field in @('input_tokens', 'output_tokens', 'api_cost_usd', 'retry_count')) {
+        Assert-RequiredRunnerTelemetry -RunnerResponse $RunnerResponse -Field $field -RunInputId $RunInputId
+    }
+    $inputTokens = Convert-RunnerTelemetryNumber -RunnerResponse $RunnerResponse -Field 'input_tokens' -RunInputId $RunInputId -RequireInteger $true -Required $true
+    $outputTokens = Convert-RunnerTelemetryNumber -RunnerResponse $RunnerResponse -Field 'output_tokens' -RunInputId $RunInputId -RequireInteger $true -Required $true
+    $apiCostUsd = Convert-RunnerTelemetryNumber -RunnerResponse $RunnerResponse -Field 'api_cost_usd' -RunInputId $RunInputId -RequireInteger $false -Required $true
+    $retryCount = Convert-RunnerTelemetryNumber -RunnerResponse $RunnerResponse -Field 'retry_count' -RunInputId $RunInputId -RequireInteger $true -Required $true
+    $runnerWallTimeMs = Convert-RunnerTelemetryNumber -RunnerResponse $RunnerResponse -Field 'wall_time_ms' -RunInputId $RunInputId -RequireInteger $true -Required $false
     return [ordered]@{
         cost_latency_record_id = $CostId
         run_id = $RunId
-        input_tokens = if ($null -ne $RunnerResponse.input_tokens) { [int]$RunnerResponse.input_tokens } else { Get-TokenEstimate -Text $InputPrompt }
-        output_tokens = if ($null -ne $RunnerResponse.output_tokens) { [int]$RunnerResponse.output_tokens } else { Get-TokenEstimate -Text $FinalAnswer }
+        input_tokens = $inputTokens
+        output_tokens = $outputTokens
         tool_call_count = @(Get-JsonArray -Value $RunnerResponse.tool_calls).Count
-        wall_time_ms = if ($null -ne $RunnerResponse.wall_time_ms) { [int]$RunnerResponse.wall_time_ms } else { $MeasuredWallTimeMs }
-        api_cost_usd = if ($null -ne $RunnerResponse.api_cost_usd) { [double]$RunnerResponse.api_cost_usd } else { 0.0 }
-        retry_count = if ($null -ne $RunnerResponse.retry_count) { [int]$RunnerResponse.retry_count } else { 0 }
+        wall_time_ms = if ($null -ne $runnerWallTimeMs) { $runnerWallTimeMs } else { $MeasuredWallTimeMs }
+        api_cost_usd = $apiCostUsd
+        retry_count = $retryCount
     }
 }
 
@@ -331,7 +409,7 @@ function New-PilotExecutionPackage {
         $startedText = $started.ToString('o')
         $endedText = $ended.ToString('o')
         $transcript = New-PilotTranscript -RunInput $runInput -Preflight $preflight -RunnerResponse $runnerResponse -RunId $runId -CostId $costId -StartedAt $startedText -EndedAt $endedText
-        $cost = New-PilotCostLatencyRecord -CostId $costId -RunId $runId -InputPrompt ([string]$runInput.input_prompt) -FinalAnswer ([string]$transcript.final_answer) -RunnerResponse $runnerResponse -MeasuredWallTimeMs $wallTimeMs
+        $cost = New-PilotCostLatencyRecord -CostId $costId -RunId $runId -RunInputId ([string]$runInput.run_input_id) -InputPrompt ([string]$runInput.input_prompt) -FinalAnswer ([string]$transcript.final_answer) -RunnerResponse $runnerResponse -MeasuredWallTimeMs $wallTimeMs
         Write-JsonFile -Path (Join-Path $Root "transcripts/$runId.json") -Value $transcript
         Write-JsonFile -Path (Join-Path $Root "cost-latency/$costId.json") -Value $cost
     }
@@ -442,6 +520,68 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
                 $failures.Add("Pilot execution package scorer rejected the self-test package: $($scoreOutput | Out-String)")
             }
         }
+        $telemetryRunnerTemplate = @'
+param(
+    [string]$RequestPath,
+    [string]$ResponsePath
+)
+$ErrorActionPreference = 'Stop'
+$request = Get-Content -LiteralPath $RequestPath -Raw | ConvertFrom-Json
+$answer = "Fixture pilot response for $($request.run_input_id). This response intentionally emits incomplete telemetry."
+$response = [ordered]@{
+    final_answer = $answer
+    final_claim = 'pilot_execution_output_unlabeled_no_empirical_claim'
+    checked_evidence = @('fixture runner request', 'public synthetic task prompt')
+    selected_claim_ceiling = 'pilot_execution_transcripts_present_unlabeled_no_results'
+    stop_or_continue_decision = 'continue_to_annotation_after_package_validation'
+    human_checkpoint_decision = 'not_evaluated_by_fixture_runner'
+    input_tokens = [int][math]::Ceiling(([string]$request.input_prompt).Length / 4)
+    output_tokens = [int][math]::Ceiling($answer.Length / 4)
+    wall_time_ms = 1
+    api_cost_usd = 0
+    retry_count = 0
+}
+__MUTATION__
+$response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -Encoding UTF8
+'@
+        foreach ($missingField in @('input_tokens', 'output_tokens', 'api_cost_usd', 'retry_count')) {
+            $missingTelemetryRunner = Join-Path $tempBase "fixture-runner-missing-$missingField.ps1"
+            $missingMutation = "`$response.Remove('$missingField')"
+            $telemetryRunnerTemplate.Replace('__MUTATION__', $missingMutation) | Set-Content -LiteralPath $missingTelemetryRunner -Encoding UTF8
+            $missingTelemetryRoot = Join-Path $tempBase "negative-missing-$missingField"
+            try {
+                New-PilotExecutionPackage -InputRoot $runInputRoot -PreflightFile $preflightPath -Root $missingTelemetryRoot -ScriptPath $missingTelemetryRunner -ScriptLabel "fixture-runner-missing-$missingField-v0" -AllowRunner $true -AllowOverwrite $false | Out-Null
+                $failures.Add("Expected pilot builder to reject missing runner telemetry field '$missingField', but it built a package.")
+            } catch {
+                if ($_.Exception.Message -notlike "*missing required telemetry field '$missingField'*") {
+                    $failures.Add("Expected missing $missingField telemetry rejection, got: $($_.Exception.Message)")
+                }
+            }
+        }
+        $blankTelemetryRoot = Join-Path $tempBase 'negative-blank-api-cost'
+        $blankTelemetryRunner = Join-Path $tempBase 'fixture-runner-blank-api-cost.ps1'
+        $blankMutation = "`$response['api_cost_usd'] = ''"
+        $telemetryRunnerTemplate.Replace('__MUTATION__', $blankMutation) | Set-Content -LiteralPath $blankTelemetryRunner -Encoding UTF8
+        try {
+            New-PilotExecutionPackage -InputRoot $runInputRoot -PreflightFile $preflightPath -Root $blankTelemetryRoot -ScriptPath $blankTelemetryRunner -ScriptLabel 'fixture-runner-blank-api-cost-v0' -AllowRunner $true -AllowOverwrite $false | Out-Null
+            $failures.Add('Expected pilot builder to reject blank runner API cost telemetry, but it built a package.')
+        } catch {
+            if ($_.Exception.Message -notlike '*api_cost_usd*must be numeric*' -and $_.Exception.Message -notlike "*missing required telemetry field 'api_cost_usd'*") {
+                $failures.Add("Expected blank api_cost_usd telemetry rejection, got: $($_.Exception.Message)")
+            }
+        }
+        $booleanTelemetryRoot = Join-Path $tempBase 'negative-boolean-api-cost'
+        $booleanTelemetryRunner = Join-Path $tempBase 'fixture-runner-boolean-api-cost.ps1'
+        $booleanMutation = "`$response['api_cost_usd'] = `$false"
+        $telemetryRunnerTemplate.Replace('__MUTATION__', $booleanMutation) | Set-Content -LiteralPath $booleanTelemetryRunner -Encoding UTF8
+        try {
+            New-PilotExecutionPackage -InputRoot $runInputRoot -PreflightFile $preflightPath -Root $booleanTelemetryRoot -ScriptPath $booleanTelemetryRunner -ScriptLabel 'fixture-runner-boolean-api-cost-v0' -AllowRunner $true -AllowOverwrite $false | Out-Null
+            $failures.Add('Expected pilot builder to reject boolean runner API cost telemetry, but it built a package.')
+        } catch {
+            if ($_.Exception.Message -notlike '*api_cost_usd*must be numeric*') {
+                $failures.Add("Expected boolean api_cost_usd telemetry rejection, got: $($_.Exception.Message)")
+            }
+        }
         $extraFile = Join-Path $packageRoot 'metadata/unowned-note.txt'
         Set-Content -LiteralPath $extraFile -Value 'not generated by the pilot execution package builder' -Encoding UTF8
         try {
@@ -454,6 +594,7 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
         }
         $info.Add('Built a 9-run pilot execution package through a local fixture runner script.')
         $info.Add('Generated transcript-shaped and cost-latency-shaped records without hosted model/API calls.')
+        $info.Add('Required explicit runner token, API cost, and retry telemetry before package wrapping.')
         $info.Add('Required -AllowRunnerScript and refused non-generated files when -Force was used.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {

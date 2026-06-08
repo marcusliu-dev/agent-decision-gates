@@ -88,6 +88,7 @@ Stop before labeling, measurement, or paper claims when:
   budget, and selected pilot rows;
 - any runner output contains private paths, credentials, unsupported result
   fields, or readiness/paper claims;
+- any runner output omits required token, API cost, or retry telemetry;
 - the pilot execution package scorer fails;
 - the annotation worklist or label-template package scorer fails;
 - completed annotations have not passed the annotation-intake validator;

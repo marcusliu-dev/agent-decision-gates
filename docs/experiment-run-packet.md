@@ -132,6 +132,8 @@ Every future executed run should produce:
 - one raw transcript record;
 - one cost/latency record;
 - one model/runtime metadata record;
+- explicit runner-reported `input_tokens`, `output_tokens`, `api_cost_usd`,
+  and `retry_count` before pilot package wrapping;
 - at least one label record;
 - the annotation guideline version used for each label record;
 - links from label rationale fields to transcript spans;

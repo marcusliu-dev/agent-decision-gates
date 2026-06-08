@@ -34,6 +34,13 @@ integer_numeric_fields:
   - wall_time_ms
   - retry_count
 
+required_for_pilot_package_fields:
+  - final_answer
+  - input_tokens
+  - output_tokens
+  - api_cost_usd
+  - retry_count
+
 join_checks:
   - optional_run_input_id_matches_request
   - response_json_parseable_before_package_wrapping

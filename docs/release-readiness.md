@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_results_variance_analyzer_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_cost_telemetry_gate_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -15,7 +15,8 @@ budget records, plus a mock execution package builder/scorer for synthetic
 transcript and cost-latency package joins, plus a runner response contract
 schema/doc/scorer for validating one private/local runner response before
 package wrapping, plus a pilot execution package builder/scorer for explicitly
-allowed local runner scripts, plus an annotation worklist builder/scorer for deriving unlabeled future-labeling work items from
+allowed local runner scripts with required runner token, API cost, and retry
+telemetry before package wrapping, plus an annotation worklist builder/scorer for deriving unlabeled future-labeling work items from
 pilot transcripts, plus a label-template package builder/scorer for deriving
 fillable placeholder templates from annotation work items, plus an annotation
 intake scorer for validating future completed annotation records, plus an
@@ -152,7 +153,8 @@ The current release claim is narrow and explicit:
   execution package builder/scorer self-tested for synthetic transcript and
   cost-latency package joins, plus a runner response contract scorer self-tested
   for single-response shape and boundary checks, plus a pilot execution package builder/scorer
-  self-tested through a local fixture runner, plus an annotation worklist
+  self-tested through a local fixture runner and missing cost-telemetry rejection,
+  plus an annotation worklist
   builder/scorer self-tested for unlabeled future-labeling work items derived
   from pilot transcripts, plus a label-template package builder/scorer
   self-tested for fillable placeholder templates derived from annotation work
@@ -169,7 +171,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_results_variance_analyzer_present_and_self_tested`.
+`empirical_pilot_cost_telemetry_gate_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -245,7 +247,8 @@ system.
 - the deterministic empirical runner response scorer self-test validates fixture
   response JSON and rejects missing `final_answer`, credential-like content,
   forbidden result/readiness fields, unsupported result/readiness claim text,
-  negative numeric fields, and request/run-input mismatches;
+  null, blank, boolean, or negative numeric fields, and request/run-input
+  mismatches;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
@@ -257,6 +260,10 @@ system.
   includes run-to-run variance summaries across repeated task/condition
   primary-annotation metric scores, and explicitly does not provide real
   aggregate metrics, real variance results, or paper readiness;
+- the deterministic empirical pilot execution package builder rejects runner
+  responses that omit required token, API cost, or retry telemetry, and rejects
+  blank API cost telemetry, before package wrapping; it explicitly does not
+  prove real cost accuracy, runner quality, or model/API eval results;
 - the deterministic empirical agreement checker passes its synthetic self-test
   and explicitly does not provide real human/LLM-judge agreement or judge
   validity evidence;

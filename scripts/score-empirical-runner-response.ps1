@@ -145,9 +145,28 @@ function Assert-NonnegativeFiniteNumber {
     if (-not (Has-JsonProperty -Object $Record -Name $Field)) {
         return
     }
-    try {
-        $number = [double]$Record.$Field
-    } catch {
+    $rawValue = $Record.PSObject.Properties[$Field].Value
+    if ($null -eq $rawValue) {
+        $Failures.Add("Runner response field '$Field' must be numeric.")
+        return
+    }
+    if ($rawValue -is [bool]) {
+        $Failures.Add("Runner response field '$Field' must be numeric.")
+        return
+    }
+    if ($rawValue -is [string] -and -not $rawValue.Trim()) {
+        $Failures.Add("Runner response field '$Field' must be numeric.")
+        return
+    }
+    $number = 0.0
+    if ($rawValue -is [string]) {
+        if (-not [double]::TryParse($rawValue.Trim(), [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$number)) {
+            $Failures.Add("Runner response field '$Field' must be numeric.")
+            return
+        }
+    } elseif ($rawValue -is [byte] -or $rawValue -is [sbyte] -or $rawValue -is [int16] -or $rawValue -is [uint16] -or $rawValue -is [int] -or $rawValue -is [uint32] -or $rawValue -is [long] -or $rawValue -is [uint64] -or $rawValue -is [single] -or $rawValue -is [double] -or $rawValue -is [decimal]) {
+        $number = [double]$rawValue
+    } else {
         $Failures.Add("Runner response field '$Field' must be numeric.")
         return
     }
@@ -414,6 +433,30 @@ function Invoke-SelfTest {
             Write-JsonFile -Path $responsePath -Value $bad
         }
 
+        Assert-NegativeCase -Failures $failures -Name 'blank_numeric_field' -ExpectedFailureText "field 'api_cost_usd' must be numeric" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
+            $bad = [ordered]@{
+                final_answer = 'Fixture output.'
+                api_cost_usd = ''
+            }
+            Write-JsonFile -Path $responsePath -Value $bad
+        }
+
+        Assert-NegativeCase -Failures $failures -Name 'null_numeric_field' -ExpectedFailureText "field 'api_cost_usd' must be numeric" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
+            $bad = [ordered]@{
+                final_answer = 'Fixture output.'
+                api_cost_usd = $null
+            }
+            Write-JsonFile -Path $responsePath -Value $bad
+        }
+
+        Assert-NegativeCase -Failures $failures -Name 'boolean_numeric_field' -ExpectedFailureText "field 'api_cost_usd' must be numeric" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
+            $bad = [ordered]@{
+                final_answer = 'Fixture output.'
+                api_cost_usd = $false
+            }
+            Write-JsonFile -Path $responsePath -Value $bad
+        }
+
         Assert-NegativeCase -Failures $failures -Name 'request_run_input_mismatch' -ExpectedFailureText 'does not match request run_input_id' -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
             $bad = [ordered]@{
                 run_input_id = 'different-run-input'
@@ -423,7 +466,7 @@ function Invoke-SelfTest {
         }
 
         $info.Add('Validated runner response contract self-test.')
-        $info.Add('Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, negative numeric fields, and request/run_input mismatches.')
+        $info.Add('Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and request/run_input mismatches.')
         $info.Add('Rejected unsupported plain-language readiness/result phrases.')
         $info.Add('Rejected unsupported hyphenated readiness/result phrases.')
         $info.Add('No hosted model/API calls are made by this scorer.')
