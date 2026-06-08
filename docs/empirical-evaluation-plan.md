@@ -105,6 +105,9 @@ A paper-ready evidence package should include:
   alias, runtime surface, budget, and source hashes;
 - mock execution package, used only to exercise transcript and cost-latency
   package joins before real model/API execution;
+- pilot execution package generated through an explicitly allowed local runner
+  script, used only as transcript/cost-latency evidence before annotation and
+  metric claims;
 - model/provider/runtime versions or identifiers;
 - random seeds or repeat identifiers where applicable;
 - raw transcripts;
@@ -138,9 +141,11 @@ Before any model/API eval run:
    ids, provider, model alias, runtime surface, and budget.
 7. Build and score a mock execution package to exercise transcript and
    cost-latency package joins without model/API calls.
-8. Run a small dry run with real transcripts only after the mock package route
+8. Build and score a pilot execution package through an explicitly allowed
+   local runner script only after the preflight and mock package routes pass.
+9. Run a small dry run with real transcripts only after the pilot package route
    passes and the budget/runtime route is still current.
-9. Review the dry run for prompt leakage, false result claims, and annotation
+10. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
 
 Before any paper-readiness or submission claim:
@@ -166,6 +171,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-prefl
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-preflight.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
@@ -175,12 +182,15 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 
 These scorers verify only the shape of the public task-suite seed, condition
 prompt pack, generated run-input package route, execution preflight route, mock
-execution package route, and run packet plus the evidence-package validator's
-and results aggregator's synthetic self-tests, the agreement checker's
-synthetic self-test, and the dry-run package builder synthetic self-test. The
-mock execution package route is a package-shape check only. They do not execute model/API evals,
-score real completed transcripts, report real aggregate metrics, measure real
-human/LLM-judge agreement, or prove empirical effectiveness.
+execution package route, pilot execution runner route, and run packet plus the
+evidence-package validator's and results aggregator's synthetic self-tests, the
+agreement checker's synthetic self-test, and the dry-run package builder
+synthetic self-test. The mock execution package route is a package-shape check
+only. The pilot execution runner self-test uses a temporary local fixture
+runner and is not a completed empirical study. They do not execute hosted
+model/API evals, score annotated completed transcripts, report real aggregate
+metrics, measure real human/LLM-judge agreement, or prove empirical
+effectiveness.
 
 ## Current Nonclaims
 

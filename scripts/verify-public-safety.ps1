@@ -36,6 +36,7 @@ $requiredPaths = @(
     'evals/empirical/run-input-schema.yaml',
     'evals/empirical/execution-preflight-schema.yaml',
     'evals/empirical/mock-execution-package-schema.yaml',
+    'evals/empirical/pilot-execution-package-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -51,6 +52,7 @@ $requiredPaths = @(
     'docs/empirical-run-inputs.md',
     'docs/empirical-execution-preflight.md',
     'docs/empirical-mock-execution-package.md',
+    'docs/empirical-pilot-execution-runner.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -76,6 +78,8 @@ $requiredPaths = @(
     'scripts/score-empirical-execution-preflight.ps1',
     'scripts/build-empirical-mock-execution-package.ps1',
     'scripts/score-empirical-mock-execution-package.ps1',
+    'scripts/build-empirical-pilot-execution-package.ps1',
+    'scripts/score-empirical-pilot-execution-package.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -155,6 +159,7 @@ $ceilingOrder = @{
     'empirical_run_input_builder_present_and_self_tested' = 15
     'empirical_execution_preflight_present_and_self_tested' = 16
     'empirical_mock_execution_package_builder_present_and_self_tested' = 17
+    'empirical_pilot_execution_runner_present_and_self_tested' = 18
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -813,7 +818,7 @@ if (Test-Path -LiteralPath $mockExecutionPackageScorerPath) {
         'mock_execution_package_schema_only_no_real_model_results',
         'mock_execution_package_only_no_real_model_results',
         'mock_synthetic_no_private_material',
-        'Rejected missing transcript, crossed cost-latency join, credential-like content, non-JSON sensitive files, and unsupported effectiveness claim cases',
+        'Rejected missing transcript, crossed cost-latency join, credential-like content, non-JSON sensitive files, and unsupported result/readiness claim cases',
         'unexpected non-JSON file',
         'source-preflight-hash.json',
         'source-run-input-manifest-hash.json',
@@ -1364,6 +1369,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-mock-execution-package.md'
             Label = 'docs/empirical-mock-execution-package.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-pilot-execution-runner.md'
+            Label = 'docs/empirical-pilot-execution-runner.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'

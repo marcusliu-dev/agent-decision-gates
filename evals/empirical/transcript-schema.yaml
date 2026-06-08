@@ -5,6 +5,7 @@ description: Required fields for future raw experiment transcripts. This schema 
 
 required_fields:
   - run_id
+  - run_input_id
   - task_id
   - condition
   - repeat_index

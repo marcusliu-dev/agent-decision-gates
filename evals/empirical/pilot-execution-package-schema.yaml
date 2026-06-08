@@ -1,7 +1,7 @@
-id: agent-decision-gates-mock-execution-package-schema
+id: agent-decision-gates-pilot-execution-package-schema
 version: 0.1.0
-claim_boundary: mock_execution_package_schema_only_no_real_model_results
-description: Required shape for synthetic mock execution packages that exercise transcript and cost-latency joins before any real model/API execution.
+claim_boundary: pilot_execution_package_schema_only_no_empirical_results
+description: Required fields for pilot execution packages produced by an explicit local runner script. This schema defines package structure only and does not prove model quality, empirical effectiveness, or paper readiness.
 
 required_directories:
   - transcripts
@@ -9,9 +9,10 @@ required_directories:
   - metadata
 
 required_metadata_files:
-  - mock-execution-manifest.json
+  - pilot-execution-manifest.json
   - source-preflight-hash.json
   - source-run-input-manifest-hash.json
+  - runner-script-hash.json
 
 required_transcript_fields:
   - run_id
@@ -49,12 +50,21 @@ required_cost_latency_fields:
   - retry_count
 
 join_requirements:
-  - every_selected_run_input_has_mock_transcript
-  - every_mock_transcript_has_cost_latency_record
+  - every_selected_run_input_has_pilot_transcript
+  - every_pilot_transcript_has_cost_latency_record
   - every_cost_latency_record_matches_transcript_run_id
-  - every_mock_transcript_input_prompt_matches_run_input
+  - every_pilot_transcript_input_prompt_matches_run_input
+  - every_pilot_transcript_provider_model_runtime_matches_preflight
   - source_preflight_hash_recorded
   - source_run_input_manifest_hash_recorded
+  - runner_script_hash_recorded
+
+runner_requirements:
+  - local_runner_script_explicitly_allowed
+  - runner_script_hash_recorded
+  - runner_outputs_json_response
+  - no_credentials_in_package
+  - no_private_paths_in_package
 
 forbidden_fields:
   - annotation_record
@@ -79,12 +89,10 @@ forbidden_fields:
   - production_ready
 
 current_nonclaims:
-  - no_real_model_api_eval_execution
-  - no_real_transcripts
-  - no_real_annotations
-  - no_real_cost_latency_results
+  - no_annotations
   - no_human_llm_judge_agreement_results
   - no_aggregate_metrics
   - no_statistical_results
   - no_empirical_effectiveness_claim
   - no_paper_readiness
+  - no_runner_quality_claim

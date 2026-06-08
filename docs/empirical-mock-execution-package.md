@@ -56,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-
 The self-tests build temporary run-input and preflight records, generate a mock
 execution package, validate it, reject missing transcript, crossed
 cost-latency join, credential-like content, non-JSON sensitive files,
-unsupported effectiveness claim cases, and `-Force` overwrite attempts over
+unsupported result/readiness claim cases, and `-Force` overwrite attempts over
 non-generated files, then remove the temporary files. They do not call models,
 APIs, judges, or external services.
 

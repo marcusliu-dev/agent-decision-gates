@@ -572,20 +572,9 @@ function Invoke-SelfTest {
         }
         & $mockBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -Force | Out-Null
 
-        foreach ($forbiddenValueToken in @(
-            'annotation_record',
-            'human_label',
-            'llm_judge_label',
-            'pass_rate',
-            'win_rate',
-            'p_value',
-            'confidence_interval',
-            'statistical_significance',
-            'effectiveness_claim',
-            'empirical_effectiveness_proven',
-            'paper_ready',
-            'production_ready'
-        )) {
+        $schemaText = Get-Content -LiteralPath (Join-Path $RepoRoot 'evals/empirical/mock-execution-package-schema.yaml') -Raw
+        $forbiddenValueTokens = Get-TopLevelList -Text $schemaText -Field 'forbidden_fields'
+        foreach ($forbiddenValueToken in $forbiddenValueTokens) {
             Assert-NegativeCase -Failures $failures -Name "unsupported_value_$forbiddenValueToken" -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText "unsupported claim text '$forbiddenValueToken'" -Mutate {
                 $transcript = Get-Content -LiteralPath $transcriptFile.FullName -Raw | ConvertFrom-Json
                 $transcript.final_claim = $forbiddenValueToken
@@ -595,7 +584,7 @@ function Invoke-SelfTest {
         }
 
         $info.Add('Validated generated mock execution package.')
-        $info.Add('Rejected missing transcript, crossed cost-latency join, credential-like content, non-JSON sensitive files, and unsupported effectiveness claim cases.')
+        $info.Add('Rejected missing transcript, crossed cost-latency join, credential-like content, non-JSON sensitive files, and unsupported result/readiness claim cases.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force

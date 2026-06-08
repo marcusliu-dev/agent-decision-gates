@@ -8,13 +8,14 @@ scorers, a synthetic dry-run evidence-package builder, a versioned condition
 prompt pack for future empirical runs, a pre-execution run-input package
 builder, an empirical execution preflight builder/scorer for future pilot
 selection, runtime, and budget records, a mock execution package builder/scorer
-for transcript and cost-latency package joins, and a
+for transcript and cost-latency package joins, a pilot execution package
+builder/scorer for explicitly allowed local runner scripts, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_mock_execution_package_builder_present_and_self_tested`
+`empirical_pilot_execution_runner_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -28,13 +29,15 @@ agreement-summary schema, agreement-checks guide, and condition prompt pack
 exist under `docs/` and `evals/empirical/`, that a run-input schema, guide,
 builder, and scorer exist, that an execution preflight schema, guide, builder,
 and scorer exist, that a mock execution package schema, guide, builder, and
+scorer exist, that a pilot execution package schema, guide, builder, and
 scorer exist, that a synthetic dry-run package guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
 prompt-pack surfaces, that the run-input builder/scorer and execution
 preflight builder/scorer self-tests pass, that the mock execution package
-builder/scorer self-tests pass,
+builder/scorer self-tests pass, that the pilot execution package builder/scorer
+self-tests pass through a local fixture runner,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -50,7 +53,8 @@ pre-execution input generation plus structural scoring, and the execution
 preflight claim is bounded to pre-execution pilot-selection, runtime, and
 budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
-self-tests, not empirical proof or paper
+validation, and the pilot execution runner claim is bounded to local-runner
+package builder/scorer self-tests, not empirical proof or paper
 readiness. No broader
 claim is made for
 package-manager
@@ -95,6 +99,7 @@ guarantees.
 - `evals/empirical/run-input-schema.yaml`
 - `evals/empirical/execution-preflight-schema.yaml`
 - `evals/empirical/mock-execution-package-schema.yaml`
+- `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -109,6 +114,7 @@ guarantees.
 - `docs/empirical-run-inputs.md`
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
+- `docs/empirical-pilot-execution-runner.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -134,6 +140,8 @@ guarantees.
 - `scripts/score-empirical-execution-preflight.ps1`
 - `scripts/build-empirical-mock-execution-package.ps1`
 - `scripts/score-empirical-mock-execution-package.ps1`
+- `scripts/build-empirical-pilot-execution-package.ps1`
+- `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -155,6 +163,8 @@ guarantees.
   runtime, and budget record generation;
 - no mock execution package claim beyond synthetic transcript/cost-latency
   package-shape validation;
+- no pilot execution runner claim beyond local-fixture self-test and
+  transcript/cost-latency package validation;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -188,8 +198,16 @@ guarantees.
   transcript-shaped records and 9 mock cost-latency-shaped records from the
   execution preflight, and the mock execution package scorer self-test rejects
   missing transcript, crossed cost-latency join, credential-like content, and
-  unsupported effectiveness claim cases, plus non-JSON sensitive files and
+  unsupported result/readiness claim cases, plus non-JSON sensitive files and
   `-Force` overwrite attempts over non-generated files;
+- the empirical pilot execution package builder self-test generates 9
+  transcript-shaped records and 9 cost-latency-shaped records through a
+  temporary local fixture runner, requires `-AllowRunnerScript`, and the pilot
+  execution package scorer self-test rejects missing transcript, crossed
+  cost-latency join, credential-like content, provider/model/runtime
+  mismatches, metadata hash tampering, non-JSON sensitive files, unsupported
+  result/readiness claim cases, and `-Force` overwrite attempts over
+  non-generated files;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as
