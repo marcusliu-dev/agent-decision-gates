@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   verify:
     name: Verify deterministic public surface
@@ -17,25 +20,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verify public surface
-        shell: powershell
-        run: .\scripts\verify-public-safety.ps1
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify-public-safety.ps1
 
       - name: Score consult eval fixtures
-        shell: powershell
-        run: .\scripts\score-eval-fixtures.ps1 -Json
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\score-eval-fixtures.ps1 -Json
 
       - name: Score empirical run packet
-        shell: powershell
-        run: .\scripts\score-empirical-run-packet.ps1 -Json
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\score-empirical-run-packet.ps1 -Json
 
       - name: Self-test empirical evidence package
-        shell: powershell
-        run: .\scripts\score-empirical-evidence-package.ps1 -SelfTest -Json
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\score-empirical-evidence-package.ps1 -SelfTest -Json
 
       - name: Self-test empirical results analyzer
-        shell: powershell
-        run: .\scripts\score-empirical-results.ps1 -SelfTest -Json
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\score-empirical-results.ps1 -SelfTest -Json
 
       - name: Self-test empirical agreement checker
-        shell: powershell
-        run: .\scripts\score-empirical-agreement.ps1 -SelfTest -Json
+        shell: pwsh
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\score-empirical-agreement.ps1 -SelfTest -Json
