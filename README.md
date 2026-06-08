@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: ci_verification_workflow_present_and_self_tested -->
+<!-- claim_ceiling: related_work_and_limitations_present_and_ci_verified -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -50,6 +50,10 @@ This repo packages a simple alternative:
   scorer in [`scripts/score-eval-fixtures.ps1`](scripts/score-eval-fixtures.ps1);
 - a design-pattern [deep-dive report](docs/deep-dive-report.md) on claim
   ceilings for agentic workflows;
+- a [related-work and limitations map](docs/related-work-and-limitations.md)
+  that positions the paper path against self-refinement, debate,
+  process-supervision, tool-use, LLM-judge, and self-correction research while
+  preserving the no-results boundary;
 - an [empirical evaluation plan](docs/empirical-evaluation-plan.md), a public
   seed [task suite](evals/empirical/agent-decision-gates-task-suite.yaml), and
   a structural task-suite scorer in
@@ -203,6 +207,9 @@ requires independent review.
   the public fixture evidence surface.
 - Read [docs/deep-dive-report.md](docs/deep-dive-report.md) for the
   design-pattern rationale and research-evidence boundary.
+- Read [docs/related-work-and-limitations.md](docs/related-work-and-limitations.md)
+  for the current literature positioning, methodological risks, and
+  nonclaims before describing the project as a paper candidate.
 - Read [docs/empirical-evaluation-plan.md](docs/empirical-evaluation-plan.md)
   for the future paper experiment design and current no-results boundary.
 - Read [docs/condition-prompt-pack.md](docs/condition-prompt-pack.md) for the

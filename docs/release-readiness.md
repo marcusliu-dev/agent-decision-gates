@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: ci_verification_workflow_present_and_self_tested -->
+<!-- claim_ceiling: related_work_and_limitations_present_and_ci_verified -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -32,7 +32,8 @@ freezing selected request JSON files before any private runner invocation, plus
 a pilot runner request package scorer for validating generated request files,
 source hashes, manifest entries, source run-input joins, and preflight runtime
 joins before runner execution, plus a GitHub Actions workflow for deterministic
-public-surface verification and core scorer self-tests.
+public-surface verification and core scorer self-tests, plus a related-work and
+limitations map for the paper path.
 
 ## Purpose
 
@@ -86,6 +87,7 @@ The current repository surface includes:
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
+- `docs/related-work-and-limitations.md`
 - `docs/empirical-evaluation-plan.md`
 - `docs/condition-prompt-pack.md`
 - `docs/empirical-run-inputs.md`
@@ -161,7 +163,7 @@ The current release claim is narrow and explicit:
 - the documentation and skill surface are internally consistent and
   verifier-backed, the design-pattern report is present, and the public eval
   fixtures, seed empirical task suite, experiment run-packet schemas,
-  annotation-guidelines surface, and evidence-package validator are
+  related-work and limitations map, annotation-guidelines surface, and evidence-package validator are
   structurally validated or self-tested, and the agreement-check route is
   synthetic-self-tested, with a synthetic dry-run package builder self-tested
   against the validator chain and a versioned condition prompt pack

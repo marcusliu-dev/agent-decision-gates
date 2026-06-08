@@ -32,18 +32,19 @@ pilot transcripts, cost/latency records, and completed annotations before
 downstream validation, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows, and a GitHub Actions workflow for deterministic public-surface
-verification and core scorer self-tests.
+verification and core scorer self-tests, plus a related-work and limitations
+map for the future paper path.
 
 ## Current Claim Ceiling
 
-`ci_verification_workflow_present_and_self_tested`
+`related_work_and_limitations_present_and_ci_verified`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
 repository surface contains a reusable skill package under `skills/consult/`,
 that public eval fixtures exist under `evals/consult/`, that a design-pattern
 report exists under `docs/deep-dive-report.md`, that an empirical evaluation
-plan, seed task suite, experiment run-packet specification, transcript schema,
+plan, related-work and limitations map, seed task suite, experiment run-packet specification, transcript schema,
 annotation schema, annotation worklist schema, label-template package schema,
 annotation-intake schema, evidence-package schema,
 evidence-package validation guide, evidence-package builder guide,
@@ -102,6 +103,8 @@ required fields and incomplete nested tool-call records,
 that `.github/workflows/verify.yml` is present and structurally checked to run
 the deterministic public verifier and core scorer self-tests with read-only
 repository permissions,
+that `docs/related-work-and-limitations.md` is present, claim-ceiling tagged,
+and checked for the expected related-work categories and no-results boundary,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -195,6 +198,7 @@ empirical effectiveness, or production runtime guarantees.
 - `docs/core-protocol.md`
 - `docs/codex-adapter.md`
 - `docs/deep-dive-report.md`
+- `docs/related-work-and-limitations.md`
 - `docs/empirical-evaluation-plan.md`
 - `docs/condition-prompt-pack.md`
 - `docs/empirical-run-inputs.md`

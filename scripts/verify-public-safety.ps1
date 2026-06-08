@@ -56,6 +56,7 @@ $requiredPaths = @(
     'docs/core-protocol.md',
     'docs/codex-adapter.md',
     'docs/deep-dive-report.md',
+    'docs/related-work-and-limitations.md',
     'docs/empirical-evaluation-plan.md',
     'docs/condition-prompt-pack.md',
     'docs/empirical-run-inputs.md',
@@ -203,6 +204,7 @@ $ceilingOrder = @{
     'empirical_claim_phrase_preservation_for_annotation_self_tested' = 31
     'empirical_evidence_package_empty_tool_calls_self_tested' = 32
     'ci_verification_workflow_present_and_self_tested' = 33
+    'related_work_and_limitations_present_and_ci_verified' = 34
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -2044,6 +2046,33 @@ if (Test-Path -LiteralPath $empiricalDryRunBuilderPath) {
     }
 }
 
+$relatedWorkDocPath = Join-Path $RepoRoot 'docs\related-work-and-limitations.md'
+if (Test-Path -LiteralPath $relatedWorkDocPath) {
+    $relatedWorkDocContent = Get-Content -LiteralPath $relatedWorkDocPath -Raw
+    foreach ($check in @(
+        'evidence-bounded claim governance',
+        'Self-Refine',
+        'Reflexion',
+        'Self-Consistency',
+        'AI Safety via Debate',
+        'Multiagent Debate',
+        'Let''s Verify Step by Step',
+        'ReAct',
+        'Toolformer',
+        'SWE-agent',
+        'Constitutional AI',
+        'Judging LLM-as-a-Judge',
+        'Large Language Models Cannot Self-Correct Reasoning Yet',
+        'does not report model/API results',
+        'does not report model/API results, human labels, agreement',
+        'not as a proven agent-safety framework'
+    )) {
+        if (-not $relatedWorkDocContent.Contains($check)) {
+            $failures.Add("Missing related-work/limitations invariant '$check' in docs/related-work-and-limitations.md")
+        }
+    }
+}
+
 $evalExpectations = @(
     @{
         Path = Join-Path $RepoRoot 'evals\consult\consult-public-happy-path.yaml'
@@ -2144,6 +2173,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\deep-dive-report.md'
             Label = 'docs/deep-dive-report.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\related-work-and-limitations.md'
+            Label = 'docs/related-work-and-limitations.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-evaluation-plan.md'
