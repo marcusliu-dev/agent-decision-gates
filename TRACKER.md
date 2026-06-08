@@ -6,13 +6,14 @@ schemas, an evidence-package validation route, a results aggregation route,
 annotation guidelines, a human-vs-LLM-judge agreement-check route, structural
 scorers, a synthetic dry-run evidence-package builder, a versioned condition
 prompt pack for future empirical runs, a pre-execution run-input package
-builder, and a
+builder, an empirical execution preflight builder/scorer for future pilot
+selection, runtime, and budget records, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_run_input_builder_present_and_self_tested`
+`empirical_execution_preflight_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -24,11 +25,13 @@ annotation schema, evidence-package schema, evidence-package validation guide,
 results-summary schema, results-analysis guide, annotation guidelines,
 agreement-summary schema, agreement-checks guide, and condition prompt pack
 exist under `docs/` and `evals/empirical/`, that a run-input schema, guide,
-builder, and scorer exist, that a synthetic dry-run package guide and builder exist,
+builder, and scorer exist, that an execution preflight schema, guide, builder,
+and scorer exist, that a synthetic dry-run package guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
-prompt-pack surfaces, that the run-input builder and scorer self-tests pass,
+prompt-pack surfaces, that the run-input builder/scorer and execution
+preflight builder/scorer self-tests pass,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -39,8 +42,11 @@ validator, results-aggregator, agreement-checker, and dry-run package-builder
 claims are bounded to synthetic self-test behavior, and the
 annotation-guidelines claim is bounded to rubric presence plus structural
 scorer coverage, and the condition-prompt claim is bounded to versioned prompt
-presence plus structural scoring, and the run-input claim is bounded to
-pre-execution input generation plus structural scoring, not empirical proof or paper readiness. No broader
+presence plus structural scoring, the run-input claim is bounded to
+pre-execution input generation plus structural scoring, and the execution
+preflight claim is bounded to pre-execution pilot-selection, runtime, and
+budget record generation plus structural scoring, not empirical proof or paper
+readiness. No broader
 claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
@@ -82,6 +88,7 @@ guarantees.
 - `evals/empirical/experiment-run-manifest.yaml`
 - `evals/empirical/condition-prompt-pack.yaml`
 - `evals/empirical/run-input-schema.yaml`
+- `evals/empirical/execution-preflight-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -94,6 +101,7 @@ guarantees.
 - `docs/empirical-evaluation-plan.md`
 - `docs/condition-prompt-pack.md`
 - `docs/empirical-run-inputs.md`
+- `docs/empirical-execution-preflight.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -115,6 +123,8 @@ guarantees.
 - `scripts/score-empirical-prompt-pack.ps1`
 - `scripts/build-empirical-run-inputs.ps1`
 - `scripts/score-empirical-run-inputs.ps1`
+- `scripts/build-empirical-execution-preflight.ps1`
+- `scripts/score-empirical-execution-preflight.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -132,6 +142,8 @@ guarantees.
 - no claim that the deterministic verifier proves production safety;
 - no model/API eval results or empirical paper claim;
 - no real dry-run package claim beyond synthetic generated examples;
+- no execution preflight claim beyond pre-execution pilot-selection,
+  runtime, and budget record generation;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -156,6 +168,11 @@ guarantees.
   task-condition-repeat input package, records task-suite/prompt-pack/manifest
   hashes, and the run-input scorer self-test rejects a package with a missing
   input record;
+- the empirical execution preflight builder self-test generates a 9-record
+  pilot preflight from the run-input package, records provider/model/runtime
+  and budget metadata before execution, and the preflight scorer self-test
+  rejects missing budget, missing run-input id, non-first sorted selection,
+  transcript field injection, and metadata hash mutation cases;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

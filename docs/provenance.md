@@ -34,6 +34,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `evals/empirical/experiment-run-manifest.yaml` | Written locally as a public run-packet manifest schema for future empirical experiments, with no model results. |
 | `evals/empirical/condition-prompt-pack.yaml` | Written locally as a public condition prompt pack for future empirical experiments, with no model/API execution or results. |
 | `evals/empirical/run-input-schema.yaml` | Written locally as a public run-input schema for future empirical experiments, with no model/API execution or results. |
+| `evals/empirical/execution-preflight-schema.yaml` | Written locally as a public execution-preflight schema for recording future pilot selection, runtime, and budget metadata before model/API execution, with no model/API calls or results. |
 | `evals/empirical/transcript-schema.yaml` | Written locally as a public transcript schema for future experiment runs, with no transcripts. |
 | `evals/empirical/annotation-schema.yaml` | Written locally as a public annotation schema for future human or judge labels, with no labels. |
 | `evals/empirical/evidence-package-schema.yaml` | Written locally as a public evidence-package schema for future experiment outputs, with no transcripts, labels, or results. |
@@ -47,6 +48,7 @@ repository and the source boundaries used to keep the public surface generic.
 | `docs/experiment-run-packet.md` | Written locally as a public run-packet specification for freezing future experiment artifacts before model/API eval execution. |
 | `docs/condition-prompt-pack.md` | Written locally as public documentation for the condition prompt pack and its no-results boundary. |
 | `docs/empirical-run-inputs.md` | Written locally as public documentation for reproducible pre-execution run-input package generation, with no model/API execution or results. |
+| `docs/empirical-execution-preflight.md` | Written locally as public documentation for execution preflight records that freeze pilot selection, provider/model/runtime, and budget before model/API execution, with no model/API calls or results. |
 | `docs/empirical-annotation-guidelines.md` | Written locally as public annotation rubric guidance for future human, LLM-judge, and rule-based labels, with no real labels or agreement results. |
 | `docs/empirical-evidence-package.md` | Written locally as a public evidence-package validation guide for future post-run completeness checks, with no executed experiment evidence. |
 | `docs/empirical-results-analysis.md` | Written locally as a public results-analysis guide for future metric aggregation after evidence-package validation, with no real experiment results. |
@@ -66,6 +68,8 @@ repository and the source boundaries used to keep the public surface generic.
 | `scripts/score-empirical-prompt-pack.ps1` | Written locally as a dependency-free deterministic structural scorer for the public empirical condition prompt pack. |
 | `scripts/build-empirical-run-inputs.ps1` | Written locally as a dependency-free deterministic builder for public pre-execution empirical run-input packages. |
 | `scripts/score-empirical-run-inputs.ps1` | Written locally as a dependency-free deterministic structural scorer for generated empirical run-input packages. |
+| `scripts/build-empirical-execution-preflight.ps1` | Written locally as a dependency-free deterministic builder for public pre-execution pilot selection, runtime, and budget records. |
+| `scripts/score-empirical-execution-preflight.ps1` | Written locally as a dependency-free deterministic structural scorer for empirical execution preflight records and their no-results boundary. |
 | `scripts/score-empirical-evidence-package.ps1` | Written locally as a dependency-free deterministic validator and synthetic self-test route for future empirical evidence packages. |
 | `scripts/score-empirical-results.ps1` | Written locally as a dependency-free deterministic results aggregator and synthetic self-test route for future validated empirical evidence packages. |
 | `scripts/score-empirical-agreement.ps1` | Written locally as a dependency-free deterministic human-vs-LLM-judge agreement checker and synthetic self-test route for future validated empirical evidence packages. |

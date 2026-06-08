@@ -34,6 +34,7 @@ $requiredPaths = @(
     'evals/empirical/experiment-run-manifest.yaml',
     'evals/empirical/condition-prompt-pack.yaml',
     'evals/empirical/run-input-schema.yaml',
+    'evals/empirical/execution-preflight-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -47,6 +48,7 @@ $requiredPaths = @(
     'docs/empirical-evaluation-plan.md',
     'docs/condition-prompt-pack.md',
     'docs/empirical-run-inputs.md',
+    'docs/empirical-execution-preflight.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -68,6 +70,8 @@ $requiredPaths = @(
     'scripts/score-empirical-prompt-pack.ps1',
     'scripts/build-empirical-run-inputs.ps1',
     'scripts/score-empirical-run-inputs.ps1',
+    'scripts/build-empirical-execution-preflight.ps1',
+    'scripts/score-empirical-execution-preflight.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -145,6 +149,7 @@ $ceilingOrder = @{
     'empirical_dry_run_package_builder_present_and_self_tested' = 13
     'empirical_condition_prompt_pack_present_and_structurally_scored' = 14
     'empirical_run_input_builder_present_and_self_tested' = 15
+    'empirical_execution_preflight_present_and_self_tested' = 16
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -407,6 +412,8 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-prompt-pack.ps1',
         'build-empirical-run-inputs.ps1 -SelfTest',
         'score-empirical-run-inputs.ps1 -SelfTest',
+        'build-empirical-execution-preflight.ps1 -SelfTest',
+        'score-empirical-execution-preflight.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -468,8 +475,11 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'No private repository material',
         'condition_prompt_pack_available',
         'run_input_builder_available',
+        'execution_preflight_available',
         'score-empirical-prompt-pack.ps1',
         'score-empirical-run-inputs.ps1',
+        'build-empirical-execution-preflight.ps1 -SelfTest',
+        'score-empirical-execution-preflight.ps1',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -498,11 +508,14 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'agreement_check_record',
         'condition_prompt_pack',
         'run_input_record',
+        'execution_preflight_record',
+        'execution_preflight_schema',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
         'condition_prompt_pack_available',
         'run_input_builder_available',
+        'execution_preflight_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -601,6 +614,93 @@ if (Test-Path -LiteralPath $runInputScorerPath) {
     )) {
         if (-not $runInputScorerContent.Contains($check)) {
             $failures.Add("Missing empirical run-input scorer invariant '$check'.")
+        }
+    }
+}
+
+$executionPreflightSchemaPath = Join-Path $RepoRoot 'evals\empirical\execution-preflight-schema.yaml'
+if (Test-Path -LiteralPath $executionPreflightSchemaPath) {
+    $executionPreflightSchemaContent = Get-Content -LiteralPath $executionPreflightSchemaPath -Raw
+    if ($executionPreflightSchemaContent -notmatch 'claim_boundary:\s*execution_preflight_schema_only_no_model_api_calls') {
+        $failures.Add('Execution preflight schema must declare execution_preflight_schema_only_no_model_api_calls claim boundary.')
+    }
+    foreach ($check in @(
+        'selected_run_input_ids',
+        'selected_run_count',
+        'provider',
+        'model_name_or_alias',
+        'runtime_surface',
+        'budget_recorded_before_execution',
+        'max_budget_usd',
+        'run_input_manifest_sha256',
+        'source_run_input_manifest_hash_recorded',
+        'provider_model_runtime_recorded',
+        'selected_run_inputs_exist',
+        'no_model_api_call_performed',
+        'transcript_messages',
+        'empirical_effectiveness_proven',
+        'no_model_api_eval_execution',
+        'no_paper_readiness'
+    )) {
+        if ($executionPreflightSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing execution preflight schema requirement '$check'.")
+        }
+    }
+}
+
+$executionPreflightDocPath = Join-Path $RepoRoot 'docs\empirical-execution-preflight.md'
+if (Test-Path -LiteralPath $executionPreflightDocPath) {
+    $executionPreflightDocContent = Get-Content -LiteralPath $executionPreflightDocPath -Raw
+    foreach ($check in @(
+        'does not call models or APIs',
+        'dist/empirical-run-inputs',
+        'dist/empirical-execution-preflight.json',
+        'build-empirical-execution-preflight.ps1 -SelfTest',
+        'score-empirical-execution-preflight.ps1 -SelfTest',
+        '9 records from the 324-record run-input package',
+        'Current Nonclaims'
+    )) {
+        if (-not $executionPreflightDocContent.Contains($check)) {
+            $failures.Add("Missing empirical execution preflight doc boundary '$check' in docs/empirical-execution-preflight.md")
+        }
+    }
+}
+
+$executionPreflightBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-execution-preflight.ps1'
+if (Test-Path -LiteralPath $executionPreflightBuilderPath) {
+    $executionPreflightBuilderContent = Get-Content -LiteralPath $executionPreflightBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical execution preflight builder',
+        'execution_preflight_only_no_model_api_calls',
+        'preflight_only_no_model_api_call',
+        'source_run_input_manifest_hash_recorded',
+        'provider_model_runtime_recorded',
+        'budget_recorded_before_execution',
+        'no_model_api_call_performed',
+        'Built a 9-record execution preflight'
+    )) {
+        if (-not $executionPreflightBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical execution preflight builder invariant '$check'.")
+        }
+    }
+}
+
+$executionPreflightScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-execution-preflight.ps1'
+if (Test-Path -LiteralPath $executionPreflightScorerPath) {
+    $executionPreflightScorerContent = Get-Content -LiteralPath $executionPreflightScorerPath -Raw
+    foreach ($check in @(
+        'Empirical execution preflight scoring',
+        'execution_preflight_schema_only_no_model_api_calls',
+        'execution_preflight_only_no_model_api_calls',
+        'preflight_only_no_model_api_call',
+        'Rejected missing budget, missing run-input id, non-first sorted selection, transcript field injection, and metadata hash mutation cases',
+        'transcript_messages',
+        'task_suite_sha256',
+        'selected_run_input_ids',
+        'metadata/run-input-manifest.json'
+    )) {
+        if (-not $executionPreflightScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical execution preflight scorer invariant '$check'.")
         }
     }
 }
@@ -1135,6 +1235,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-run-inputs.md'
             Label = 'docs/empirical-run-inputs.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-execution-preflight.md'
+            Label = 'docs/empirical-execution-preflight.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'

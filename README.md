@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_run_input_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_execution_preflight_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -62,6 +62,9 @@ This repo packages a simple alternative:
 - an [empirical run-input package guide](docs/empirical-run-inputs.md), schema,
   builder, and scorer for materializing fixed task-condition-repeat inputs
   before any model/API eval execution;
+- an [empirical execution preflight guide](docs/empirical-execution-preflight.md),
+  schema, builder, and scorer for recording the pilot run selection, provider,
+  model alias, runtime surface, and budget before any model/API eval execution;
 - an [experiment run packet](docs/experiment-run-packet.md), transcript and
   annotation schemas under [`evals/empirical/`](evals/empirical/), and a
   structural run-packet scorer in
@@ -164,6 +167,9 @@ requires independent review.
   frozen condition instructions required before any future model/API eval run.
 - Read [docs/empirical-run-inputs.md](docs/empirical-run-inputs.md) for the
   pre-execution run-input records that future model/API evals should consume.
+- Read [docs/empirical-execution-preflight.md](docs/empirical-execution-preflight.md)
+  for the pre-execution pilot-selection, runtime, and budget gate required
+  before any future model/API eval run.
 - Read [docs/experiment-run-packet.md](docs/experiment-run-packet.md) for the
   frozen-artifact contract required before any future model/API eval run.
 - Read [docs/empirical-annotation-guidelines.md](docs/empirical-annotation-guidelines.md)
@@ -200,14 +206,17 @@ evaluation plan, experiment run-packet schemas, an evidence-package validator,
 a results aggregator, empirical annotation guidelines, an agreement checker, a
 synthetic dry-run package builder, a versioned condition prompt pack, and
 deterministic structural scorers under `MIT`, plus a pre-execution run-input
-package builder for fixed task-condition-repeat records. The current ceiling is
-no higher than `empirical_run_input_builder_present_and_self_tested`. The
+package builder for fixed task-condition-repeat records and an execution
+preflight builder for recording the pilot selection, provider, model alias,
+runtime surface, and budget before execution. The current ceiling is no higher
+than `empirical_execution_preflight_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
 correctness. The dry-run package is synthetic evidence-shape exercise only. The
 condition prompt pack freezes planned instructions only. The run-input builder
-materializes pre-execution inputs only. The repository
+materializes pre-execution inputs only. The execution preflight records a future
+pilot run gate only. The repository
 intentionally does not ship CI, deployment automation, application
 source scaffolding, model/API eval results, or a broader framework/runtime
 product surface.

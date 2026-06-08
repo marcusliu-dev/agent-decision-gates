@@ -1,0 +1,66 @@
+id: agent-decision-gates-execution-preflight-schema
+version: 0.1.0
+claim_boundary: execution_preflight_schema_only_no_model_api_calls
+description: Required fields for future empirical execution preflight records. This schema defines a model/budget/run-selection gate before execution and contains no model outputs or results.
+
+required_fields:
+  - preflight_id
+  - preflight_version
+  - claim_boundary
+  - run_input_package_root_label
+  - task_suite_sha256
+  - prompt_pack_sha256
+  - manifest_sha256
+  - run_input_manifest_sha256
+  - selected_run_input_ids
+  - selected_run_count
+  - selected_conditions
+  - selected_task_ids
+  - provider
+  - model_name_or_alias
+  - runtime_surface
+  - execution_mode
+  - budget_recorded_before_execution
+  - max_budget_usd
+  - estimated_input_tokens
+  - estimated_output_tokens
+  - estimated_total_tokens
+  - records_per_condition
+  - selection_strategy
+  - stop_gates_satisfied
+  - current_nonclaims
+
+metadata_requirements:
+  - source_run_input_manifest_hash_recorded
+  - provider_model_runtime_recorded
+  - budget_recorded_before_execution
+  - selected_run_inputs_exist
+  - no_model_api_call_performed
+
+forbidden_fields:
+  - raw_transcript
+  - transcript_messages
+  - model_output
+  - model_response
+  - annotation_record
+  - cost_latency_result
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - production_ready
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_transcripts
+  - no_annotations
+  - no_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

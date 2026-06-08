@@ -101,6 +101,8 @@ A paper-ready evidence package should include:
 - all prompts and condition instructions;
 - generated run-input records with task, condition, repeat, prompt, and hash
   metadata;
+- execution preflight record with selected run-input ids, provider, model
+  alias, runtime surface, budget, and source hashes;
 - model/provider/runtime versions or identifiers;
 - random seeds or repeat identifiers where applicable;
 - raw transcripts;
@@ -130,7 +132,8 @@ Before any model/API eval run:
 3. Confirm the scoring schema.
 4. Confirm the privacy and redaction boundary.
 5. Freeze the annotation guideline version.
-6. Record the model/API budget.
+6. Build and score an execution preflight record with selected pilot run-input
+   ids, provider, model alias, runtime surface, and budget.
 7. Run a small dry run with transcripts.
 8. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
@@ -154,6 +157,8 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-task-suite.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-prompt-pack.ps1
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-run-inputs.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-inputs.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-preflight.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-preflight.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
@@ -162,10 +167,10 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 ```
 
 These scorers verify only the shape of the public task-suite seed, condition
-prompt pack, generated run-input package route, and run packet plus the
-evidence-package validator's and results aggregator's synthetic self-tests, the
-agreement checker's synthetic self-test, and the dry-run package builder
-synthetic self-test. They do not execute model/API evals,
+prompt pack, generated run-input package route, execution preflight route, and
+run packet plus the evidence-package validator's and results aggregator's
+synthetic self-tests, the agreement checker's synthetic self-test, and the
+dry-run package builder synthetic self-test. They do not execute model/API evals,
 score real completed transcripts, report real aggregate metrics, measure real
 human/LLM-judge agreement, or prove empirical effectiveness.
 
