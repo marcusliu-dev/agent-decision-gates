@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_pilot_run_chain_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_runner_response_contract_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -68,6 +68,9 @@ This repo packages a simple alternative:
 - an [empirical mock execution package guide](docs/empirical-mock-execution-package.md),
   schema, builder, and scorer for exercising transcript and cost-latency package
   joins without real model/API eval execution;
+- an [empirical runner response contract](docs/empirical-runner-contract.md),
+  schema, and scorer for validating a private or local runner response before
+  it is wrapped into a pilot transcript/cost-latency package;
 - an [empirical pilot execution runner guide](docs/empirical-pilot-execution-runner.md),
   schema, builder, and scorer for routing selected pilot inputs through an
   explicitly allowed local runner script and validating transcript/cost-latency
@@ -198,6 +201,9 @@ requires independent review.
 - Read [docs/empirical-mock-execution-package.md](docs/empirical-mock-execution-package.md)
   for the synthetic transcript/cost-latency package route that exercises the
   execution artifact contract before real model/API eval runs.
+- Read [docs/empirical-runner-contract.md](docs/empirical-runner-contract.md)
+  for the private/local runner response contract and scorer that validates one
+  runner response before it is wrapped into a pilot execution package.
 - Read [docs/empirical-pilot-execution-runner.md](docs/empirical-pilot-execution-runner.md)
   for the explicit local-runner route that can produce pilot transcript and
   cost-latency packages without storing credentials or private runner code in
@@ -257,8 +263,10 @@ deterministic structural scorers under `MIT`, plus a pre-execution run-input
 package builder for fixed task-condition-repeat records and an execution
 preflight builder for recording the pilot selection, provider, model alias,
 runtime surface, and budget before execution, plus a mock execution package
-builder for transcript/cost-latency package joins, plus a pilot execution
-runner package builder for explicitly allowed local runner scripts, plus an
+builder for transcript/cost-latency package joins, plus a runner response
+contract scorer for validating one private/local runner response before package
+wrapping, plus a pilot execution runner package builder for explicitly allowed
+local runner scripts, plus an
 empirical pilot run chain builder that connects run inputs, execution preflight,
 explicit runner execution, pilot package validation, annotation worklist
 generation, and label-template generation, plus an
@@ -269,7 +277,7 @@ intake validator for future completed label records, plus an evidence-package
 builder that assembles future pilot transcripts, cost/latency records, and
 completed annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_pilot_run_chain_builder_present_and_self_tested`. The
+`empirical_runner_response_contract_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -277,7 +285,8 @@ correctness. The dry-run package is synthetic evidence-shape exercise only. The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape
-evidence only. The pilot execution runner self-test uses a local fixture runner
+evidence only. The runner response contract validates response shape and
+boundaries only. The pilot execution runner self-test uses a local fixture runner
 and does not by itself establish real empirical results. The pilot run chain
 self-test uses a local fixture runner and does not by itself establish completed
 model/API eval results, completed labels, metrics, agreement, or paper

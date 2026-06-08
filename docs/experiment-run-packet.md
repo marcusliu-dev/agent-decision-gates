@@ -48,6 +48,11 @@ The current structural run packet contains:
   and [`score-empirical-mock-execution-package.ps1`](../scripts/score-empirical-mock-execution-package.ps1)
   for exercising synthetic transcript and cost-latency package joins before
   any model/API eval execution;
+- [`runner-response-schema.yaml`](../evals/empirical/runner-response-schema.yaml),
+  [`empirical-runner-contract.md`](empirical-runner-contract.md),
+  and [`score-empirical-runner-response.ps1`](../scripts/score-empirical-runner-response.ps1)
+  for validating one local/private runner response before it is wrapped into
+  a pilot transcript and cost-latency record;
 - [`pilot-execution-package-schema.yaml`](../evals/empirical/pilot-execution-package-schema.yaml),
   [`empirical-pilot-execution-runner.md`](empirical-pilot-execution-runner.md),
   [`build-empirical-pilot-execution-package.ps1`](../scripts/build-empirical-pilot-execution-package.ps1),
@@ -145,6 +150,7 @@ Stop before execution if:
 - the run_input_builder_available stop gate is not satisfied;
 - the execution_preflight_available stop gate is not satisfied;
 - the mock_execution_package_builder_available stop gate is not satisfied;
+- the runner response contract is needed but the runner_response_contract_available stop gate is not satisfied;
 - the pilot execution runner route is needed but the pilot_execution_runner_available stop gate is not satisfied;
 - the first-pilot chain is needed but the pilot_run_chain_builder_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
@@ -171,6 +177,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-prefl
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-preflight.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
@@ -189,19 +196,21 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 Those commands check only the packet structure, run-input builder/scorer
 self-tests, execution preflight builder/scorer self-tests, evidence-package
 validator self-test, agreement-checker self-test, the synthetic mock execution
-package builder/scorer self-tests, the pilot execution runner package
-builder/scorer self-tests, the pilot run chain builder self-test, the
+package builder/scorer self-tests, the runner response contract scorer
+self-test, the pilot execution runner package builder/scorer self-tests, the
+pilot run chain builder self-test, the
 annotation worklist builder/scorer self-tests, the label-template package
 builder/scorer self-tests, the annotation-intake scorer self-test, the
 evidence-package builder self-test, and the synthetic
 dry-run package builder self-test. This
 includes the synthetic dry-run package builder self-test.
 The synthetic mock execution package and synthetic
-dry-run package builder self-test are not real experiment outputs. The pilot
-execution runner self-test uses a temporary local fixture runner and does not
-call hosted model APIs. The pilot run chain self-test also uses a temporary
-local fixture runner and prepares downstream unlabeled work items and
-placeholder templates only. The annotation worklist self-tests produce unlabeled
+dry-run package builder self-test are not real experiment outputs. The runner
+response scorer self-test validates fixture response JSON only and does not call
+hosted model APIs. The pilot execution runner self-test uses a temporary local
+fixture runner and does not call hosted model APIs. The pilot run chain self-test
+also uses a temporary local fixture runner and prepares downstream unlabeled
+work items and placeholder templates only. The annotation worklist self-tests produce unlabeled
 work items only. The label-template package self-tests produce placeholders
 only. The annotation-intake scorer self-test uses synthetic completed-label
 fixtures only. The evidence-package builder self-test assembles synthetic
@@ -214,6 +223,7 @@ The synthetic mock execution package remains a package-shape exercise only.
 This packet does not prove:
 
 - model/API eval execution;
+- validated real runner responses;
 - human or LLM-judge annotation labels;
 - false-readiness or overclaim rates;
 - cost/latency measurements;

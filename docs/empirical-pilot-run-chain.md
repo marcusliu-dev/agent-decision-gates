@@ -27,6 +27,10 @@ This is the handoff before real labeling and measurement. A private runner may
 call a hosted model/API, but private runner code, API credentials, and provider
 secrets stay outside this public repository.
 
+During pilot execution, each local runner response is scored with
+[`score-empirical-runner-response.ps1`](../scripts/score-empirical-runner-response.ps1)
+before it is wrapped into transcript and cost/latency package records.
+
 ## Command
 
 Self-test without persistent files or model/API calls:

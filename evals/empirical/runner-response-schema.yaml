@@ -1,0 +1,94 @@
+id: agent-decision-gates-runner-response-schema
+version: 0.1.0
+claim_boundary: runner_response_contract_schema_only_no_execution_results
+description: Required and optional fields for one local runner response before it is wrapped into a pilot execution package. This schema defines response shape only and does not prove model quality, empirical effectiveness, or paper readiness.
+
+required_response_fields:
+  - final_answer
+
+optional_response_fields:
+  - run_input_id
+  - transcript_messages
+  - tool_calls
+  - final_claim
+  - checked_evidence
+  - selected_claim_ceiling
+  - stop_or_continue_decision
+  - human_checkpoint_decision
+  - input_tokens
+  - output_tokens
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+numeric_fields:
+  - input_tokens
+  - output_tokens
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+integer_numeric_fields:
+  - input_tokens
+  - output_tokens
+  - wall_time_ms
+  - retry_count
+
+join_checks:
+  - optional_run_input_id_matches_request
+  - response_json_parseable_before_package_wrapping
+  - final_answer_nonempty_before_transcript_generation
+
+privacy_requirements:
+  - no_credentials_in_response
+  - no_absolute_private_paths_in_response
+  - no_private_key_material_in_response
+
+forbidden_fields:
+  - annotation_record
+  - human_label
+  - llm_judge_label
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - model_api_eval_results
+  - model_api_results
+  - model_quality
+  - aggregate_metrics
+  - real_aggregate_metrics
+  - runner_quality
+  - runner_quality_claim
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - paper_readiness
+  - production_ready
+
+forbidden_claim_phrases:
+  - paper readiness
+  - paper ready
+  - production readiness
+  - production ready
+  - runner quality
+  - model quality
+  - empirical proof
+  - empirical result
+  - empirical results
+  - model/API eval results
+  - completed model/API evals
+  - aggregate metrics
+  - real labels
+  - real transcripts
+
+current_nonclaims:
+  - no_model_api_eval_execution
+  - no_validated_real_runner_responses
+  - no_pilot_transcripts
+  - no_annotations
+  - no_human_llm_judge_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

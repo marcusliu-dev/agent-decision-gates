@@ -67,6 +67,7 @@ $paths = [ordered]@{
     RunInputSchema = Join-Path $RepoRoot 'evals/empirical/run-input-schema.yaml'
     ExecutionPreflightSchema = Join-Path $RepoRoot 'evals/empirical/execution-preflight-schema.yaml'
     MockExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/mock-execution-package-schema.yaml'
+    RunnerResponseSchema = Join-Path $RepoRoot 'evals/empirical/runner-response-schema.yaml'
     PilotExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-package-schema.yaml'
     AnnotationWorklistSchema = Join-Path $RepoRoot 'evals/empirical/annotation-worklist-schema.yaml'
     LabelTemplatePackageSchema = Join-Path $RepoRoot 'evals/empirical/label-template-package-schema.yaml'
@@ -76,6 +77,7 @@ $paths = [ordered]@{
     RunInputDoc = Join-Path $RepoRoot 'docs/empirical-run-inputs.md'
     ExecutionPreflightDoc = Join-Path $RepoRoot 'docs/empirical-execution-preflight.md'
     MockExecutionPackageDoc = Join-Path $RepoRoot 'docs/empirical-mock-execution-package.md'
+    RunnerContractDoc = Join-Path $RepoRoot 'docs/empirical-runner-contract.md'
     PilotExecutionRunnerDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-runner.md'
     PilotRunChainDoc = Join-Path $RepoRoot 'docs/empirical-pilot-run-chain.md'
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
@@ -92,6 +94,7 @@ $paths = [ordered]@{
     ExecutionPreflightScorer = Join-Path $RepoRoot 'scripts/score-empirical-execution-preflight.ps1'
     MockExecutionPackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-mock-execution-package.ps1'
     MockExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-mock-execution-package.ps1'
+    RunnerResponseScorer = Join-Path $RepoRoot 'scripts/score-empirical-runner-response.ps1'
     PilotExecutionPackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-execution-package.ps1'
     PilotExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-pilot-execution-package.ps1'
     PilotRunChainBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-run-chain.ps1'
@@ -134,6 +137,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'required_artifacts') -Required @(
         'execution_preflight_record',
         'mock_execution_package',
+        'runner_response_contract',
         'pilot_execution_package',
         'pilot_run_chain',
         'annotation_worklist',
@@ -160,6 +164,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'run_input_builder_available',
         'execution_preflight_available',
         'mock_execution_package_builder_available',
+        'runner_response_contract_available',
         'pilot_execution_runner_available',
         'pilot_run_chain_builder_available',
         'annotation_worklist_builder_available',
@@ -182,6 +187,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'no_transcripts',
         'no_annotations',
         'no_completed_annotations',
+        'no_validated_real_runner_responses',
         'no_paper_readiness'
     ) -Label 'current_nonclaims'
     Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $manifest -Field 'forbidden_result_fields') -Required @(
@@ -201,6 +207,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'run_input_schema: evals/empirical/run-input-schema.yaml',
         'execution_preflight_schema: evals/empirical/execution-preflight-schema.yaml',
         'mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml',
+        'runner_response_schema: evals/empirical/runner-response-schema.yaml',
+        'runner_response_contract: docs/empirical-runner-contract.md',
         'pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml',
         'pilot_run_chain_builder: docs/empirical-pilot-run-chain.md',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
@@ -611,6 +619,93 @@ if (Test-Path -LiteralPath $paths.MockExecutionPackageScorer) {
     }
 }
 
+if (Test-Path -LiteralPath $paths.RunnerResponseSchema) {
+    $schema = Get-Content -LiteralPath $paths.RunnerResponseSchema -Raw
+    if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'runner_response_contract_schema_only_no_execution_results') {
+        $failures.Add('Runner response schema must declare runner_response_contract_schema_only_no_execution_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_response_fields') -Required @(
+        'final_answer'
+    ) -Label 'runner response required_response_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'optional_response_fields') -Required @(
+        'run_input_id',
+        'transcript_messages',
+        'final_claim',
+        'checked_evidence',
+        'selected_claim_ceiling',
+        'stop_or_continue_decision',
+        'human_checkpoint_decision',
+        'input_tokens',
+        'output_tokens',
+        'wall_time_ms',
+        'api_cost_usd',
+        'retry_count'
+    ) -Label 'runner response optional_response_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'join_checks') -Required @(
+        'optional_run_input_id_matches_request',
+        'response_json_parseable_before_package_wrapping',
+        'final_answer_nonempty_before_transcript_generation'
+    ) -Label 'runner response join_checks'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'privacy_requirements') -Required @(
+        'no_credentials_in_response',
+        'no_absolute_private_paths_in_response',
+        'no_private_key_material_in_response'
+    ) -Label 'runner response privacy_requirements'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'forbidden_fields') -Required @(
+        'pass_rate',
+        'aggregate_metrics',
+        'runner_quality_claim',
+        'empirical_effectiveness_proven',
+        'paper_ready',
+        'paper_readiness',
+        'production_ready'
+    ) -Label 'runner response forbidden_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'current_nonclaims') -Required @(
+        'no_model_api_eval_execution',
+        'no_validated_real_runner_responses',
+        'no_pilot_transcripts',
+        'no_aggregate_metrics',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'runner response current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.RunnerContractDoc) {
+    $doc = Get-Content -LiteralPath $paths.RunnerContractDoc -Raw
+    foreach ($check in @(
+        'score-empirical-runner-response.ps1 -SelfTest',
+        'Response Contract',
+        'does not call hosted model APIs',
+        'does not prove runner quality',
+        'credential-like content',
+        'forbidden result/readiness fields',
+        'request/run-input mismatches',
+        'Current Nonclaims'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical runner contract doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.RunnerResponseScorer) {
+    $scorer = Get-Content -LiteralPath $paths.RunnerResponseScorer -Raw
+    foreach ($check in @(
+        'Empirical runner response scoring',
+        'runner_response_contract_schema_only_no_execution_results',
+        'Validated runner response contract self-test',
+        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, negative numeric fields, and request/run_input mismatches',
+        'No hosted model/API calls are made by this scorer',
+        'does not match request run_input_id',
+        'blocked sensitive pattern',
+        'unsupported result/readiness claim text'
+    )) {
+        if (-not $scorer.Contains($check)) {
+            $failures.Add("Empirical runner response scorer is missing invariant '$check'.")
+        }
+    }
+}
+
 if (Test-Path -LiteralPath $paths.PilotExecutionPackageSchema) {
     $schema = Get-Content -LiteralPath $paths.PilotExecutionPackageSchema -Raw
     if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'pilot_execution_package_schema_only_no_empirical_results') {
@@ -710,6 +805,7 @@ if (Test-Path -LiteralPath $paths.PilotExecutionRunnerDoc) {
     foreach ($check in @(
         'does not call hosted model APIs',
         'Runner Contract',
+        'score-empirical-runner-response.ps1 -SelfTest',
         'dist/empirical-pilot-execution-package',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
@@ -732,6 +828,7 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageBuilder) {
         'pilot_execution_package_unlabeled_no_empirical_results',
         'pilot_execution_transcripts_present_unlabeled_no_results',
         'Pass -AllowRunnerScript',
+        'score-empirical-runner-response.ps1',
         'Built a 9-run pilot execution package',
         'refused non-generated files when -Force was used',
         'runner-script-hash.json',

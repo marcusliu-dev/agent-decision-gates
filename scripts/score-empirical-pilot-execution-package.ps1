@@ -624,7 +624,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $request = Get-Content -LiteralPath $RequestPath -Raw | ConvertFrom-Json
-$answer = "Fixture pilot response for $($request.run_input_id). This local runner self-test output is not an empirical result."
+$answer = "Fixture pilot response for $($request.run_input_id). This local runner self-test output is package-shape material only."
 $response = [ordered]@{
     final_answer = $answer
     final_claim = 'pilot_execution_output_unlabeled_no_empirical_claim'

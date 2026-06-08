@@ -320,7 +320,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $request = Get-Content -LiteralPath $RequestPath -Raw | ConvertFrom-Json
-$answer = "Fixture chain response for $($request.run_input_id). This local runner output exercises packaging only and is not an empirical result."
+$answer = "Fixture chain response for $($request.run_input_id). This local runner output exercises package wrapping only."
 $response = [ordered]@{
     final_answer = $answer
     final_claim = 'pilot_chain_fixture_output_only'

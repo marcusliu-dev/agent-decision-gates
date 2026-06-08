@@ -56,6 +56,14 @@ Optional response fields include:
 - `api_cost_usd`;
 - `retry_count`.
 
+Before a runner response is wrapped into a pilot transcript and cost-latency
+record, the builder calls
+[`score-empirical-runner-response.ps1`](../scripts/score-empirical-runner-response.ps1).
+That scorer validates the single response contract, blocked sensitive patterns,
+unsupported result/readiness fields, numeric telemetry fields, and optional
+request/run-input matching. It does not prove runner quality or model/API eval
+results.
+
 The package scorer rejects credentials, private paths, non-JSON package files,
 unsupported result or paper-readiness claims, provider/model/runtime mismatch,
 broken transcript/cost joins, and missing selected run inputs.
@@ -67,6 +75,7 @@ Run:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-run-inputs.ps1 -OutputRoot dist/empirical-run-inputs -Force
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-preflight.ps1 -RunInputRoot dist/empirical-run-inputs -OutputPath dist/empirical-execution-preflight.json -Provider openai-compatible -ModelNameOrAlias model-under-test -RuntimeSurface private-runner-script -MaxBudgetUsd 1.00 -Force
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response.ps1 -ResponsePath path\to\sample-response.json -RequestPath path\to\sample-request.json
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -RunInputRoot dist/empirical-run-inputs -PreflightPath dist/empirical-execution-preflight.json -OutputRoot dist/empirical-pilot-execution-package -RunnerScriptPath path\to\private-runner.ps1 -RunnerLabel private-runner-v0 -AllowRunnerScript -Force
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -RunInputRoot dist/empirical-run-inputs -PreflightPath dist/empirical-execution-preflight.json -PackageRoot dist/empirical-pilot-execution-package
 ```
@@ -75,6 +84,7 @@ For self-tests without persistent generated files or model/API calls, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
 ```
 

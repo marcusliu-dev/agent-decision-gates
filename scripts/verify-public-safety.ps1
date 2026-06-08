@@ -36,6 +36,7 @@ $requiredPaths = @(
     'evals/empirical/run-input-schema.yaml',
     'evals/empirical/execution-preflight-schema.yaml',
     'evals/empirical/mock-execution-package-schema.yaml',
+    'evals/empirical/runner-response-schema.yaml',
     'evals/empirical/pilot-execution-package-schema.yaml',
     'evals/empirical/annotation-worklist-schema.yaml',
     'evals/empirical/label-template-package-schema.yaml',
@@ -55,6 +56,7 @@ $requiredPaths = @(
     'docs/empirical-run-inputs.md',
     'docs/empirical-execution-preflight.md',
     'docs/empirical-mock-execution-package.md',
+    'docs/empirical-runner-contract.md',
     'docs/empirical-pilot-execution-runner.md',
     'docs/empirical-pilot-run-chain.md',
     'docs/empirical-annotation-worklist.md',
@@ -86,6 +88,7 @@ $requiredPaths = @(
     'scripts/score-empirical-execution-preflight.ps1',
     'scripts/build-empirical-mock-execution-package.ps1',
     'scripts/score-empirical-mock-execution-package.ps1',
+    'scripts/score-empirical-runner-response.ps1',
     'scripts/build-empirical-pilot-execution-package.ps1',
     'scripts/score-empirical-pilot-execution-package.ps1',
     'scripts/build-empirical-pilot-run-chain.ps1',
@@ -180,6 +183,7 @@ $ceilingOrder = @{
     'empirical_annotation_intake_validator_present_and_self_tested' = 21
     'empirical_evidence_package_builder_present_and_self_tested' = 22
     'empirical_pilot_run_chain_builder_present_and_self_tested' = 23
+    'empirical_runner_response_contract_present_and_self_tested' = 24
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -446,6 +450,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-execution-preflight.ps1 -SelfTest',
         'build-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-mock-execution-package.ps1 -SelfTest',
+        'score-empirical-runner-response.ps1 -SelfTest',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
@@ -459,6 +464,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'mock execution package route',
+        'runner response contract route',
         'pilot execution runner route',
         'pilot run chain route',
         'annotation worklist route',
@@ -525,6 +531,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'run_input_builder_available',
         'execution_preflight_available',
         'mock_execution_package_builder_available',
+        'runner_response_contract_available',
         'pilot_execution_runner_available',
         'pilot_run_chain_builder_available',
         'annotation_worklist_builder_available',
@@ -537,6 +544,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'score-empirical-execution-preflight.ps1',
         'build-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-mock-execution-package.ps1 -SelfTest',
+        'score-empirical-runner-response.ps1 -SelfTest',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-run-chain.ps1 -SelfTest',
@@ -554,6 +562,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'synthetic mock execution package',
+        'runner response',
         'pilot run chain',
         'annotation worklist',
         'label-template package',
@@ -902,6 +911,80 @@ if (Test-Path -LiteralPath $mockExecutionPackageScorerPath) {
     )) {
         if (-not $mockExecutionPackageScorerContent.Contains($check)) {
             $failures.Add("Missing empirical mock execution package scorer invariant '$check'.")
+        }
+    }
+}
+
+$runnerResponseSchemaPath = Join-Path $RepoRoot 'evals\empirical\runner-response-schema.yaml'
+if (Test-Path -LiteralPath $runnerResponseSchemaPath) {
+    $runnerResponseSchemaContent = Get-Content -LiteralPath $runnerResponseSchemaPath -Raw
+    if ($runnerResponseSchemaContent -notmatch 'claim_boundary:\s*runner_response_contract_schema_only_no_execution_results') {
+        $failures.Add('Runner response schema must declare runner_response_contract_schema_only_no_execution_results claim boundary.')
+    }
+    foreach ($check in @(
+        'required_response_fields',
+        'final_answer',
+        'optional_response_fields',
+        'run_input_id',
+        'transcript_messages',
+        'checked_evidence',
+        'numeric_fields',
+        'forbidden_claim_phrases',
+        'optional_run_input_id_matches_request',
+        'no_credentials_in_response',
+        'no_absolute_private_paths_in_response',
+        'no_validated_real_runner_responses',
+        'no_paper_readiness',
+        'paper_ready',
+        'production_ready',
+        'paper readiness',
+        'production readiness',
+        'runner quality',
+        'empirical proof'
+    )) {
+        if ($runnerResponseSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing runner response schema requirement '$check'.")
+        }
+    }
+}
+
+$runnerContractDocPath = Join-Path $RepoRoot 'docs\empirical-runner-contract.md'
+if (Test-Path -LiteralPath $runnerContractDocPath) {
+    $runnerContractDocContent = Get-Content -LiteralPath $runnerContractDocPath -Raw
+    foreach ($check in @(
+        'score-empirical-runner-response.ps1 -SelfTest',
+        'Response Contract',
+        'does not call hosted model APIs',
+        'does not prove runner quality',
+        'credential-like content',
+        'forbidden result/readiness fields',
+        'request/run-input mismatches',
+        'Current Nonclaims'
+    )) {
+        if (-not $runnerContractDocContent.Contains($check)) {
+            $failures.Add("Missing empirical runner contract doc boundary '$check' in docs/empirical-runner-contract.md")
+        }
+    }
+}
+
+$runnerResponseScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-runner-response.ps1'
+if (Test-Path -LiteralPath $runnerResponseScorerPath) {
+    $runnerResponseScorerContent = Get-Content -LiteralPath $runnerResponseScorerPath -Raw
+    foreach ($check in @(
+        'Empirical runner response scoring',
+        'runner_response_contract_schema_only_no_execution_results',
+        'Validated runner response contract self-test',
+        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, negative numeric fields, and request/run_input mismatches',
+        'Rejected unsupported plain-language readiness/result phrases',
+        'Rejected unsupported hyphenated readiness/result phrases',
+        'No hosted model/API calls are made by this scorer',
+        'does not match request run_input_id',
+        'blocked sensitive pattern',
+        'unsupported result/readiness claim phrase',
+        'unsupported result/readiness claim text'
+    )) {
+        if (-not $runnerResponseScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical runner response scorer invariant '$check'.")
         }
     }
 }
@@ -1765,6 +1848,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-mock-execution-package.md'
             Label = 'docs/empirical-mock-execution-package.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-runner-contract.md'
+            Label = 'docs/empirical-runner-contract.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-pilot-execution-runner.md'

@@ -168,6 +168,21 @@ function Invoke-LocalRunner {
         if (-not (Test-Path -LiteralPath $responsePath)) {
             throw "Runner script did not create response JSON for run_input_id '$($Request.run_input_id)'."
         }
+        $runnerResponseScorer = Join-Path $PSScriptRoot 'score-empirical-runner-response.ps1'
+        if (-not (Test-Path -LiteralPath $runnerResponseScorer)) {
+            throw 'Runner response scorer is missing; cannot validate local runner output before package wrapping.'
+        }
+        $scoreOutput = & $runnerResponseScorer -ResponsePath $responsePath -RequestPath $requestPath -Json 2>&1
+        $scoreInvocationSucceeded = $?
+        $scoreText = ($scoreOutput | Out-String)
+        try {
+            $score = $scoreText | ConvertFrom-Json
+        } catch {
+            throw "Runner response scorer did not return JSON for run_input_id '$($Request.run_input_id)': $scoreText"
+        }
+        if (-not $scoreInvocationSucceeded -or [string]$score.status -ne 'pass') {
+            throw "Runner response failed contract scoring for run_input_id '$($Request.run_input_id)': $scoreText"
+        }
         return (Get-Content -LiteralPath $responsePath -Raw | ConvertFrom-Json)
     } finally {
         if (Test-Path -LiteralPath $tempDir) {
@@ -382,7 +397,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $request = Get-Content -LiteralPath $RequestPath -Raw | ConvertFrom-Json
-$answer = "Fixture pilot response for $($request.run_input_id). This is a local runner self-test output and not an empirical result."
+$answer = "Fixture pilot response for $($request.run_input_id). This is a local runner self-test output for package wrapping only."
 $response = [ordered]@{
     final_answer = $answer
     final_claim = 'pilot_execution_output_unlabeled_no_empirical_claim'

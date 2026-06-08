@@ -8,11 +8,13 @@ scorers, a synthetic dry-run evidence-package builder, a versioned condition
 prompt pack for future empirical runs, a pre-execution run-input package
 builder, an empirical execution preflight builder/scorer for future pilot
 selection, runtime, and budget records, a mock execution package builder/scorer
-for transcript and cost-latency package joins, a pilot execution package
-builder/scorer for explicitly allowed local runner scripts, an empirical pilot
-run chain builder for connecting run inputs, preflight, explicit local-runner
-execution, pilot package scoring, annotation worklist generation, and
-label-template generation, an annotation worklist builder/scorer for deriving
+for transcript and cost-latency package joins, a runner response contract
+schema/doc/scorer for validating one private/local runner response before
+package wrapping, a pilot execution package builder/scorer for explicitly
+allowed local runner scripts, an empirical pilot run chain builder for
+connecting run inputs, preflight, explicit local-runner execution, pilot package
+scoring, annotation worklist generation, and label-template generation, an
+annotation worklist builder/scorer for deriving
 unlabeled future-labeling work items from pilot transcripts, a label-template
 package builder/scorer for deriving fillable placeholder templates from
 annotation work items, an annotation intake scorer for validating future
@@ -24,7 +26,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_run_chain_builder_present_and_self_tested`
+`empirical_runner_response_contract_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -40,8 +42,9 @@ guide, annotation guidelines, agreement-summary schema, agreement-checks guide,
 and condition prompt pack exist under `docs/` and `evals/empirical/`, that a
 run-input schema, guide, builder, and scorer exist, that an execution preflight
 schema, guide, builder, and scorer exist, that a mock execution package schema,
-guide, builder, and scorer exist, that a pilot execution package schema, guide,
-builder, and scorer exist, that an annotation worklist guide, builder, and
+guide, builder, and scorer exist, that a runner response contract schema, guide,
+and scorer exist, that a pilot execution package schema, guide, builder, and
+scorer exist, that an annotation worklist guide, builder, and
 scorer exist, that a synthetic dry-run package guide and builder exist,
 that a label-template package guide, builder, and scorer exist, that an
 annotation-intake guide and scorer exist, that an evidence-package builder
@@ -69,6 +72,12 @@ run-input generation, preflight, explicit runner execution, pilot package
 scoring, annotation worklist generation/scoring, and label-template
 generation/scoring without producing completed labels, agreement metrics,
 aggregate metrics, or a paper-readiness claim,
+that the runner response scorer self-test validates fixture response JSON and
+rejects missing `final_answer`, credential-like content, forbidden
+result/readiness fields, unsupported result/readiness claim text, negative
+numeric fields, and request/run-input mismatches, and that the pilot execution
+package builder validates each runner response with that scorer before package
+wrapping,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -84,7 +93,8 @@ pre-execution input generation plus structural scoring, and the execution
 preflight claim is bounded to pre-execution pilot-selection, runtime, and
 budget record generation plus structural scoring, and the mock execution
 package claim is bounded to synthetic transcript/cost-latency package-shape
-validation, and the pilot execution runner claim is bounded to local-runner
+validation, and the runner response contract claim is bounded to single-response
+schema/scorer self-tests, and the pilot execution runner claim is bounded to local-runner
 package builder/scorer self-tests, and the annotation worklist claim is bounded
 to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
@@ -92,7 +102,7 @@ annotation-intake claim is bounded to synthetic completed-annotation intake
 validation, and the evidence-package builder claim is bounded to synthetic
 assembly plus validator handoff, and the pilot run chain claim is bounded to a
 fixture-runner chain execution plus downstream structural scoring, not real
-transcript quality, real labels, agreement, metrics, empirical proof, or paper
+runner responses, transcript quality, real labels, agreement, metrics, empirical proof, or paper
 readiness. No
 broader claim is made for
 package-manager
@@ -137,6 +147,7 @@ guarantees.
 - `evals/empirical/run-input-schema.yaml`
 - `evals/empirical/execution-preflight-schema.yaml`
 - `evals/empirical/mock-execution-package-schema.yaml`
+- `evals/empirical/runner-response-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
@@ -155,6 +166,7 @@ guarantees.
 - `docs/empirical-run-inputs.md`
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
+- `docs/empirical-runner-contract.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-pilot-run-chain.md`
 - `docs/empirical-annotation-worklist.md`
@@ -186,6 +198,7 @@ guarantees.
 - `scripts/score-empirical-execution-preflight.ps1`
 - `scripts/build-empirical-mock-execution-package.ps1`
 - `scripts/score-empirical-mock-execution-package.ps1`
+- `scripts/score-empirical-runner-response.ps1`
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-pilot-run-chain.ps1`
@@ -216,6 +229,9 @@ guarantees.
   runtime, and budget record generation;
 - no mock execution package claim beyond synthetic transcript/cost-latency
   package-shape validation;
+- no runner response contract claim beyond fixture response validation,
+  sensitive-pattern rejection, forbidden result/readiness rejection, numeric
+  telemetry checks, and optional request/run-input matching;
 - no pilot execution runner claim beyond local-fixture self-test and
   transcript/cost-latency package validation;
 - no annotation worklist claim beyond unlabeled work-item generation and
@@ -298,6 +314,10 @@ guarantees.
   building/scoring, requires `-AllowRunnerScript`, rejects `-Force` overwrite
   attempts over non-generated files, and generates no completed labels,
   agreement metrics, aggregate metrics, or paper-readiness claim;
+- the empirical runner response scorer self-test validates fixture response JSON
+  and rejects missing `final_answer`, credential-like content, forbidden
+  result/readiness fields, unsupported result/readiness claim text, negative
+  numeric fields, and request/run-input mismatches;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

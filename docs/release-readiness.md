@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_run_chain_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_runner_response_contract_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -11,9 +11,10 @@ checks, plus a synthetic dry-run evidence-package builder and versioned
 condition prompt pack, a pre-execution run-input package builder, and an
 execution preflight builder/scorer for future pilot selection, runtime, and
 budget records, plus a mock execution package builder/scorer for synthetic
-transcript and cost-latency package joins, plus a pilot execution package
-builder/scorer for explicitly allowed local runner scripts, plus an annotation
-worklist builder/scorer for deriving unlabeled future-labeling work items from
+transcript and cost-latency package joins, plus a runner response contract
+schema/doc/scorer for validating one private/local runner response before
+package wrapping, plus a pilot execution package builder/scorer for explicitly
+allowed local runner scripts, plus an annotation worklist builder/scorer for deriving unlabeled future-labeling work items from
 pilot transcripts, plus a label-template package builder/scorer for deriving
 fillable placeholder templates from annotation work items, plus an annotation
 intake scorer for validating future completed annotation records, plus an
@@ -58,6 +59,7 @@ The current repository surface includes:
 - `evals/empirical/run-input-schema.yaml`
 - `evals/empirical/execution-preflight-schema.yaml`
 - `evals/empirical/mock-execution-package-schema.yaml`
+- `evals/empirical/runner-response-schema.yaml`
 - `evals/empirical/pilot-execution-package-schema.yaml`
 - `evals/empirical/annotation-worklist-schema.yaml`
 - `evals/empirical/label-template-package-schema.yaml`
@@ -76,6 +78,7 @@ The current repository surface includes:
 - `docs/empirical-run-inputs.md`
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
+- `docs/empirical-runner-contract.md`
 - `docs/empirical-pilot-execution-runner.md`
 - `docs/empirical-pilot-run-chain.md`
 - `docs/empirical-annotation-worklist.md`
@@ -107,6 +110,7 @@ The current repository surface includes:
 - `scripts/score-empirical-execution-preflight.ps1`
 - `scripts/build-empirical-mock-execution-package.ps1`
 - `scripts/score-empirical-mock-execution-package.ps1`
+- `scripts/score-empirical-runner-response.ps1`
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
 - `scripts/build-empirical-pilot-run-chain.ps1`
@@ -145,7 +149,8 @@ The current release claim is narrow and explicit:
   self-tested, and an execution preflight builder/scorer self-tested for
   pilot-selection, runtime, and budget records before execution, plus a mock
   execution package builder/scorer self-tested for synthetic transcript and
-  cost-latency package joins, plus a pilot execution package builder/scorer
+  cost-latency package joins, plus a runner response contract scorer self-tested
+  for single-response shape and boundary checks, plus a pilot execution package builder/scorer
   self-tested through a local fixture runner, plus an annotation worklist
   builder/scorer self-tested for unlabeled future-labeling work items derived
   from pilot transcripts, plus a label-template package builder/scorer
@@ -163,7 +168,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_run_chain_builder_present_and_self_tested`.
+`empirical_runner_response_contract_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -236,6 +241,10 @@ system.
   `-Force` overwrite attempts over non-generated files, and generates no
   completed labels, agreement metrics, aggregate metrics, or paper-readiness
   claim;
+- the deterministic empirical runner response scorer self-test validates fixture
+  response JSON and rejects missing `final_answer`, credential-like content,
+  forbidden result/readiness fields, unsupported result/readiness claim text,
+  negative numeric fields, and request/run-input mismatches;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
