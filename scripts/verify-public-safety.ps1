@@ -56,6 +56,7 @@ $requiredPaths = @(
     'docs/empirical-execution-preflight.md',
     'docs/empirical-mock-execution-package.md',
     'docs/empirical-pilot-execution-runner.md',
+    'docs/empirical-pilot-run-chain.md',
     'docs/empirical-annotation-worklist.md',
     'docs/empirical-label-template-package.md',
     'docs/empirical-annotation-intake.md',
@@ -87,6 +88,7 @@ $requiredPaths = @(
     'scripts/score-empirical-mock-execution-package.ps1',
     'scripts/build-empirical-pilot-execution-package.ps1',
     'scripts/score-empirical-pilot-execution-package.ps1',
+    'scripts/build-empirical-pilot-run-chain.ps1',
     'scripts/build-empirical-annotation-worklist.ps1',
     'scripts/score-empirical-annotation-worklist.ps1',
     'scripts/build-empirical-label-template-package.ps1',
@@ -177,6 +179,7 @@ $ceilingOrder = @{
     'empirical_label_template_package_builder_present_and_self_tested' = 20
     'empirical_annotation_intake_validator_present_and_self_tested' = 21
     'empirical_evidence_package_builder_present_and_self_tested' = 22
+    'empirical_pilot_run_chain_builder_present_and_self_tested' = 23
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -445,6 +448,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-mock-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
@@ -456,6 +460,7 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'mock execution package route',
         'pilot execution runner route',
+        'pilot run chain route',
         'annotation worklist route',
         'label-template package route',
         'annotation intake route',
@@ -521,6 +526,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'execution_preflight_available',
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
+        'pilot_run_chain_builder_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -533,6 +539,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'score-empirical-mock-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
@@ -547,6 +554,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'synthetic mock execution package',
+        'pilot run chain',
         'annotation worklist',
         'label-template package',
         'annotation-intake',
@@ -578,6 +586,8 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'mock_execution_package_schema',
         'pilot_execution_package',
         'pilot_execution_package_schema',
+        'pilot_run_chain',
+        'pilot_run_chain_builder',
         'annotation_worklist',
         'annotation_worklist_schema',
         'label_template_package',
@@ -594,6 +604,7 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'execution_preflight_available',
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
+        'pilot_run_chain_builder_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -891,6 +902,43 @@ if (Test-Path -LiteralPath $mockExecutionPackageScorerPath) {
     )) {
         if (-not $mockExecutionPackageScorerContent.Contains($check)) {
             $failures.Add("Missing empirical mock execution package scorer invariant '$check'.")
+        }
+    }
+}
+
+$pilotRunChainDocPath = Join-Path $RepoRoot 'docs\empirical-pilot-run-chain.md'
+if (Test-Path -LiteralPath $pilotRunChainDocPath) {
+    $pilotRunChainDocContent = Get-Content -LiteralPath $pilotRunChainDocPath -Raw
+    foreach ($check in @(
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
+        'AllowRunnerScript',
+        'explicitly allowed local runner',
+        'does not embed provider API code',
+        'does not prove',
+        'Current Nonclaims'
+    )) {
+        if (-not $pilotRunChainDocContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot run chain doc boundary '$check' in docs/empirical-pilot-run-chain.md")
+        }
+    }
+}
+
+$pilotRunChainBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-pilot-run-chain.ps1'
+if (Test-Path -LiteralPath $pilotRunChainBuilderPath) {
+    $pilotRunChainBuilderContent = Get-Content -LiteralPath $pilotRunChainBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical pilot run chain builder',
+        'pilot_run_chain_executed_no_labels_no_metrics',
+        'pilot-run-chain-manifest.json',
+        'score-empirical-pilot-execution-package.ps1',
+        'score-empirical-annotation-worklist.ps1',
+        'score-empirical-label-template-package.ps1',
+        'Required -AllowRunnerScript and refused non-generated files when -Force was used',
+        'Rejected root-level and nested non-generated files when -Force was used',
+        'Generated no completed labels, agreement metrics, aggregate metrics, or paper-readiness claim'
+    )) {
+        if (-not $pilotRunChainBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical pilot run chain builder invariant '$check'.")
         }
     }
 }
@@ -1721,6 +1769,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-pilot-execution-runner.md'
             Label = 'docs/empirical-pilot-execution-runner.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-pilot-run-chain.md'
+            Label = 'docs/empirical-pilot-run-chain.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-annotation-worklist.md'

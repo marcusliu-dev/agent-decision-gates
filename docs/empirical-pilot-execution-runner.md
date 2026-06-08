@@ -21,6 +21,14 @@ cost-latency records, source hashes, and a runner-script hash.
 This keeps the public repository useful for reproducible experiments while
 preserving the no-export boundary for credentials and private runtime details.
 
+For the integrated first-pilot route that chains run-input generation,
+execution preflight, this runner, annotation worklist generation, and
+label-template generation, use
+[`docs/empirical-pilot-run-chain.md`](empirical-pilot-run-chain.md). That
+chain remains bounded to fixture/self-test execution until a real authorized
+runner produces reviewed transcripts that are separately labeled and validated
+through the annotation-intake route.
+
 ## Runner Contract
 
 The runner script is invoked once per selected run input with:

@@ -77,6 +77,7 @@ $paths = [ordered]@{
     ExecutionPreflightDoc = Join-Path $RepoRoot 'docs/empirical-execution-preflight.md'
     MockExecutionPackageDoc = Join-Path $RepoRoot 'docs/empirical-mock-execution-package.md'
     PilotExecutionRunnerDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-runner.md'
+    PilotRunChainDoc = Join-Path $RepoRoot 'docs/empirical-pilot-run-chain.md'
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
     LabelTemplatePackageDoc = Join-Path $RepoRoot 'docs/empirical-label-template-package.md'
     AnnotationIntakeDoc = Join-Path $RepoRoot 'docs/empirical-annotation-intake.md'
@@ -93,6 +94,7 @@ $paths = [ordered]@{
     MockExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-mock-execution-package.ps1'
     PilotExecutionPackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-execution-package.ps1'
     PilotExecutionPackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-pilot-execution-package.ps1'
+    PilotRunChainBuilder = Join-Path $RepoRoot 'scripts/build-empirical-pilot-run-chain.ps1'
     AnnotationWorklistBuilder = Join-Path $RepoRoot 'scripts/build-empirical-annotation-worklist.ps1'
     AnnotationWorklistScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-worklist.ps1'
     LabelTemplatePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-label-template-package.ps1'
@@ -133,6 +135,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'execution_preflight_record',
         'mock_execution_package',
         'pilot_execution_package',
+        'pilot_run_chain',
         'annotation_worklist',
         'label_template_package',
         'annotation_intake_package',
@@ -158,6 +161,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'execution_preflight_available',
         'mock_execution_package_builder_available',
         'pilot_execution_runner_available',
+        'pilot_run_chain_builder_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -198,6 +202,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'execution_preflight_schema: evals/empirical/execution-preflight-schema.yaml',
         'mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml',
         'pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml',
+        'pilot_run_chain_builder: docs/empirical-pilot-run-chain.md',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
         'label_template_package_schema: evals/empirical/label-template-package-schema.yaml',
         'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml',
@@ -755,6 +760,41 @@ if (Test-Path -LiteralPath $paths.PilotExecutionPackageScorer) {
     )) {
         if (-not $scorer.Contains($check)) {
             $failures.Add("Empirical pilot execution package scorer is missing invariant '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.PilotRunChainDoc) {
+    $doc = Get-Content -LiteralPath $paths.PilotRunChainDoc -Raw
+    foreach ($check in @(
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
+        'AllowRunnerScript',
+        'explicitly allowed local runner',
+        'does not embed provider API code',
+        'does not prove',
+        'Current Nonclaims'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical pilot run chain doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.PilotRunChainBuilder) {
+    $builder = Get-Content -LiteralPath $paths.PilotRunChainBuilder -Raw
+    foreach ($check in @(
+        'Empirical pilot run chain builder',
+        'pilot_run_chain_executed_no_labels_no_metrics',
+        'pilot-run-chain-manifest.json',
+        'score-empirical-pilot-execution-package.ps1',
+        'score-empirical-annotation-worklist.ps1',
+        'score-empirical-label-template-package.ps1',
+        'Required -AllowRunnerScript and refused non-generated files when -Force was used',
+        'Rejected root-level and nested non-generated files when -Force was used',
+        'Generated no completed labels, agreement metrics, aggregate metrics, or paper-readiness claim'
+    )) {
+        if (-not $builder.Contains($check)) {
+            $failures.Add("Empirical pilot run chain builder is missing invariant '$check'.")
         }
     }
 }
@@ -1370,6 +1410,8 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'pilot-execution-package-schema.yaml',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'pilot_run_chain_builder_available',
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
         'annotation_intake_validator_available',
@@ -1386,6 +1428,7 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'build-empirical-dry-run-package.ps1 -SelfTest',
         'synthetic mock execution package',
         'pilot execution runner',
+        'pilot run chain',
         'annotation worklist',
         'label-template package',
         'annotation-intake',
@@ -1410,6 +1453,7 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
         'score-empirical-mock-execution-package.ps1 -SelfTest',
         'build-empirical-pilot-execution-package.ps1 -SelfTest',
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
+        'build-empirical-pilot-run-chain.ps1 -SelfTest',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
@@ -1423,6 +1467,7 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
         'dry-run package builder',
         'mock execution package route',
         'pilot execution runner route',
+        'pilot run chain route',
         'annotation worklist route',
         'label-template package route',
         'annotation intake route',

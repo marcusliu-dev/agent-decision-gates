@@ -25,6 +25,7 @@ required_artifacts:
   - execution_preflight_record
   - mock_execution_package
   - pilot_execution_package
+  - pilot_run_chain
   - annotation_worklist
   - label_template_package
   - annotation_intake_package
@@ -54,6 +55,7 @@ schemas:
   execution_preflight_schema: evals/empirical/execution-preflight-schema.yaml
   mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml
   pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml
+  pilot_run_chain_builder: docs/empirical-pilot-run-chain.md
   annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
   label_template_package_schema: evals/empirical/label-template-package-schema.yaml
   annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml
@@ -67,6 +69,7 @@ stop_gates:
   - execution_preflight_available
   - mock_execution_package_builder_available
   - pilot_execution_runner_available
+  - pilot_run_chain_builder_available
   - annotation_worklist_builder_available
   - label_template_package_builder_available
   - annotation_intake_validator_available

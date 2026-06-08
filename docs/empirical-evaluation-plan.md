@@ -108,6 +108,10 @@ A paper-ready evidence package should include:
 - pilot execution package generated through an explicitly allowed local runner
   script, used only as transcript/cost-latency evidence before annotation and
   metric claims;
+- pilot run chain package generated through an explicitly allowed local runner
+  script, used only to connect run inputs, execution preflight, pilot package
+  validation, annotation worklist generation, and label-template generation
+  before completed labels, agreement, metrics, or paper-readiness claims;
 - annotation worklist generated from pilot transcripts and annotation
   guidelines, used only to prepare unlabeled future labeling items before human
   or LLM-judge labels are claimed;
@@ -154,17 +158,20 @@ Before any model/API eval run:
    cost-latency package joins without model/API calls.
 8. Build and score a pilot execution package through an explicitly allowed
    local runner script only after the preflight and mock package routes pass.
-9. Build and score an annotation worklist from the pilot package before any
+9. For a reproducible first pilot, run and score the pilot run chain through an
+   explicitly allowed local runner script before treating downstream annotation
+   work items or label templates as current.
+10. Build and score an annotation worklist from the pilot package before any
    human or LLM-judge label production.
-10. Build and score a label-template package from the annotation worklist
+11. Build and score a label-template package from the annotation worklist
     before any completed annotation records are produced.
-11. Score completed annotation intake records against the label-template
+12. Score completed annotation intake records against the label-template
     package before agreement, metric, or paper-readiness claims.
-12. Build and validate an evidence package from the pilot execution package and
+13. Build and validate an evidence package from the pilot execution package and
     annotation-intake package before result aggregation or agreement checks.
-13. Run a small dry run with real transcripts only after the pilot package route
+14. Run a small dry run with real transcripts only after the pilot package route
    passes and the budget/runtime route is still current.
-14. Review the dry run for prompt leakage, false result claims, and annotation
+15. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
 
 Before any paper-readiness or submission claim:
@@ -192,6 +199,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
@@ -207,8 +215,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 
 These scorers verify only the shape of the public task-suite seed, condition
 prompt pack, generated run-input package route, execution preflight route, mock
-execution package route, pilot execution runner route, annotation worklist
-route, label-template package route, annotation intake route, evidence-package
+execution package route, pilot execution runner route, pilot run chain route,
+annotation worklist route, label-template package route, annotation intake route, evidence-package
 builder route, and run packet plus the evidence-package validator's and results
 aggregator's synthetic self-tests, the agreement
 checker's synthetic self-test, and the dry-run package builder synthetic
@@ -219,12 +227,15 @@ unlabeled future-labeling work items only. The label-template self-tests create
 placeholders only, not completed labels. The annotation-intake scorer self-test
 uses synthetic completed-label records only, not real labels. The
 evidence-package builder self-test assembles synthetic source packages only.
-The current structural surface explicitly includes the mock execution package
-route. It also includes the pilot execution runner route, annotation worklist
-route, label-template package route, annotation intake route, and evidence
-package builder route.
+The pilot run chain self-test uses a temporary local fixture runner and
+connects downstream package-shape checks only; it does not produce completed
+labels, agreement metrics, aggregate metrics, or paper-readiness evidence. The
+current structural surface explicitly includes the mock execution package
+route. It also includes the pilot execution runner route, pilot run chain
+route, annotation worklist route, label-template package route, annotation
+intake route, and evidence package builder route.
 
-Verification sync terms: annotation worklist route; evidence package builder.
+Verification sync terms: pilot run chain route; build-empirical-pilot-run-chain.ps1 -SelfTest.
 They do not execute hosted model/API evals, score annotated completed
 transcripts, report real aggregate metrics, measure real human/LLM-judge
 agreement, or prove empirical effectiveness.

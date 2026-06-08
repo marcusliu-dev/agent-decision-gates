@@ -55,6 +55,13 @@ The current structural run packet contains:
   for executing selected pilot inputs through an explicitly allowed local
   runner script and validating the resulting transcript/cost-latency package
   before annotation or metric claims;
+- [`empirical-pilot-run-chain.md`](empirical-pilot-run-chain.md) and
+  [`build-empirical-pilot-run-chain.ps1`](../scripts/build-empirical-pilot-run-chain.ps1)
+  for running the first-pilot chain from run inputs through execution
+  preflight, explicitly allowed local-runner execution, pilot package scoring,
+  annotation worklist generation, and label-template generation before
+  completed labels, agreement measurements, aggregate metrics, or paper
+  readiness are claimed;
 - [`annotation-worklist-schema.yaml`](../evals/empirical/annotation-worklist-schema.yaml),
   [`empirical-annotation-worklist.md`](empirical-annotation-worklist.md),
   [`build-empirical-annotation-worklist.ps1`](../scripts/build-empirical-annotation-worklist.ps1),
@@ -139,6 +146,7 @@ Stop before execution if:
 - the execution_preflight_available stop gate is not satisfied;
 - the mock_execution_package_builder_available stop gate is not satisfied;
 - the pilot execution runner route is needed but the pilot_execution_runner_available stop gate is not satisfied;
+- the first-pilot chain is needed but the pilot_run_chain_builder_available stop gate is not satisfied;
 - the annotation worklist route is needed but the annotation_worklist_builder_available stop gate is not satisfied;
 - the label-template package route is needed but the label_template_package_builder_available stop gate is not satisfied;
 - completed annotations need intake validation but the annotation_intake_validator_available stop gate is not satisfied;
@@ -165,6 +173,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-pilot-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-pilot-run-chain.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
@@ -181,15 +190,18 @@ Those commands check only the packet structure, run-input builder/scorer
 self-tests, execution preflight builder/scorer self-tests, evidence-package
 validator self-test, agreement-checker self-test, the synthetic mock execution
 package builder/scorer self-tests, the pilot execution runner package
-builder/scorer self-tests, the annotation worklist builder/scorer self-tests,
-the label-template package builder/scorer self-tests, the annotation-intake
-scorer self-test, the evidence-package builder self-test, and the synthetic
+builder/scorer self-tests, the pilot run chain builder self-test, the
+annotation worklist builder/scorer self-tests, the label-template package
+builder/scorer self-tests, the annotation-intake scorer self-test, the
+evidence-package builder self-test, and the synthetic
 dry-run package builder self-test. This
 includes the synthetic dry-run package builder self-test.
 The synthetic mock execution package and synthetic
 dry-run package builder self-test are not real experiment outputs. The pilot
 execution runner self-test uses a temporary local fixture runner and does not
-call hosted model APIs. The annotation worklist self-tests produce unlabeled
+call hosted model APIs. The pilot run chain self-test also uses a temporary
+local fixture runner and prepares downstream unlabeled work items and
+placeholder templates only. The annotation worklist self-tests produce unlabeled
 work items only. The label-template package self-tests produce placeholders
 only. The annotation-intake scorer self-test uses synthetic completed-label
 fixtures only. The evidence-package builder self-test assembles synthetic

@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_evidence_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_run_chain_builder_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -72,6 +72,10 @@ This repo packages a simple alternative:
   schema, builder, and scorer for routing selected pilot inputs through an
   explicitly allowed local runner script and validating transcript/cost-latency
   outputs before labels or metrics are claimed;
+- an [empirical pilot run chain guide](docs/empirical-pilot-run-chain.md) and
+  builder for running the reproducible first-pilot chain from run inputs through
+  preflight, explicit runner execution, pilot package validation, annotation
+  worklist generation, and label-template generation;
 - an [empirical annotation worklist guide](docs/empirical-annotation-worklist.md),
   schema, builder, and scorer for deriving unlabeled annotation work items from
   pilot transcripts before any human or LLM-judge labels are claimed;
@@ -198,6 +202,10 @@ requires independent review.
   for the explicit local-runner route that can produce pilot transcript and
   cost-latency packages without storing credentials or private runner code in
   this public repository.
+- Read [docs/empirical-pilot-run-chain.md](docs/empirical-pilot-run-chain.md)
+  for the one-command first-pilot chain that executes an explicitly allowed
+  local runner and prepares unlabeled annotation work items plus placeholder
+  label templates.
 - Read [docs/empirical-annotation-worklist.md](docs/empirical-annotation-worklist.md)
   for the unlabeled worklist route that prepares future transcript annotation
   without creating labels, metrics, or paper-readiness evidence.
@@ -251,6 +259,9 @@ preflight builder for recording the pilot selection, provider, model alias,
 runtime surface, and budget before execution, plus a mock execution package
 builder for transcript/cost-latency package joins, plus a pilot execution
 runner package builder for explicitly allowed local runner scripts, plus an
+empirical pilot run chain builder that connects run inputs, execution preflight,
+explicit runner execution, pilot package validation, annotation worklist
+generation, and label-template generation, plus an
 annotation worklist builder for deriving unlabeled future-labeling work items
 from pilot transcripts, plus a label-template package builder for deriving
 fillable placeholder templates from annotation work items, plus an annotation
@@ -258,7 +269,7 @@ intake validator for future completed label records, plus an evidence-package
 builder that assembles future pilot transcripts, cost/latency records, and
 completed annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_evidence_package_builder_present_and_self_tested`. The
+`empirical_pilot_run_chain_builder_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -267,7 +278,10 @@ condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape
 evidence only. The pilot execution runner self-test uses a local fixture runner
-and does not by itself establish real empirical results. The annotation
+and does not by itself establish real empirical results. The pilot run chain
+self-test uses a local fixture runner and does not by itself establish completed
+model/API eval results, completed labels, metrics, agreement, or paper
+readiness. The annotation
 worklist self-tests generate unlabeled work items only and do not establish
 labels, agreement, metrics, or annotator quality. The label-template self-tests
 generate placeholders only and do not establish completed annotations, labels,

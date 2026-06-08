@@ -9,19 +9,22 @@ prompt pack for future empirical runs, a pre-execution run-input package
 builder, an empirical execution preflight builder/scorer for future pilot
 selection, runtime, and budget records, a mock execution package builder/scorer
 for transcript and cost-latency package joins, a pilot execution package
-builder/scorer for explicitly allowed local runner scripts, an annotation
-worklist builder/scorer for deriving unlabeled future-labeling work items from
-pilot transcripts, a label-template package builder/scorer for deriving
-fillable placeholder templates from annotation work items, an annotation
-intake scorer for validating future completed annotation records, an evidence
-package builder for assembling future pilot transcripts, cost/latency records,
-and completed annotations before downstream validation, and a
+builder/scorer for explicitly allowed local runner scripts, an empirical pilot
+run chain builder for connecting run inputs, preflight, explicit local-runner
+execution, pilot package scoring, annotation worklist generation, and
+label-template generation, an annotation worklist builder/scorer for deriving
+unlabeled future-labeling work items from pilot transcripts, a label-template
+package builder/scorer for deriving fillable placeholder templates from
+annotation work items, an annotation intake scorer for validating future
+completed annotation records, an evidence package builder for assembling future
+pilot transcripts, cost/latency records, and completed annotations before
+downstream validation, and a
 reusable `$consult` skill package for evidence-first decision gates in AI-agent
 workflows.
 
 ## Current Claim Ceiling
 
-`empirical_evidence_package_builder_present_and_self_tested`
+`empirical_pilot_run_chain_builder_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -43,6 +46,7 @@ scorer exist, that a synthetic dry-run package guide and builder exist,
 that a label-template package guide, builder, and scorer exist, that an
 annotation-intake guide and scorer exist, that an evidence-package builder
 guide and builder exist,
+that a pilot run chain guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
 task-suite, run-packet, evidence-package validator, results aggregator,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
@@ -60,6 +64,11 @@ completed-annotation package derived from the temporary local fixture
 label-template package, that the evidence-package builder self-test assembles
 a synthetic package from pilot execution and annotation-intake source packages
 and validates the assembled package,
+that the pilot run chain builder self-test runs a local fixture runner through
+run-input generation, preflight, explicit runner execution, pilot package
+scoring, annotation worklist generation/scoring, and label-template
+generation/scoring without producing completed labels, agreement metrics,
+aggregate metrics, or a paper-readiness claim,
 that the deterministic public-surface integrity verifier
 passes for the current repository surface, and that the materials in this
 repository are aligned with that surface. The eval and task-suite claims are
@@ -81,8 +90,10 @@ to unlabeled work-item generation and scoring, and the label-template package
 claim is bounded to placeholder template generation and scoring, and the
 annotation-intake claim is bounded to synthetic completed-annotation intake
 validation, and the evidence-package builder claim is bounded to synthetic
-assembly plus validator handoff, not real transcript quality, real labels,
-agreement, metrics, empirical proof, or paper readiness. No
+assembly plus validator handoff, and the pilot run chain claim is bounded to a
+fixture-runner chain execution plus downstream structural scoring, not real
+transcript quality, real labels, agreement, metrics, empirical proof, or paper
+readiness. No
 broader claim is made for
 package-manager
 distribution, executable framework behavior beyond the current skill package,
@@ -145,6 +156,7 @@ guarantees.
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
 - `docs/empirical-pilot-execution-runner.md`
+- `docs/empirical-pilot-run-chain.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
@@ -176,6 +188,7 @@ guarantees.
 - `scripts/score-empirical-mock-execution-package.ps1`
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
+- `scripts/build-empirical-pilot-run-chain.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -213,6 +226,9 @@ guarantees.
   validation against templates, work items, schema, and guideline hashes;
 - no evidence-package builder claim beyond synthetic assembly, source scanning,
   join validation handoff, and generated-file overwrite protection;
+- no pilot run chain claim beyond local fixture-runner chain execution,
+  downstream structural scoring, required explicit runner allowance, and
+  generated-file overwrite protection;
 - no package-manager or registry publication surface;
 - no claim that this repository is a full framework, SDK, or deployment
   system.
@@ -276,6 +292,12 @@ guarantees.
   evidence package from pilot execution and annotation-intake source packages,
   validates the assembled package, and rejects missing annotation joins,
   non-JSON sensitive source material, and non-generated overwrite attempts;
+- the empirical pilot run chain builder self-test runs a temporary local
+  fixture runner through run inputs, execution preflight, pilot package
+  building/scoring, annotation worklist building/scoring, and label-template
+  building/scoring, requires `-AllowRunnerScript`, rejects `-Force` overwrite
+  attempts over non-generated files, and generates no completed labels,
+  agreement metrics, aggregate metrics, or paper-readiness claim;
 - the empirical run-packet scorer passes for the current run-packet schema
   surface;
 - the empirical annotation guidelines are present and structurally checked as

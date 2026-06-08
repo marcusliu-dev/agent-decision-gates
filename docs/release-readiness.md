@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_evidence_package_builder_present_and_self_tested -->
+<!-- claim_ceiling: empirical_pilot_run_chain_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -18,7 +18,10 @@ pilot transcripts, plus a label-template package builder/scorer for deriving
 fillable placeholder templates from annotation work items, plus an annotation
 intake scorer for validating future completed annotation records, plus an
 evidence-package builder for assembling future pilot transcripts, cost/latency
-records, and completed annotations into a validation-ready evidence package.
+records, and completed annotations into a validation-ready evidence package,
+plus a pilot run chain builder for connecting run inputs, execution preflight,
+explicit local-runner execution, pilot package validation, annotation worklist
+generation, and label-template generation.
 
 ## Purpose
 
@@ -74,6 +77,7 @@ The current repository surface includes:
 - `docs/empirical-execution-preflight.md`
 - `docs/empirical-mock-execution-package.md`
 - `docs/empirical-pilot-execution-runner.md`
+- `docs/empirical-pilot-run-chain.md`
 - `docs/empirical-annotation-worklist.md`
 - `docs/empirical-label-template-package.md`
 - `docs/empirical-annotation-intake.md`
@@ -105,6 +109,7 @@ The current repository surface includes:
 - `scripts/score-empirical-mock-execution-package.ps1`
 - `scripts/build-empirical-pilot-execution-package.ps1`
 - `scripts/score-empirical-pilot-execution-package.ps1`
+- `scripts/build-empirical-pilot-run-chain.ps1`
 - `scripts/build-empirical-annotation-worklist.ps1`
 - `scripts/score-empirical-annotation-worklist.ps1`
 - `scripts/build-empirical-label-template-package.ps1`
@@ -149,12 +154,16 @@ The current release claim is narrow and explicit:
   completed annotation records against templates, work items, schema, and
   guideline hashes, plus an evidence-package builder self-tested for assembling
   synthetic pilot transcripts, cost/latency records, and completed annotation
-  records before downstream validation;
+  records before downstream validation, plus a pilot run chain builder
+  self-tested through a temporary local fixture runner from run-input
+  generation through preflight, explicit runner execution, pilot package
+  scoring, annotation worklist generation/scoring, and label-template
+  generation/scoring;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_evidence_package_builder_present_and_self_tested`.
+`empirical_pilot_run_chain_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -220,6 +229,13 @@ system.
   packages, validates the assembled package, and rejects missing annotation
   joins, non-JSON sensitive source material, and non-generated overwrite
   attempts;
+- the deterministic empirical pilot run chain builder self-test runs a
+  temporary local fixture runner through run inputs, execution preflight,
+  pilot package building/scoring, annotation worklist building/scoring, and
+  label-template building/scoring, requires `-AllowRunnerScript`, rejects
+  `-Force` overwrite attempts over non-generated files, and generates no
+  completed labels, agreement metrics, aggregate metrics, or paper-readiness
+  claim;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
@@ -279,6 +295,10 @@ These are intentionally outside the current release scope:
 - any claim that the evidence-package builder self-test is itself a real
   transcript-quality, annotation-quality, agreement, metric, model-quality,
   empirical-effectiveness, or paper-readiness finding;
+- any claim that the pilot run chain self-test is itself a completed model/API
+  experiment, real transcript-quality finding, completed annotation set,
+  human/LLM-judge agreement measurement, aggregate metric, empirical
+  effectiveness result, or paper-readiness finding;
 - any claim that the synthetic dry-run package is a real experiment output.
 
 ## Interpretation Rule
