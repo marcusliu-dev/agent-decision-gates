@@ -382,7 +382,7 @@ foreach ($relativePath in $forbiddenPaths) {
 $gitignorePath = Join-Path $RepoRoot '.gitignore'
 if (Test-Path -LiteralPath $gitignorePath) {
     $gitignoreContent = Get-Content -LiteralPath $gitignorePath -Raw
-    if ($gitignoreContent -notmatch '(?m)^dist/$') {
+    if ($gitignoreContent -notmatch '(?m)^dist/\r?$') {
         $failures.Add(".gitignore must ignore generated dist/ review-package output.")
     }
 }
