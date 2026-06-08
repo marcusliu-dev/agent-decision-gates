@@ -1391,6 +1391,7 @@ if (Test-Path -LiteralPath $paths.ResultsSummarySchema) {
         'metrics',
         'condition_metrics',
         'cost_latency_summary',
+        'run_to_run_variance',
         'annotator_agreement',
         'analyzer_version'
     ) -Label 'results summary required_summary_fields'
@@ -1419,6 +1420,13 @@ if (Test-Path -LiteralPath $paths.ResultsSummarySchema) {
         'no_empirical_effectiveness_claim',
         'no_paper_readiness'
     ) -Label 'results summary current_nonclaims'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $resultsSummary -Field 'run_to_run_variance_fields') -Required @(
+        'grouping',
+        'group_count',
+        'groups_with_two_or_more_repeats',
+        'groups',
+        'metric_variance_summary'
+    ) -Label 'results summary run_to_run_variance_fields'
 }
 
 if (Test-Path -LiteralPath $paths.AgreementSummarySchema) {

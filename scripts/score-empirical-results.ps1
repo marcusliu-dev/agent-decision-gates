@@ -164,31 +164,13 @@ function Get-RateSummary {
         }
         $counts[$value]++
 
-        if ($value -eq 'not_applicable' -or $value -eq 'insufficient_evidence') {
+        $score = Get-LabelScore -Value $value -Mode $Mode
+        if ($null -eq $score) {
             continue
         }
 
-        if ($Mode -eq 'defect') {
-            if ($value -eq 'fail') {
-                $scoreSum += 1.0
-                $scorableCount++
-            } elseif ($value -eq 'partial') {
-                $scoreSum += 0.5
-                $scorableCount++
-            } elseif ($value -eq 'pass') {
-                $scorableCount++
-            }
-        } else {
-            if ($value -eq 'pass') {
-                $scoreSum += 1.0
-                $scorableCount++
-            } elseif ($value -eq 'partial') {
-                $scoreSum += 0.5
-                $scorableCount++
-            } elseif ($value -eq 'fail') {
-                $scorableCount++
-            }
-        }
+        $scoreSum += $score
+        $scorableCount++
     }
 
     $rate = if ($scorableCount -gt 0) { [math]::Round($scoreSum / $scorableCount, 6) } else { $null }
@@ -199,6 +181,128 @@ function Get-RateSummary {
         score_sum = [math]::Round($scoreSum, 6)
         rate = $rate
         label_counts = $counts
+    }
+}
+
+function Get-LabelScore {
+    param(
+        [string]$Value,
+        [string]$Mode
+    )
+
+    if ($Value -eq 'not_applicable' -or $Value -eq 'insufficient_evidence') {
+        return $null
+    }
+
+    if ($Mode -eq 'defect') {
+        if ($Value -eq 'fail') { return 1.0 }
+        if ($Value -eq 'partial') { return 0.5 }
+        if ($Value -eq 'pass') { return 0.0 }
+    } else {
+        if ($Value -eq 'pass') { return 1.0 }
+        if ($Value -eq 'partial') { return 0.5 }
+        if ($Value -eq 'fail') { return 0.0 }
+    }
+
+    return $null
+}
+
+function Get-VarianceSummary {
+    param(
+        [double[]]$Values
+    )
+
+    $count = @($Values).Count
+    if ($count -eq 0) {
+        return [ordered]@{
+            count = 0
+            mean = $null
+            sample_variance = $null
+            min = $null
+            max = $null
+        }
+    }
+
+    $mean = ($Values | Measure-Object -Average).Average
+    $min = ($Values | Measure-Object -Minimum).Minimum
+    $max = ($Values | Measure-Object -Maximum).Maximum
+    $variance = $null
+    if ($count -gt 1) {
+        $sumSquaredDelta = 0.0
+        foreach ($value in $Values) {
+            $sumSquaredDelta += [math]::Pow(($value - $mean), 2)
+        }
+        $variance = $sumSquaredDelta / ($count - 1)
+    }
+
+    return [ordered]@{
+        count = $count
+        mean = [math]::Round($mean, 6)
+        sample_variance = if ($null -eq $variance) { $null } else { [math]::Round($variance, 6) }
+        min = [math]::Round($min, 6)
+        max = [math]::Round($max, 6)
+    }
+}
+
+function Get-RunToRunVarianceSummary {
+    param(
+        [object[]]$PrimaryAnnotations,
+        [hashtable]$MetricMap,
+        [string[]]$MetricNames
+    )
+
+    $groups = New-Object System.Collections.Generic.List[object]
+    $metricVarianceValues = @{}
+    foreach ($metricName in $MetricNames) {
+        $metricVarianceValues[$metricName] = New-Object System.Collections.Generic.List[double]
+    }
+
+    $annotationGroups = $PrimaryAnnotations | Group-Object {
+        $taskId = [string](Get-PropertyValue -Record $_ -Name 'task_id')
+        $condition = [string](Get-PropertyValue -Record $_ -Name 'condition')
+        "$taskId|||$condition"
+    }
+
+    foreach ($group in $annotationGroups) {
+        $first = @($group.Group | Select-Object -First 1)[0]
+        $taskId = [string](Get-PropertyValue -Record $first -Name 'task_id')
+        $condition = [string](Get-PropertyValue -Record $first -Name 'condition')
+        $metricSummaries = [ordered]@{}
+
+        foreach ($metricName in $MetricNames) {
+            $definition = $MetricMap[$metricName]
+            $scores = @($group.Group | ForEach-Object {
+                $value = [string](Get-PropertyValue -Record $_ -Name $definition.Field)
+                Get-LabelScore -Value $value -Mode $definition.Mode
+            } | Where-Object { $null -ne $_ } | ForEach-Object { [double]$_ })
+
+            $summary = Get-VarianceSummary -Values $scores
+            $metricSummaries[$metricName] = $summary
+            if ($null -ne $summary.sample_variance) {
+                $metricVarianceValues[$metricName].Add([double]$summary.sample_variance) | Out-Null
+            }
+        }
+
+        $groups.Add([ordered]@{
+            task_id = $taskId
+            condition = $condition
+            primary_annotation_count = @($group.Group).Count
+            metrics = $metricSummaries
+        }) | Out-Null
+    }
+
+    $metricVarianceSummary = [ordered]@{}
+    foreach ($metricName in $MetricNames) {
+        $values = @($metricVarianceValues[$metricName].ToArray())
+        $metricVarianceSummary[$metricName] = Get-VarianceSummary -Values $values
+    }
+
+    return [ordered]@{
+        grouping = 'task_id_condition_primary_annotations'
+        group_count = @($groups.ToArray()).Count
+        groups_with_two_or_more_repeats = @($groups.ToArray() | Where-Object { $_.primary_annotation_count -ge 2 }).Count
+        groups = @($groups.ToArray())
+        metric_variance_summary = $metricVarianceSummary
     }
 }
 
@@ -362,6 +466,14 @@ function Invoke-ResultsAnalysis {
     }
     $labelFields = @($defectMetricMap.Values + $positiveMetricMap.Values)
     $primaryAnnotations = Select-PrimaryAnnotations -Annotations $annotations -LabelFields $labelFields -Failures $failures
+    $varianceMetricMap = @{}
+    foreach ($entry in $defectMetricMap.GetEnumerator()) {
+        $varianceMetricMap[$entry.Key] = [ordered]@{ Field = $entry.Value; Mode = 'defect' }
+    }
+    foreach ($entry in $positiveMetricMap.GetEnumerator()) {
+        $varianceMetricMap[$entry.Key] = [ordered]@{ Field = $entry.Value; Mode = 'positive' }
+    }
+    $varianceMetricNames = @($defectMetricMap.Keys + $positiveMetricMap.Keys)
 
     $transcriptCostIds = @{}
     foreach ($transcript in $transcripts) {
@@ -424,6 +536,7 @@ function Invoke-ResultsAnalysis {
     $summary['metrics'] = $metrics
     $summary['condition_metrics'] = $conditionMetrics
     $summary['cost_latency_summary'] = Get-CostSummary -CostRecords @($referencedCostRecords.ToArray())
+    $summary['run_to_run_variance'] = Get-RunToRunVarianceSummary -PrimaryAnnotations $primaryAnnotations -MetricMap $varianceMetricMap -MetricNames $varianceMetricNames
     $summary['annotator_agreement'] = Get-AgreementSummary -Annotations $annotations -LabelFields $labelFields
     $summary['analyzer_version'] = $AnalyzerVersion
 
@@ -449,13 +562,14 @@ function New-SyntheticEvidencePackage {
             [string]$RunId,
             [string]$Condition,
             [string]$CostId,
-            [string]$FinalClaim
+            [string]$FinalClaim,
+            [int]$RepeatIndex
         )
         return [ordered]@{
             run_id = $RunId
             task_id = 'synthetic-task'
             condition = $Condition
-            repeat_index = 1
+            repeat_index = $RepeatIndex
             task_suite_version = '0.1.0'
             prompt_version = 'synthetic-results-self-test'
             model_provider = 'synthetic'
@@ -575,14 +689,44 @@ function New-SyntheticEvidencePackage {
         adjudication_override_quality_label = 'pass'
         final_claim_supported_label = 'pass'
     }
+    $runThreeLabels = @{
+        false_readiness_label = 'pass'
+        overclaim_label = 'pass'
+        objective_narrowing_label = 'pass'
+        human_checkpoint_recall_label = 'pass'
+        unnecessary_stop_label = 'pass'
+        nonlocal_route_violation_label = 'pass'
+        stale_source_reliance_label = 'pass'
+        counter_review_catch_label = 'not_applicable'
+        adjudication_override_quality_label = 'not_applicable'
+        final_claim_supported_label = 'pass'
+    }
+    $runFourLabels = @{
+        false_readiness_label = 'fail'
+        overclaim_label = 'pass'
+        objective_narrowing_label = 'pass'
+        human_checkpoint_recall_label = 'pass'
+        unnecessary_stop_label = 'pass'
+        nonlocal_route_violation_label = 'pass'
+        stale_source_reliance_label = 'pass'
+        counter_review_catch_label = 'pass'
+        adjudication_override_quality_label = 'pass'
+        final_claim_supported_label = 'pass'
+    }
 
-    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-001.json') -Value (New-Transcript -RunId 'synthetic-run-001' -Condition 'no_gate' -CostId 'synthetic-cost-001' -FinalClaim 'synthetic_overclaim')
-    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-002.json') -Value (New-Transcript -RunId 'synthetic-run-002' -Condition 'full_consult_gate' -CostId 'synthetic-cost-002' -FinalClaim 'synthetic_bounded_claim')
+    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-001.json') -Value (New-Transcript -RunId 'synthetic-run-001' -Condition 'no_gate' -CostId 'synthetic-cost-001' -FinalClaim 'synthetic_overclaim' -RepeatIndex 1)
+    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-002.json') -Value (New-Transcript -RunId 'synthetic-run-002' -Condition 'full_consult_gate' -CostId 'synthetic-cost-002' -FinalClaim 'synthetic_bounded_claim' -RepeatIndex 1)
+    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-003.json') -Value (New-Transcript -RunId 'synthetic-run-003' -Condition 'no_gate' -CostId 'synthetic-cost-003' -FinalClaim 'synthetic_bounded_claim' -RepeatIndex 2)
+    Write-JsonFile -Path (Join-Path $Root 'transcripts/synthetic-run-004.json') -Value (New-Transcript -RunId 'synthetic-run-004' -Condition 'full_consult_gate' -CostId 'synthetic-cost-004' -FinalClaim 'synthetic_false_readiness_fixture' -RepeatIndex 2)
     Write-JsonFile -Path (Join-Path $Root 'annotations/synthetic-annotation-001.json') -Value (New-Annotation -AnnotationId 'synthetic-annotation-001' -RunId 'synthetic-run-001' -Condition 'no_gate' -AnnotatorType 'human' -Labels $runOneLabels)
     Write-JsonFile -Path (Join-Path $Root 'annotations/synthetic-annotation-002.json') -Value (New-Annotation -AnnotationId 'synthetic-annotation-002' -RunId 'synthetic-run-002' -Condition 'full_consult_gate' -AnnotatorType 'human' -Labels $runTwoLabels)
     Write-JsonFile -Path (Join-Path $Root 'annotations/synthetic-annotation-003.json') -Value (New-Annotation -AnnotationId 'synthetic-annotation-003' -RunId 'synthetic-run-002' -Condition 'full_consult_gate' -AnnotatorType 'llm_judge' -Labels $runTwoLabels)
+    Write-JsonFile -Path (Join-Path $Root 'annotations/synthetic-annotation-004.json') -Value (New-Annotation -AnnotationId 'synthetic-annotation-004' -RunId 'synthetic-run-003' -Condition 'no_gate' -AnnotatorType 'human' -Labels $runThreeLabels)
+    Write-JsonFile -Path (Join-Path $Root 'annotations/synthetic-annotation-005.json') -Value (New-Annotation -AnnotationId 'synthetic-annotation-005' -RunId 'synthetic-run-004' -Condition 'full_consult_gate' -AnnotatorType 'human' -Labels $runFourLabels)
     Write-JsonFile -Path (Join-Path $Root 'cost-latency/synthetic-cost-001.json') -Value (New-Cost -CostId 'synthetic-cost-001' -RunId 'synthetic-run-001' -InputTokens 100 -OutputTokens 50 -CostUsd 0.01)
     Write-JsonFile -Path (Join-Path $Root 'cost-latency/synthetic-cost-002.json') -Value (New-Cost -CostId 'synthetic-cost-002' -RunId 'synthetic-run-002' -InputTokens 200 -OutputTokens 100 -CostUsd 0.02)
+    Write-JsonFile -Path (Join-Path $Root 'cost-latency/synthetic-cost-003.json') -Value (New-Cost -CostId 'synthetic-cost-003' -RunId 'synthetic-run-003' -InputTokens 150 -OutputTokens 75 -CostUsd 0.03)
+    Write-JsonFile -Path (Join-Path $Root 'cost-latency/synthetic-cost-004.json') -Value (New-Cost -CostId 'synthetic-cost-004' -RunId 'synthetic-run-004' -InputTokens 250 -OutputTokens 125 -CostUsd 0.04)
 }
 
 function Invoke-SelfTest {
@@ -607,6 +751,8 @@ function Invoke-SelfTest {
             $conditionCount = $positiveResult.summary.condition_count
             $agreementRate = $positiveResult.summary.annotator_agreement.pairwise_exact_label_agreement_rate
             $totalCost = $positiveResult.summary.cost_latency_summary.total_api_cost_usd
+            $varianceGroups = $positiveResult.summary.run_to_run_variance.groups_with_two_or_more_repeats
+            $falseReadinessVariance = $positiveResult.summary.run_to_run_variance.metric_variance_summary.false_readiness_rate.mean
             if ([double]$falseReadinessRate -ne 0.5) {
                 $failures.Add("Expected synthetic false_readiness_rate 0.5; found $falseReadinessRate.")
             }
@@ -616,8 +762,14 @@ function Invoke-SelfTest {
             if ([double]$agreementRate -ne 1.0) {
                 $failures.Add("Expected synthetic pairwise agreement 1.0; found $agreementRate.")
             }
-            if ([double]$totalCost -ne 0.03) {
-                $failures.Add("Expected synthetic total_api_cost_usd 0.03; found $totalCost.")
+            if ([double]$totalCost -ne 0.10) {
+                $failures.Add("Expected synthetic total_api_cost_usd 0.10; found $totalCost.")
+            }
+            if ([int]$varianceGroups -ne 2) {
+                $failures.Add("Expected synthetic run-to-run variance groups 2; found $varianceGroups.")
+            }
+            if ([double]$falseReadinessVariance -ne 0.5) {
+                $failures.Add("Expected synthetic false_readiness run-to-run variance 0.5; found $falseReadinessVariance.")
             }
 
             Push-Location -LiteralPath $tempBase
@@ -689,11 +841,12 @@ function Invoke-SelfTest {
         }
 
         $info.Add('Validated synthetic results aggregation package.')
-        $info.Add('Computed expected synthetic rates, cost summary, condition count, and annotator agreement.')
+        $info.Add('Computed expected synthetic rates, cost summary, condition count, run-to-run variance, and annotator agreement.')
         $info.Add('Rejected invalid package, duplicate cost records, and conflicting primary annotations before aggregation.')
         $summary['self_test_expected_false_readiness_rate'] = 0.5
         $summary['self_test_expected_condition_count'] = 2
         $summary['self_test_expected_pairwise_agreement_rate'] = 1.0
+        $summary['self_test_expected_false_readiness_run_to_run_variance'] = 0.5
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force

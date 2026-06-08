@@ -10,7 +10,8 @@ builder, an empirical execution preflight builder/scorer for future pilot
 selection, runtime, and budget records, a mock execution package builder/scorer
 for transcript and cost-latency package joins, a runner response contract
 schema/doc/scorer for validating one private/local runner response before
-package wrapping, a pilot execution package builder/scorer for explicitly
+package wrapping, a results analyzer with synthetic-self-tested run-to-run
+variance summaries, a pilot execution package builder/scorer for explicitly
 allowed local runner scripts, an empirical pilot run chain builder for
 connecting run inputs, preflight, explicit local-runner execution, pilot package
 scoring, annotation worklist generation, and label-template generation, an
@@ -26,7 +27,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_runner_response_contract_present_and_self_tested`
+`empirical_results_variance_analyzer_present_and_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -51,7 +52,8 @@ annotation-intake guide and scorer exist, that an evidence-package builder
 guide and builder exist,
 that a pilot run chain guide and builder exist,
 that deterministic structural scorers pass for the current fixture,
-task-suite, run-packet, evidence-package validator, results aggregator,
+task-suite, run-packet, evidence-package validator, results aggregator with
+run-to-run variance summaries,
 annotation-guidelines, agreement-check, dry-run package-builder, and condition
 prompt-pack surfaces, that the run-input builder/scorer and execution
 preflight builder/scorer self-tests pass, that the mock execution package
@@ -84,8 +86,8 @@ repository are aligned with that surface. The eval and task-suite claims are
 bounded to fixture/task-suite presence plus structural validation, not full
 runtime execution. The report, empirical-plan, and run-packet claims are bounded
 to design-pattern and experiment-design explanation; the evidence-package
-validator, results-aggregator, agreement-checker, and dry-run package-builder
-claims are bounded to synthetic self-test behavior, and the
+validator, results analyzer with variance summaries, agreement-checker, and
+dry-run package-builder claims are bounded to synthetic self-test behavior, and the
 annotation-guidelines claim is bounded to rubric presence plus structural
 scorer coverage, and the condition-prompt claim is bounded to versioned prompt
 presence plus structural scoring, the run-input claim is bounded to
@@ -324,8 +326,10 @@ guarantees.
   the required future label rubric;
 - the empirical evidence-package validator self-test passes on synthetic
   positive and negative packages;
-- the empirical results aggregator self-test passes on a synthetic evidence
-  package and rejects an invalid package before aggregation;
+- the empirical results analyzer self-test passes on a synthetic evidence
+  package, computes run-to-run variance summaries across repeated task/condition
+  primary-annotation metric scores, and rejects invalid packages before
+  aggregation;
 - the empirical agreement checker self-test passes on synthetic human/LLM
   annotation pairs and rejects invalid, missing-pair, and low-agreement
   packages under its required gates;

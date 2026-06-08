@@ -184,6 +184,7 @@ $ceilingOrder = @{
     'empirical_evidence_package_builder_present_and_self_tested' = 22
     'empirical_pilot_run_chain_builder_present_and_self_tested' = 23
     'empirical_runner_response_contract_present_and_self_tested' = 24
+    'empirical_results_variance_analyzer_present_and_self_tested' = 25
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -1570,6 +1571,9 @@ if (Test-Path -LiteralPath $resultsSummarySchemaPath) {
         'unnecessary_stop_rate',
         'human_checkpoint_recall_rate',
         'cost_latency_summary',
+        'run_to_run_variance',
+        'task_id_condition_primary_annotations',
+        'sample_variance',
         'pairwise_exact_label_agreement_rate',
         'pairwise_label_matches',
         'no_model_api_eval_execution',
@@ -1619,6 +1623,7 @@ if (Test-Path -LiteralPath $empiricalResultsDocPath) {
         'real aggregate metrics',
         'score-empirical-results.ps1 -SelfTest',
         'Synthetic self-test metrics',
+        'run-to-run variance summaries are based only on synthetic self-test data',
         'not empirical proof or paper readiness',
         'Current Nonclaims'
     )) {
@@ -1637,6 +1642,9 @@ if (Test-Path -LiteralPath $empiricalResultsScorerPath) {
         'false_readiness_rate',
         'condition_metrics',
         'cost_latency_summary',
+        'run_to_run_variance',
+        'Get-RunToRunVarianceSummary',
+        'Computed expected synthetic rates, cost summary, condition count, run-to-run variance, and annotator agreement',
         'pairwise_exact_label_agreement_rate',
         'not referenced by any transcript',
         'conflicting same-priority primary annotations',

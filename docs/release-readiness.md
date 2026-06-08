@@ -1,10 +1,11 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_runner_response_contract_present_and_self_tested -->
+<!-- claim_ceiling: empirical_results_variance_analyzer_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
-evidence-package validator, a results aggregator, an installable `$consult`
+evidence-package validator, a results aggregator with run-to-run variance
+summaries, an installable `$consult`
 skill package, public eval fixtures, a seed empirical task suite, empirical
 annotation guidelines, an agreement checker, and deterministic structural
 checks, plus a synthetic dry-run evidence-package builder and versioned
@@ -168,7 +169,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_runner_response_contract_present_and_self_tested`.
+`empirical_results_variance_analyzer_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -252,8 +253,10 @@ system.
 - the deterministic empirical evidence-package validator passes its synthetic
   positive and negative self-test and explicitly does not provide real
   transcripts, labels, or model results;
-- the deterministic empirical results aggregator passes its synthetic self-test
-  and explicitly does not provide real aggregate metrics or paper readiness;
+- the deterministic empirical results analyzer passes its synthetic self-test,
+  includes run-to-run variance summaries across repeated task/condition
+  primary-annotation metric scores, and explicitly does not provide real
+  aggregate metrics, real variance results, or paper readiness;
 - the deterministic empirical agreement checker passes its synthetic self-test
   and explicitly does not provide real human/LLM-judge agreement or judge
   validity evidence;

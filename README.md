@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_runner_response_contract_present_and_self_tested -->
+<!-- claim_ceiling: empirical_results_variance_analyzer_present_and_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -103,7 +103,8 @@ This repo packages a simple alternative:
   evidence-package schema, and a synthetic self-test validator in
   [`scripts/score-empirical-evidence-package.ps1`](scripts/score-empirical-evidence-package.ps1);
 - an [empirical results-analysis guide](docs/empirical-results-analysis.md),
-  results-summary schema, and a synthetic self-test aggregator in
+  results-summary schema, and a synthetic self-test analyzer with variance
+  summaries in
   [`scripts/score-empirical-results.ps1`](scripts/score-empirical-results.ps1);
 - an [empirical agreement-checks guide](docs/empirical-agreement-checks.md),
   agreement-summary schema, and a synthetic self-test checker in
@@ -257,8 +258,9 @@ requires independent review.
 This is a published public repository with a reusable `$consult` skill package,
 public eval fixtures, documentation, a design-pattern report, an empirical
 evaluation plan, experiment run-packet schemas, an evidence-package validator,
-a results aggregator, empirical annotation guidelines, an agreement checker, a
-synthetic dry-run package builder, a versioned condition prompt pack, and
+a results aggregator with run-to-run variance summaries, empirical annotation
+guidelines, an agreement checker, a synthetic dry-run package builder, a
+versioned condition prompt pack, and
 deterministic structural scorers under `MIT`, plus a pre-execution run-input
 package builder for fixed task-condition-repeat records and an execution
 preflight builder for recording the pilot selection, provider, model alias,
@@ -277,11 +279,13 @@ intake validator for future completed label records, plus an evidence-package
 builder that assembles future pilot transcripts, cost/latency records, and
 completed annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_runner_response_contract_present_and_self_tested`. The
+`empirical_results_variance_analyzer_present_and_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
-correctness. The dry-run package is synthetic evidence-shape exercise only. The
+correctness. The run-to-run variance summary is synthetic-self-tested analyzer
+logic only and is not a real empirical result. The dry-run package is synthetic
+evidence-shape exercise only. The
 condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape

@@ -1,13 +1,13 @@
 # Empirical Results Analysis
 
-<!-- claim_ceiling: empirical_results_aggregator_present_and_self_tested -->
+<!-- claim_ceiling: empirical_results_variance_analyzer_present_and_self_tested -->
 
-Status: Synthetic-self-tested results aggregation route for future empirical
-evidence packages. This document defines how completed, validated evidence
-packages can be summarized into bounded metrics after model/API execution. It
-does not execute model/API evals, include real transcripts, include real labels,
-report real results, or claim paper readiness. In verifier terms, it does not
-execute model/API evals.
+Status: Synthetic-self-tested results aggregation and run-to-run variance route
+for future empirical evidence packages. This document defines how completed,
+validated evidence packages can be summarized into bounded metrics after
+model/API execution. It does not execute model/API evals, include real
+transcripts, include real labels, report real results, or claim paper readiness.
+In verifier terms, it does not execute model/API evals.
 
 ## Purpose
 
@@ -26,7 +26,7 @@ This separates four states:
 4. interpreted empirical results.
 
 The current repository is still in the first state plus synthetic validator and
-aggregator self-tests. It has no executed run artifacts and no interpreted
+analyzer self-tests. It has no executed run artifacts and no interpreted
 empirical results. The current analyzer is not empirical proof or paper readiness.
 
 ## Analyzer
@@ -87,7 +87,10 @@ The current analyzer computes:
 - condition-level metric summaries;
 - total and average cost/latency summaries;
 - pairwise exact annotator agreement when at least two annotations exist for the
-  same run and label field.
+  same run and label field;
+- task/condition run-to-run variance over primary-annotation metric scores
+  across repeats, reported as sample variance when at least two repeats are
+  scorable.
 
 ## Result Boundary
 
@@ -103,6 +106,7 @@ Stop before any result claim if:
 - a cost/latency record is not referenced by exactly one transcript;
 - same-priority primary annotations conflict for a run;
 - metric summaries are based only on synthetic self-test data;
+- run-to-run variance summaries are based only on synthetic self-test data;
 - annotator agreement is unavailable but the claim depends on annotation
   reliability, and the agreement checker has not reported a suitable
   human/LLM-judge comparison;

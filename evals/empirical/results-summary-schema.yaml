@@ -12,6 +12,7 @@ required_summary_fields:
   - metrics
   - condition_metrics
   - cost_latency_summary
+  - run_to_run_variance
   - annotator_agreement
   - analyzer_version
 
@@ -47,6 +48,19 @@ cost_latency_fields:
   - api_cost_usd
   - retry_count
 
+run_to_run_variance_fields:
+  - grouping
+  - group_count
+  - groups_with_two_or_more_repeats
+  - groups
+  - metric_variance_summary
+
+run_to_run_variance_grouping:
+  grouping: task_id_condition_primary_annotations
+  scope: primary_annotations_only
+  variance_type: sample_variance
+  minimum_repeats_for_variance: 2
+
 agreement_fields:
   - pairwise_exact_label_agreement_rate
   - pairwise_label_comparisons
@@ -67,6 +81,7 @@ validator_self_test:
     - expected_false_readiness_rate_mismatch
     - expected_condition_count_mismatch
     - expected_agreement_rate_mismatch
+    - expected_run_to_run_variance_mismatch
 
 forbidden_public_result_claims:
   - real_model_api_results
