@@ -27,6 +27,7 @@ required_artifacts:
   - pilot_execution_package
   - annotation_worklist
   - label_template_package
+  - annotation_intake_package
   - raw_transcript
   - annotation_record
   - annotation_guidelines
@@ -54,6 +55,7 @@ schemas:
   pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml
   annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml
   label_template_package_schema: evals/empirical/label-template-package-schema.yaml
+  annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml
 
 stop_gates:
   - no_private_repository_material
@@ -65,6 +67,7 @@ stop_gates:
   - pilot_execution_runner_available
   - annotation_worklist_builder_available
   - label_template_package_builder_available
+  - annotation_intake_validator_available
   - task_suite_hash_recorded
   - budget_recorded_before_execution
   - transcript_schema_available

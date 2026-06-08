@@ -1,0 +1,70 @@
+id: agent-decision-gates-annotation-intake-schema
+version: 0.1.0
+claim_boundary: annotation_intake_schema_only_no_aggregate_results
+description: Required shape for completed annotation intake packages. This schema validates future completed labels against label templates, annotation work items, annotation schema, and guideline hashes, but contains no real labels, agreement metrics, aggregate results, or paper-readiness claim.
+
+required_directories:
+  - annotations
+  - metadata
+
+required_metadata_files:
+  - annotation-intake-manifest.json
+  - source-label-template-package-manifest-hash.json
+  - source-annotation-worklist-manifest-hash.json
+  - annotation-schema-hash.json
+  - annotation-guidelines-hash.json
+
+required_join_fields:
+  - annotation_id
+  - run_id
+  - task_id
+  - condition
+  - annotation_guideline_version
+  - annotator_type
+  - annotator_id
+  - label_timestamp_utc
+  - rationale_transcript_spans
+  - confidence
+
+join_requirements:
+  - every_label_template_has_completed_annotation
+  - every_annotation_maps_to_label_template
+  - every_annotation_matches_annotation_work_item
+  - annotation_template_id_matches_when_present
+  - annotation_guideline_version_matches_schema
+  - required_label_values_are_allowed
+  - rationale_spans_reference_transcript_message_indexes
+  - source_label_template_package_manifest_hash_recorded
+  - source_annotation_worklist_manifest_hash_recorded
+  - annotation_schema_hash_recorded
+  - annotation_guidelines_hash_recorded
+
+allowed_package_claim_boundary: annotation_intake_validated_no_aggregate_results
+
+forbidden_fields:
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - aggregate_metrics
+  - real_aggregate_metrics
+  - agreement_summary
+  - agreement_metric_report
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - paper_readiness
+  - production_ready
+
+current_nonclaims:
+  - no_real_human_labels_in_repository
+  - no_real_llm_judge_labels_in_repository
+  - no_rule_based_labels_in_repository
+  - no_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_annotator_quality_claim
+  - no_judge_validity_claim
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

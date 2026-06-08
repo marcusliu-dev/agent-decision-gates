@@ -113,6 +113,9 @@ A paper-ready evidence package should include:
   or LLM-judge labels are claimed;
 - label-template package generated from annotation work items, used only to
   prepare fillable placeholder templates before completed labels are claimed;
+- annotation-intake package validated from completed label records, used only
+  to check future labels against templates, work items, schema, and guideline
+  hashes before agreement or metrics are claimed;
 - model/provider/runtime versions or identifiers;
 - random seeds or repeat identifiers where applicable;
 - raw transcripts;
@@ -152,9 +155,11 @@ Before any model/API eval run:
    human or LLM-judge label production.
 10. Build and score a label-template package from the annotation worklist
     before any completed annotation records are produced.
-11. Run a small dry run with real transcripts only after the pilot package route
+11. Score completed annotation intake records against the label-template
+    package before agreement, metric, or paper-readiness claims.
+12. Run a small dry run with real transcripts only after the pilot package route
    passes and the budget/runtime route is still current.
-12. Review the dry run for prompt leakage, false result claims, and annotation
+13. Review the dry run for prompt leakage, false result claims, and annotation
    ambiguity.
 
 Before any paper-readiness or submission claim:
@@ -186,6 +191,7 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-annotation-work
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-worklist.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-label-template-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-label-template-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-annotation-intake.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-results.ps1 -SelfTest
@@ -196,17 +202,19 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 These scorers verify only the shape of the public task-suite seed, condition
 prompt pack, generated run-input package route, execution preflight route, mock
 execution package route, pilot execution runner route, annotation worklist
-route, label-template package route, and run packet plus the evidence-package
-validator's and results aggregator's synthetic self-tests, the agreement
+route, label-template package route, annotation intake route, and run packet
+plus the evidence-package validator's and results aggregator's synthetic
+self-tests, the agreement
 checker's synthetic self-test, and the dry-run package builder synthetic
 self-test. The mock execution package route is a package-shape check only. The
 pilot execution runner self-test uses a temporary local fixture runner and is
 not a completed empirical study. The annotation worklist self-tests create
 unlabeled future-labeling work items only. The label-template self-tests create
-placeholders only, not completed labels. The current structural surface
+placeholders only, not completed labels. The annotation-intake scorer self-test
+uses synthetic completed-label records only, not real labels. The current structural surface
 explicitly includes the mock execution package route. It also includes the
-pilot execution runner route, annotation worklist route, and label-template
-package route.
+pilot execution runner route, annotation worklist route, label-template
+package route, and annotation intake route.
 They do not execute hosted model/API evals, score annotated completed
 transcripts, report real aggregate metrics, measure real human/LLM-judge
 agreement, or prove empirical effectiveness.

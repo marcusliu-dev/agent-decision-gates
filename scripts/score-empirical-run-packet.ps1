@@ -70,6 +70,7 @@ $paths = [ordered]@{
     PilotExecutionPackageSchema = Join-Path $RepoRoot 'evals/empirical/pilot-execution-package-schema.yaml'
     AnnotationWorklistSchema = Join-Path $RepoRoot 'evals/empirical/annotation-worklist-schema.yaml'
     LabelTemplatePackageSchema = Join-Path $RepoRoot 'evals/empirical/label-template-package-schema.yaml'
+    AnnotationIntakeSchema = Join-Path $RepoRoot 'evals/empirical/annotation-intake-schema.yaml'
     AnnotationGuidelines = Join-Path $RepoRoot 'docs/empirical-annotation-guidelines.md'
     ConditionPromptDoc = Join-Path $RepoRoot 'docs/condition-prompt-pack.md'
     RunInputDoc = Join-Path $RepoRoot 'docs/empirical-run-inputs.md'
@@ -78,6 +79,7 @@ $paths = [ordered]@{
     PilotExecutionRunnerDoc = Join-Path $RepoRoot 'docs/empirical-pilot-execution-runner.md'
     AnnotationWorklistDoc = Join-Path $RepoRoot 'docs/empirical-annotation-worklist.md'
     LabelTemplatePackageDoc = Join-Path $RepoRoot 'docs/empirical-label-template-package.md'
+    AnnotationIntakeDoc = Join-Path $RepoRoot 'docs/empirical-annotation-intake.md'
     EmpiricalPlan = Join-Path $RepoRoot 'docs/empirical-evaluation-plan.md'
     RunPacketDoc = Join-Path $RepoRoot 'docs/experiment-run-packet.md'
     DryRunDoc = Join-Path $RepoRoot 'docs/empirical-dry-run-package.md'
@@ -94,6 +96,7 @@ $paths = [ordered]@{
     AnnotationWorklistScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-worklist.ps1'
     LabelTemplatePackageBuilder = Join-Path $RepoRoot 'scripts/build-empirical-label-template-package.ps1'
     LabelTemplatePackageScorer = Join-Path $RepoRoot 'scripts/score-empirical-label-template-package.ps1'
+    AnnotationIntakeScorer = Join-Path $RepoRoot 'scripts/score-empirical-annotation-intake.ps1'
     DryRunBuilder = Join-Path $RepoRoot 'scripts/build-empirical-dry-run-package.ps1'
 }
 
@@ -130,6 +133,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_execution_package',
         'annotation_worklist',
         'label_template_package',
+        'annotation_intake_package',
         'raw_transcript',
         'annotation_record',
         'annotation_guidelines',
@@ -153,6 +157,7 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'pilot_execution_runner_available',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
+        'annotation_intake_validator_available',
         'budget_recorded_before_execution',
         'annotation_guidelines_available',
         'agreement_checker_available',
@@ -189,7 +194,8 @@ if (Test-Path -LiteralPath $paths.Manifest) {
         'mock_execution_package_schema: evals/empirical/mock-execution-package-schema.yaml',
         'pilot_execution_package_schema: evals/empirical/pilot-execution-package-schema.yaml',
         'annotation_worklist_schema: evals/empirical/annotation-worklist-schema.yaml',
-        'label_template_package_schema: evals/empirical/label-template-package-schema.yaml'
+        'label_template_package_schema: evals/empirical/label-template-package-schema.yaml',
+        'annotation_intake_schema: evals/empirical/annotation-intake-schema.yaml'
     )) {
         if (-not $manifest.Contains($schemaLink)) {
             $failures.Add("Experiment run manifest is missing schema link '$schemaLink'.")
@@ -1003,6 +1009,96 @@ if (Test-Path -LiteralPath $paths.LabelTemplatePackageScorer) {
     }
 }
 
+if (Test-Path -LiteralPath $paths.AnnotationIntakeSchema) {
+    $schema = Get-Content -LiteralPath $paths.AnnotationIntakeSchema -Raw
+    if ((Get-Scalar -Text $schema -Field 'claim_boundary') -ne 'annotation_intake_schema_only_no_aggregate_results') {
+        $failures.Add('Annotation intake schema must declare annotation_intake_schema_only_no_aggregate_results.')
+    }
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_directories') -Required @(
+        'annotations',
+        'metadata'
+    ) -Label 'annotation intake required_directories'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'required_metadata_files') -Required @(
+        'annotation-intake-manifest.json',
+        'source-label-template-package-manifest-hash.json',
+        'source-annotation-worklist-manifest-hash.json',
+        'annotation-schema-hash.json',
+        'annotation-guidelines-hash.json'
+    ) -Label 'annotation intake required_metadata_files'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'join_requirements') -Required @(
+        'every_label_template_has_completed_annotation',
+        'every_annotation_maps_to_label_template',
+        'every_annotation_matches_annotation_work_item',
+        'annotation_template_id_matches_when_present',
+        'annotation_guideline_version_matches_schema',
+        'required_label_values_are_allowed',
+        'rationale_spans_reference_transcript_message_indexes',
+        'source_label_template_package_manifest_hash_recorded',
+        'source_annotation_worklist_manifest_hash_recorded',
+        'annotation_schema_hash_recorded',
+        'annotation_guidelines_hash_recorded'
+    ) -Label 'annotation intake join_requirements'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'forbidden_fields') -Required @(
+        'pass_rate',
+        'win_rate',
+        'p_value',
+        'confidence_interval',
+        'statistical_significance',
+        'aggregate_metrics',
+        'agreement_summary',
+        'effectiveness_claim',
+        'empirical_effectiveness_proven',
+        'paper_ready',
+        'paper_readiness',
+        'production_ready'
+    ) -Label 'annotation intake forbidden_fields'
+    Assert-ListContains -Failures $failures -Items (Get-YamlList -Text $schema -Field 'current_nonclaims') -Required @(
+        'no_real_human_labels_in_repository',
+        'no_real_llm_judge_labels_in_repository',
+        'no_rule_based_labels_in_repository',
+        'no_agreement_results',
+        'no_aggregate_metrics',
+        'no_statistical_results',
+        'no_annotator_quality_claim',
+        'no_judge_validity_claim',
+        'no_empirical_effectiveness_claim',
+        'no_paper_readiness'
+    ) -Label 'annotation intake current_nonclaims'
+}
+
+if (Test-Path -LiteralPath $paths.AnnotationIntakeDoc) {
+    $doc = Get-Content -LiteralPath $paths.AnnotationIntakeDoc -Raw
+    foreach ($check in @(
+        'does not create labels',
+        'score-empirical-annotation-intake.ps1 -SelfTest',
+        'RequireHuman',
+        'metadata hashes',
+        'forbidden aggregate/result fields',
+        'Current Nonclaims'
+    )) {
+        if (-not $doc.Contains($check)) {
+            $failures.Add("Empirical annotation-intake doc is missing boundary '$check'.")
+        }
+    }
+}
+
+if (Test-Path -LiteralPath $paths.AnnotationIntakeScorer) {
+    $scorer = Get-Content -LiteralPath $paths.AnnotationIntakeScorer -Raw
+    foreach ($check in @(
+        'Empirical annotation intake scoring',
+        'annotation_intake_schema_only_no_aggregate_results',
+        'annotation_intake_validated_no_aggregate_results',
+        'Rejected unsupported template labels, duplicate work-item run ids, work-item mismatches, missing annotation, invalid labels, NaN confidence, out-of-range spans, duplicate annotator records, mismatched task ids, metadata hash tampering, forbidden aggregate fields, and non-JSON sensitive files',
+        'source-label-template-package-manifest-hash.json',
+        'source-annotation-worklist-manifest-hash.json',
+        'RequireHuman'
+    )) {
+        if (-not $scorer.Contains($check)) {
+            $failures.Add("Empirical annotation-intake scorer is missing invariant '$check'.")
+        }
+    }
+}
+
 if (Test-Path -LiteralPath $paths.TranscriptSchema) {
     $transcript = Get-Content -LiteralPath $paths.TranscriptSchema -Raw
     if ((Get-Scalar -Text $transcript -Field 'claim_boundary') -ne 'transcript_schema_only_no_transcripts') {
@@ -1233,12 +1329,15 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'score-empirical-pilot-execution-package.ps1 -SelfTest',
         'annotation_worklist_builder_available',
         'label_template_package_builder_available',
+        'annotation_intake_validator_available',
         'annotation-worklist-schema.yaml',
         'build-empirical-annotation-worklist.ps1 -SelfTest',
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'label-template-package-schema.yaml',
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
+        'annotation-intake-schema.yaml',
+        'score-empirical-annotation-intake.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
@@ -1246,6 +1345,7 @@ if (Test-Path -LiteralPath $paths.RunPacketDoc) {
         'pilot execution runner',
         'annotation worklist',
         'label-template package',
+        'annotation-intake',
         'synthetic dry-run package builder self-test'
     )) {
         if (-not $doc.Contains($check)) {
@@ -1271,6 +1371,7 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
         'score-empirical-annotation-worklist.ps1 -SelfTest',
         'build-empirical-label-template-package.ps1 -SelfTest',
         'score-empirical-label-template-package.ps1 -SelfTest',
+        'score-empirical-annotation-intake.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-results.ps1 -SelfTest',
@@ -1281,6 +1382,7 @@ if (Test-Path -LiteralPath $paths.EmpiricalPlan) {
         'pilot execution runner route',
         'annotation worklist route',
         'label-template package route',
+        'annotation intake route',
         'do not execute hosted'
     )) {
         if (-not $plan.Contains($check)) {
