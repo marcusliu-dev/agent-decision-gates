@@ -42,6 +42,12 @@ The current structural run packet contains:
   and [`score-empirical-execution-preflight.ps1`](../scripts/score-empirical-execution-preflight.ps1)
   for recording pilot run-input selection, provider, model alias, runtime
   surface, budget, and source hashes before any model/API eval execution;
+- [`mock-execution-package-schema.yaml`](../evals/empirical/mock-execution-package-schema.yaml),
+  [`empirical-mock-execution-package.md`](empirical-mock-execution-package.md),
+  [`build-empirical-mock-execution-package.ps1`](../scripts/build-empirical-mock-execution-package.ps1),
+  and [`score-empirical-mock-execution-package.ps1`](../scripts/score-empirical-mock-execution-package.ps1)
+  for exercising synthetic transcript and cost-latency package joins before
+  any model/API eval execution;
 - [`evidence-package-schema.yaml`](../evals/empirical/evidence-package-schema.yaml)
   for post-run package completeness and join requirements;
 - [`agreement-summary-schema.yaml`](../evals/empirical/agreement-summary-schema.yaml)
@@ -99,6 +105,7 @@ Stop before execution if:
 - the condition_prompt_pack_available stop gate is not satisfied;
 - the run_input_builder_available stop gate is not satisfied;
 - the execution_preflight_available stop gate is not satisfied;
+- the mock_execution_package_builder_available stop gate is not satisfied;
 - budget is not recorded;
 - transcript fields are missing;
 - annotation guideline version is missing;
@@ -117,6 +124,8 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-run-inputs.ps1 
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-inputs.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/build-empirical-execution-preflight.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-execution-preflight.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/build-empirical-mock-execution-package.ps1 -SelfTest
+powershell -ExecutionPolicy Bypass -File scripts/score-empirical-mock-execution-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-run-packet.ps1
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-evidence-package.ps1 -SelfTest
 powershell -ExecutionPolicy Bypass -File scripts/score-empirical-agreement.ps1 -SelfTest
@@ -125,9 +134,10 @@ powershell -ExecutionPolicy Bypass -File scripts/build-empirical-dry-run-package
 
 Those commands check only the packet structure, run-input builder/scorer
 self-tests, execution preflight builder/scorer self-tests, evidence-package
-validator self-test, agreement-checker self-test, and the synthetic dry-run
-package builder self-test. The synthetic dry-run package builder self-test is
-not a real experiment output.
+validator self-test, agreement-checker self-test, the synthetic mock execution
+package builder/scorer self-tests, and the synthetic dry-run package builder self-test.
+The synthetic mock execution package and synthetic dry-run package builder
+self-test are not real experiment outputs.
 They do not run models, call APIs, score real completed transcripts,
 measure real agreement, or prove empirical effectiveness.
 

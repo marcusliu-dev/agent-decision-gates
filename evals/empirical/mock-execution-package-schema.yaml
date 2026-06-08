@@ -1,0 +1,82 @@
+id: agent-decision-gates-mock-execution-package-schema
+version: 0.1.0
+claim_boundary: mock_execution_package_schema_only_no_real_model_results
+description: Required shape for synthetic mock execution packages that exercise transcript and cost-latency joins before any real model/API execution.
+
+required_directories:
+  - transcripts
+  - cost-latency
+  - metadata
+
+required_metadata_files:
+  - mock-execution-manifest.json
+  - source-preflight-hash.json
+  - source-run-input-manifest-hash.json
+
+required_transcript_fields:
+  - run_id
+  - run_input_id
+  - task_id
+  - condition
+  - repeat_index
+  - task_suite_version
+  - prompt_version
+  - model_provider
+  - model_name_or_alias
+  - runtime_surface
+  - start_timestamp_utc
+  - end_timestamp_utc
+  - input_prompt
+  - transcript_messages
+  - tool_calls
+  - final_answer
+  - final_claim
+  - checked_evidence
+  - selected_claim_ceiling
+  - stop_or_continue_decision
+  - human_checkpoint_decision
+  - cost_latency_record_id
+  - redaction_status
+
+required_cost_latency_fields:
+  - cost_latency_record_id
+  - run_id
+  - input_tokens
+  - output_tokens
+  - tool_call_count
+  - wall_time_ms
+  - api_cost_usd
+  - retry_count
+
+join_requirements:
+  - every_selected_run_input_has_mock_transcript
+  - every_mock_transcript_has_cost_latency_record
+  - every_cost_latency_record_matches_transcript_run_id
+  - every_mock_transcript_input_prompt_matches_run_input
+  - source_preflight_hash_recorded
+  - source_run_input_manifest_hash_recorded
+
+forbidden_fields:
+  - annotation_record
+  - human_label
+  - llm_judge_label
+  - pass_rate
+  - win_rate
+  - p_value
+  - confidence_interval
+  - statistical_significance
+  - effectiveness_claim
+  - empirical_effectiveness_proven
+  - paper_ready
+  - production_ready
+
+current_nonclaims:
+  - no_real_model_api_eval_execution
+  - no_real_transcripts
+  - no_real_annotations
+  - no_real_cost_latency_results
+  - no_human_llm_judge_agreement_results
+  - no_aggregate_metrics
+  - no_statistical_results
+  - no_empirical_effectiveness_claim
+  - no_paper_readiness

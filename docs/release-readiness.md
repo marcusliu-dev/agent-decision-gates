@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_execution_preflight_present_and_self_tested -->
+<!-- claim_ceiling: empirical_mock_execution_package_builder_present_and_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -10,7 +10,8 @@ annotation guidelines, an agreement checker, and deterministic structural
 checks, plus a synthetic dry-run evidence-package builder and versioned
 condition prompt pack, a pre-execution run-input package builder, and an
 execution preflight builder/scorer for future pilot selection, runtime, and
-budget records.
+budget records, plus a mock execution package builder/scorer for synthetic
+transcript and cost-latency package joins.
 
 ## Purpose
 
@@ -46,6 +47,7 @@ The current repository surface includes:
 - `evals/empirical/condition-prompt-pack.yaml`
 - `evals/empirical/run-input-schema.yaml`
 - `evals/empirical/execution-preflight-schema.yaml`
+- `evals/empirical/mock-execution-package-schema.yaml`
 - `evals/empirical/transcript-schema.yaml`
 - `evals/empirical/annotation-schema.yaml`
 - `evals/empirical/evidence-package-schema.yaml`
@@ -59,6 +61,7 @@ The current repository surface includes:
 - `docs/condition-prompt-pack.md`
 - `docs/empirical-run-inputs.md`
 - `docs/empirical-execution-preflight.md`
+- `docs/empirical-mock-execution-package.md`
 - `docs/experiment-run-packet.md`
 - `docs/empirical-annotation-guidelines.md`
 - `docs/empirical-evidence-package.md`
@@ -82,6 +85,8 @@ The current repository surface includes:
 - `scripts/score-empirical-run-inputs.ps1`
 - `scripts/build-empirical-execution-preflight.ps1`
 - `scripts/score-empirical-execution-preflight.ps1`
+- `scripts/build-empirical-mock-execution-package.ps1`
+- `scripts/score-empirical-mock-execution-package.ps1`
 - `scripts/score-empirical-run-packet.ps1`
 - `scripts/score-empirical-evidence-package.ps1`
 - `scripts/score-empirical-results.ps1`
@@ -109,12 +114,14 @@ The current release claim is narrow and explicit:
   against the validator chain and a versioned condition prompt pack
   structurally scored, plus a pre-execution run-input builder and scorer
   self-tested, and an execution preflight builder/scorer self-tested for
-  pilot-selection, runtime, and budget records before execution;
+  pilot-selection, runtime, and budget records before execution, plus a mock
+  execution package builder/scorer self-tested for synthetic transcript and
+  cost-latency package joins;
 - the current contents are suitable for public reading, reuse, and adaptation
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_execution_preflight_present_and_self_tested`.
+`empirical_mock_execution_package_builder_present_and_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -145,6 +152,11 @@ system.
   alias, runtime surface, budget, selected run-input ids, and source hashes
   before execution, reject a non-first sorted selection tamper case, and
   explicitly do not call model/API routes;
+- the deterministic empirical mock execution package builder and scorer
+  self-tests pass for a generated 9-record mock transcript/cost-latency package
+  and reject missing transcript, crossed cost-latency join, credential-like
+  content, non-JSON sensitive files, unsupported effectiveness claim cases, and
+  `-Force` overwrite attempts over non-generated files;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
@@ -186,6 +198,8 @@ These are intentionally outside the current release scope:
   publication;
 - any claim that the execution preflight is itself a real model/API run,
   transcript, annotation, cost/latency result, or empirical finding;
+- any claim that the mock execution package is itself a real model/API run,
+  real transcript, annotation, cost/latency result, or empirical finding;
 - any claim that the synthetic dry-run package is a real experiment output.
 
 ## Interpretation Rule

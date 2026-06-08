@@ -35,6 +35,7 @@ $requiredPaths = @(
     'evals/empirical/condition-prompt-pack.yaml',
     'evals/empirical/run-input-schema.yaml',
     'evals/empirical/execution-preflight-schema.yaml',
+    'evals/empirical/mock-execution-package-schema.yaml',
     'evals/empirical/transcript-schema.yaml',
     'evals/empirical/annotation-schema.yaml',
     'evals/empirical/evidence-package-schema.yaml',
@@ -49,6 +50,7 @@ $requiredPaths = @(
     'docs/condition-prompt-pack.md',
     'docs/empirical-run-inputs.md',
     'docs/empirical-execution-preflight.md',
+    'docs/empirical-mock-execution-package.md',
     'docs/experiment-run-packet.md',
     'docs/empirical-evidence-package.md',
     'docs/empirical-results-analysis.md',
@@ -72,6 +74,8 @@ $requiredPaths = @(
     'scripts/score-empirical-run-inputs.ps1',
     'scripts/build-empirical-execution-preflight.ps1',
     'scripts/score-empirical-execution-preflight.ps1',
+    'scripts/build-empirical-mock-execution-package.ps1',
+    'scripts/score-empirical-mock-execution-package.ps1',
     'scripts/score-empirical-run-packet.ps1',
     'scripts/score-empirical-evidence-package.ps1',
     'scripts/score-empirical-results.ps1',
@@ -150,6 +154,7 @@ $ceilingOrder = @{
     'empirical_condition_prompt_pack_present_and_structurally_scored' = 14
     'empirical_run_input_builder_present_and_self_tested' = 15
     'empirical_execution_preflight_present_and_self_tested' = 16
+    'empirical_mock_execution_package_builder_present_and_self_tested' = 17
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -414,9 +419,12 @@ if (Test-Path -LiteralPath $empiricalPlanPath) {
         'score-empirical-run-inputs.ps1 -SelfTest',
         'build-empirical-execution-preflight.ps1 -SelfTest',
         'score-empirical-execution-preflight.ps1 -SelfTest',
+        'build-empirical-mock-execution-package.ps1 -SelfTest',
+        'score-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-evidence-package.ps1 -SelfTest',
         'score-empirical-agreement.ps1 -SelfTest',
         'build-empirical-dry-run-package.ps1 -SelfTest',
+        'mock execution package route',
         'dry-run package builder'
     )) {
         if (-not $empiricalPlanContent.Contains($check)) {
@@ -476,10 +484,13 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'condition_prompt_pack_available',
         'run_input_builder_available',
         'execution_preflight_available',
+        'mock_execution_package_builder_available',
         'score-empirical-prompt-pack.ps1',
         'score-empirical-run-inputs.ps1',
         'build-empirical-execution-preflight.ps1 -SelfTest',
         'score-empirical-execution-preflight.ps1',
+        'build-empirical-mock-execution-package.ps1 -SelfTest',
+        'score-empirical-mock-execution-package.ps1 -SelfTest',
         'score-empirical-run-packet.ps1',
         'evidence-package-schema.yaml',
         'agreement-summary-schema.yaml',
@@ -487,6 +498,7 @@ if (Test-Path -LiteralPath $experimentRunPacketPath) {
         'score-empirical-agreement.ps1 -SelfTest',
         'dry_run_package_builder_available',
         'build-empirical-dry-run-package.ps1 -SelfTest',
+        'synthetic mock execution package',
         'synthetic dry-run package builder self-test'
     )) {
         if (-not $experimentRunPacketContent.Contains($check)) {
@@ -510,12 +522,15 @@ if (Test-Path -LiteralPath $runManifestPath) {
         'run_input_record',
         'execution_preflight_record',
         'execution_preflight_schema',
+        'mock_execution_package',
+        'mock_execution_package_schema',
         'cost_latency_record',
         'results_summary_schema',
         'agreement_summary_schema',
         'condition_prompt_pack_available',
         'run_input_builder_available',
         'execution_preflight_available',
+        'mock_execution_package_builder_available',
         'annotation_guidelines_available',
         'agreement_checker_available',
         'dry_run_package_builder_available',
@@ -701,6 +716,112 @@ if (Test-Path -LiteralPath $executionPreflightScorerPath) {
     )) {
         if (-not $executionPreflightScorerContent.Contains($check)) {
             $failures.Add("Missing empirical execution preflight scorer invariant '$check'.")
+        }
+    }
+}
+
+$mockExecutionPackageSchemaPath = Join-Path $RepoRoot 'evals\empirical\mock-execution-package-schema.yaml'
+if (Test-Path -LiteralPath $mockExecutionPackageSchemaPath) {
+    $mockExecutionPackageSchemaContent = Get-Content -LiteralPath $mockExecutionPackageSchemaPath -Raw
+    if ($mockExecutionPackageSchemaContent -notmatch 'claim_boundary:\s*mock_execution_package_schema_only_no_real_model_results') {
+        $failures.Add('Mock execution package schema must declare mock_execution_package_schema_only_no_real_model_results claim boundary.')
+    }
+    foreach ($check in @(
+        'transcripts',
+        'cost-latency',
+        'metadata',
+        'mock-execution-manifest.json',
+        'source-preflight-hash.json',
+        'source-run-input-manifest-hash.json',
+        'run_input_id',
+        'transcript_messages',
+        'tool_calls',
+        'final_answer',
+        'cost_latency_record_id',
+        'every_selected_run_input_has_mock_transcript',
+        'every_mock_transcript_has_cost_latency_record',
+        'every_cost_latency_record_matches_transcript_run_id',
+        'source_preflight_hash_recorded',
+        'source_run_input_manifest_hash_recorded',
+        'annotation_record',
+        'human_label',
+        'llm_judge_label',
+        'pass_rate',
+        'win_rate',
+        'p_value',
+        'confidence_interval',
+        'statistical_significance',
+        'effectiveness_claim',
+        'empirical_effectiveness_proven',
+        'paper_ready',
+        'production_ready',
+        'no_real_model_api_eval_execution',
+        'no_real_transcripts',
+        'no_real_cost_latency_results',
+        'no_paper_readiness'
+    )) {
+        if ($mockExecutionPackageSchemaContent -notlike "*$check*") {
+            $failures.Add("Missing mock execution package schema requirement '$check'.")
+        }
+    }
+}
+
+$mockExecutionPackageDocPath = Join-Path $RepoRoot 'docs\empirical-mock-execution-package.md'
+if (Test-Path -LiteralPath $mockExecutionPackageDocPath) {
+    $mockExecutionPackageDocContent = Get-Content -LiteralPath $mockExecutionPackageDocPath -Raw
+    foreach ($check in @(
+        'does not call models or APIs',
+        'dist/empirical-mock-execution-package',
+        'build-empirical-mock-execution-package.ps1 -SelfTest',
+        'score-empirical-mock-execution-package.ps1 -SelfTest',
+        '9 mock transcript records',
+        'credential-like content',
+        'non-JSON sensitive files',
+        'Current Nonclaims'
+    )) {
+        if (-not $mockExecutionPackageDocContent.Contains($check)) {
+            $failures.Add("Missing empirical mock execution package doc boundary '$check' in docs/empirical-mock-execution-package.md")
+        }
+    }
+}
+
+$mockExecutionPackageBuilderPath = Join-Path $RepoRoot 'scripts\build-empirical-mock-execution-package.ps1'
+if (Test-Path -LiteralPath $mockExecutionPackageBuilderPath) {
+    $mockExecutionPackageBuilderContent = Get-Content -LiteralPath $mockExecutionPackageBuilderPath -Raw
+    foreach ($check in @(
+        'Empirical mock execution package builder',
+        'mock_execution_package_only_no_real_model_results',
+        'mock_synthetic_no_private_material',
+        'Built a 9-run mock execution package',
+        'Refused non-generated files when -Force was used',
+        'non-generated file',
+        'source-preflight-hash.json',
+        'source-run-input-manifest-hash.json',
+        'no_real_model_api_eval_execution'
+    )) {
+        if (-not $mockExecutionPackageBuilderContent.Contains($check)) {
+            $failures.Add("Missing empirical mock execution package builder invariant '$check'.")
+        }
+    }
+}
+
+$mockExecutionPackageScorerPath = Join-Path $RepoRoot 'scripts\score-empirical-mock-execution-package.ps1'
+if (Test-Path -LiteralPath $mockExecutionPackageScorerPath) {
+    $mockExecutionPackageScorerContent = Get-Content -LiteralPath $mockExecutionPackageScorerPath -Raw
+    foreach ($check in @(
+        'Empirical mock execution package scoring',
+        'mock_execution_package_schema_only_no_real_model_results',
+        'mock_execution_package_only_no_real_model_results',
+        'mock_synthetic_no_private_material',
+        'Rejected missing transcript, crossed cost-latency join, credential-like content, non-JSON sensitive files, and unsupported effectiveness claim cases',
+        'unexpected non-JSON file',
+        'source-preflight-hash.json',
+        'source-run-input-manifest-hash.json',
+        'transcript_messages',
+        'cost_latency_record_id'
+    )) {
+        if (-not $mockExecutionPackageScorerContent.Contains($check)) {
+            $failures.Add("Missing empirical mock execution package scorer invariant '$check'.")
         }
     }
 }
@@ -1239,6 +1360,10 @@ if (-not $trackerCeilingMatch.Success) {
         @{
             Path = Join-Path $RepoRoot 'docs\empirical-execution-preflight.md'
             Label = 'docs/empirical-execution-preflight.md'
+        },
+        @{
+            Path = Join-Path $RepoRoot 'docs\empirical-mock-execution-package.md'
+            Label = 'docs/empirical-mock-execution-package.md'
         },
         @{
             Path = Join-Path $RepoRoot 'docs\experiment-run-packet.md'
