@@ -65,18 +65,24 @@ Before a runner response is wrapped into a pilot transcript and cost-latency
 record, the builder calls
 [`score-empirical-runner-response.ps1`](../scripts/score-empirical-runner-response.ps1).
 That scorer validates the single response contract, blocked sensitive patterns,
-unsupported result/readiness fields, numeric telemetry fields, and optional
-request/run-input matching. It does not prove runner quality or model/API eval
-results.
+unsupported result/readiness JSON fields, numeric telemetry fields, and
+optional request/run-input matching. It preserves natural-language
+readiness/result phrases for downstream annotation so overclaim behavior can be
+measured instead of filtered out before transcript packaging. It does not prove
+runner quality or model/API eval results.
 
 The package builder rejects missing required runner telemetry before wrapping.
 The package scorer rejects missing or invalid cost-latency package fields,
-credentials, private paths, non-JSON package files, unsupported result or
-paper-readiness claims, provider/model/runtime mismatch, broken transcript/cost
-joins, missing selected run inputs, and total API cost above the preflight max
-budget.
+credentials, private paths, non-JSON package files, forbidden
+result/readiness JSON fields, provider/model/runtime mismatch, broken
+transcript/cost joins, missing selected run inputs, and total API cost above
+the preflight max budget. It preserves natural-language readiness/result
+phrases in transcript values for downstream annotation.
 It explicitly rejects credentials before any pilot package can support a public
 claim.
+
+Package scoring rejects forbidden result/readiness JSON fields.
+Package scoring preserves natural-language readiness/result phrases.
 
 ## Structural Verification
 
@@ -103,8 +109,9 @@ temporary local fixture runner, validate the resulting transcript/cost package,
 reject missing runner cost telemetry, missing transcripts, crossed
 cost-latency joins, total API cost above the preflight max budget,
 credential-like content, provider/model/runtime mismatches,
-metadata hash tampering, non-JSON sensitive files, unsupported
-result/paper-readiness tokens, and `-Force` overwrite attempts over
+metadata hash tampering, non-JSON sensitive files, and forbidden
+result/readiness JSON fields, preserves natural-language readiness/result
+phrases for downstream annotation, rejects `-Force` overwrite attempts over
 non-generated files, then remove the temporary files.
 
 ## Current Nonclaims

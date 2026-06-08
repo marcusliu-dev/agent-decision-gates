@@ -35,7 +35,7 @@ workflows.
 
 ## Current Claim Ceiling
 
-`empirical_pilot_runner_request_package_scorer_present_and_self_tested`
+`empirical_claim_phrase_preservation_for_annotation_self_tested`
 
 Current evidence proves that this repository is publicly visible at
 `https://github.com/marcusliu-dev/agent-decision-gates`, that the current
@@ -90,8 +90,9 @@ generation/scoring without producing completed labels, agreement metrics,
 aggregate metrics, or a paper-readiness claim,
 that the runner response scorer self-test validates fixture response JSON and
 rejects missing `final_answer`, credential-like content, forbidden
-result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric
-fields, and request/run-input mismatches, and that the pilot execution
+result/readiness fields, null, blank, boolean, or negative numeric fields, and
+request/run-input mismatches while preserving natural-language readiness/result
+phrases for downstream annotation, and that the pilot execution
 package builder validates each runner response with that scorer and requires
 explicit runner token, API cost, and retry telemetry before package wrapping,
 that the deterministic public-surface integrity verifier
@@ -260,8 +261,9 @@ guarantees.
 - no mock execution package claim beyond synthetic transcript/cost-latency
   package-shape validation;
 - no runner response contract claim beyond fixture response validation,
-  sensitive-pattern rejection, forbidden result/readiness rejection, numeric
-  telemetry checks, and optional request/run-input matching;
+  sensitive-pattern rejection, forbidden result/readiness JSON-field rejection,
+  natural-language readiness/result phrase preservation for downstream
+  annotation, numeric telemetry checks, and optional request/run-input matching;
 - no pilot execution runner claim beyond local-fixture self-test and
   transcript/cost-latency package validation;
 - no pilot execution readiness claim beyond pre-run structure, runner path,
@@ -322,8 +324,9 @@ guarantees.
   temporary local fixture runner, requires `-AllowRunnerScript`, and the pilot
   execution package scorer self-test rejects missing transcript, crossed
   cost-latency join, budget overrun, credential-like content, provider/model/runtime
-  mismatches, metadata hash tampering, non-JSON sensitive files, unsupported
-  result/readiness claim cases, and `-Force` overwrite attempts over
+  mismatches, metadata hash tampering, non-JSON sensitive files, and forbidden
+  result/readiness fields, preserves natural-language readiness/result phrases
+  for downstream annotation, and rejects `-Force` overwrite attempts over
   non-generated files;
 - the empirical pilot execution readiness checker self-test validates generated
   run inputs, execution preflight, a temporary private runner path, runner label,
@@ -364,8 +367,9 @@ guarantees.
   agreement metrics, aggregate metrics, or paper-readiness claim;
 - the empirical runner response scorer self-test validates fixture response JSON
   and rejects missing `final_answer`, credential-like content, forbidden
-  result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric
-  fields, and request/run-input mismatches;
+  result/readiness fields, null, blank, boolean, or negative numeric fields, and
+  request/run-input mismatches, while preserving natural-language
+  readiness/result phrases and `final_claim` values for downstream annotation;
 - the empirical pilot execution package builder self-test rejects runner
   responses that omit required token, API cost, or retry telemetry, and rejects
   blank `api_cost_usd`, before package wrapping;

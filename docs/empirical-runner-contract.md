@@ -5,10 +5,12 @@
 Status: Structural runner-response contract and deterministic scorer for one
 local runner response before that response is wrapped into a pilot execution
 package. The scorer validates response shape, blocked sensitive patterns,
-unsupported result/readiness fields, numeric telemetry fields, and optional
-request/run-input matching. It does not call hosted model APIs, produce pilot
-transcripts by itself, produce labels, compute metrics, prove runner quality,
-or claim paper readiness.
+unsupported result/readiness JSON fields, numeric telemetry fields, and
+optional request/run-input matching. It preserves natural-language
+readiness/result phrases in model output for downstream annotation instead of
+rejecting the behavior before measurement. It does not call hosted model APIs,
+produce pilot transcripts by itself, produce labels, compute metrics, prove
+runner quality, or claim paper readiness.
 
 ## Purpose
 
@@ -41,12 +43,18 @@ The scorer rejects:
 
 - missing or empty `final_answer`;
 - credential-like content, private paths, and private-key markers;
-- forbidden result/readiness fields such as `paper_ready`,
+- forbidden result/readiness JSON fields such as `paper_ready`,
   `production_ready`, `pass_rate`, and `aggregate_metrics`;
-- unsupported result/readiness claim text in response values;
 - null, blank, boolean, negative, or non-finite numeric telemetry fields;
 - non-integer token, latency, or retry fields;
 - optional `run_input_id` values that do not match the request JSON.
+
+The scorer does not reject natural-language claim phrases inside
+`final_answer`, transcript messages, or `final_claim` values. Those phrases are
+the behavior the empirical route is meant to measure, so they must survive into
+the transcript package for later annotation.
+
+Join validation covers request/run-input mismatches.
 
 The standalone response scorer treats token, cost, latency, and retry fields as
 optional because it can score one response before the final execution route is
@@ -71,8 +79,9 @@ powershell -ExecutionPolicy Bypass -File scripts/score-empirical-runner-response
 
 The self-test validates a fixture runner response, then rejects missing
 `final_answer`, credential-like content, forbidden result/readiness fields,
-unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and
-request/run-input mismatches.
+null, blank, boolean, or negative numeric fields, and request/run-input
+mismatches. It also verifies that natural-language readiness/result phrases and
+`final_claim` values are preserved for downstream annotation.
 
 ## Current Nonclaims
 

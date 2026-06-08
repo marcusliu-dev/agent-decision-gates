@@ -70,6 +70,7 @@ runner_requirements:
   - runner_reports_retry_count_before_package_wrapping
   - no_credentials_in_package
   - no_private_paths_in_package
+  - natural_language_claim_phrases_preserved_for_annotation
 
 forbidden_fields:
   - annotation_record

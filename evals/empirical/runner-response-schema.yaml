@@ -73,7 +73,7 @@ forbidden_fields:
   - paper_readiness
   - production_ready
 
-forbidden_claim_phrases:
+tracked_claim_phrases:
   - paper readiness
   - paper ready
   - production readiness
@@ -88,6 +88,11 @@ forbidden_claim_phrases:
   - aggregate metrics
   - real labels
   - real transcripts
+
+claim_phrase_handling:
+  - natural_language_claim_phrases_are_preserved_for_downstream_annotation
+  - forbidden_result_fields_are_rejected_as_json_fields_only
+  - scorer_does_not_convert_model_output_into_empirical_results
 
 current_nonclaims:
   - no_model_api_eval_execution

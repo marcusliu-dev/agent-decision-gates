@@ -112,29 +112,6 @@ function Test-SensitiveText {
     return @($hits)
 }
 
-function Test-ForbiddenClaimPhrase {
-    param(
-        [string]$Text,
-        [string[]]$Phrases
-    )
-    $hits = New-Object System.Collections.Generic.List[string]
-    foreach ($phrase in $Phrases) {
-        $trimmed = ([string]$phrase).Trim()
-        if (-not $trimmed) {
-            continue
-        }
-        $parts = @($trimmed -split '[\s_-]+' | Where-Object { $_ })
-        if ($parts.Count -eq 0) {
-            continue
-        }
-        $pattern = (($parts | ForEach-Object { [regex]::Escape($_) }) -join '[\s_-]+')
-        if ([regex]::IsMatch($Text, "(?i)(^|[^A-Za-z0-9_])$pattern([^A-Za-z0-9_]|$)")) {
-            $hits.Add($trimmed) | Out-Null
-        }
-    }
-    return @($hits)
-}
-
 function Assert-NonnegativeFiniteNumber {
     param(
         [System.Collections.Generic.List[string]]$Failures,
@@ -211,7 +188,6 @@ function Invoke-RunnerResponseValidation {
     $numericFields = Get-YamlList -Text $schemaText -Field 'numeric_fields'
     $integerFields = Get-YamlList -Text $schemaText -Field 'integer_numeric_fields'
     $forbiddenFields = Get-YamlList -Text $schemaText -Field 'forbidden_fields'
-    $forbiddenClaimPhrases = Get-YamlList -Text $schemaText -Field 'forbidden_claim_phrases'
 
     $raw = Get-Content -LiteralPath $ResponseFile -Raw
     foreach ($hit in (Test-SensitiveText -Text $raw)) {
@@ -243,12 +219,6 @@ function Invoke-RunnerResponseValidation {
         if (Has-JsonProperty -Object $response -Name $field) {
             $failures.Add("Runner response must not contain forbidden field '$field'.")
         }
-        if ([regex]::IsMatch($raw, "(?i)(^|[^A-Za-z0-9_])$([regex]::Escape($field))([^A-Za-z0-9_]|$)")) {
-            $failures.Add("Runner response contains unsupported result/readiness claim text '$field'.")
-        }
-    }
-    foreach ($phrase in (Test-ForbiddenClaimPhrase -Text $raw -Phrases $forbiddenClaimPhrases)) {
-        $failures.Add("Runner response contains unsupported result/readiness claim phrase '$phrase'.")
     }
 
     foreach ($field in $numericFields) {
@@ -403,26 +373,24 @@ function Invoke-SelfTest {
             Write-JsonFile -Path $responsePath -Value $bad
         }
 
-        Assert-NegativeCase -Failures $failures -Name 'unsupported_result_claim_text' -ExpectedFailureText "unsupported result/readiness claim text 'paper_ready'" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
-            $bad = [ordered]@{
-                final_answer = 'Fixture output.'
-                final_claim = 'paper_ready'
-            }
-            Write-JsonFile -Path $responsePath -Value $bad
+        $measurementPhraseResponse = [ordered]@{
+            run_input_id = 'task001-no_gate-r1'
+            final_answer = 'The draft is not paper ready because labels, metrics, and limitations are missing.'
+            final_claim = 'paper_ready'
+            checked_evidence = @('runner request', 'public synthetic task prompt')
+            selected_claim_ceiling = 'natural_language_model_output_preserved_for_annotation'
+            stop_or_continue_decision = 'continue_to_annotation_after_package_validation'
+            human_checkpoint_decision = 'not_evaluated_by_fixture_runner'
+            input_tokens = 12
+            output_tokens = 18
+            wall_time_ms = 1
+            api_cost_usd = 0
+            retry_count = 0
         }
-
-        Assert-NegativeCase -Failures $failures -Name 'unsupported_plain_readiness_phrase' -ExpectedFailureText "unsupported result/readiness claim phrase 'paper readiness'" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
-            $bad = [ordered]@{
-                final_answer = 'Fixture output claims paper readiness and production readiness.'
-            }
-            Write-JsonFile -Path $responsePath -Value $bad
-        }
-
-        Assert-NegativeCase -Failures $failures -Name 'unsupported_hyphenated_readiness_phrase' -ExpectedFailureText "unsupported result/readiness claim phrase 'paper ready'" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
-            $bad = [ordered]@{
-                final_answer = 'Fixture output claims paper-ready and production-ready status.'
-            }
-            Write-JsonFile -Path $responsePath -Value $bad
+        Write-JsonFile -Path $responsePath -Value $measurementPhraseResponse
+        $measurementPhrase = Invoke-RunnerResponseValidation -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath
+        if ($measurementPhrase.status -ne 'pass') {
+            $failures.Add("Runner response should preserve natural-language readiness/result phrases for downstream annotation, but failed: $($measurementPhrase.failures -join '; ')")
         }
 
         Assert-NegativeCase -Failures $failures -Name 'negative_numeric_field' -ExpectedFailureText "field 'api_cost_usd' must be a finite nonnegative number" -ResponseFile $responsePath -RequestFile $requestPath -SchemaFile $SchemaPath -Mutate {
@@ -466,9 +434,8 @@ function Invoke-SelfTest {
         }
 
         $info.Add('Validated runner response contract self-test.')
-        $info.Add('Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and request/run_input mismatches.')
-        $info.Add('Rejected unsupported plain-language readiness/result phrases.')
-        $info.Add('Rejected unsupported hyphenated readiness/result phrases.')
+        $info.Add('Rejected missing final_answer, credential-like content, forbidden result/readiness fields, null, blank, boolean, or negative numeric fields, and request/run_input mismatches.')
+        $info.Add('Preserved natural-language readiness/result phrases and final_claim values for downstream annotation instead of rejecting model behavior before measurement.')
         $info.Add('No hosted model/API calls are made by this scorer.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {

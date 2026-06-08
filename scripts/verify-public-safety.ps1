@@ -197,6 +197,7 @@ $ceilingOrder = @{
     'empirical_pilot_execution_readiness_checker_present_and_self_tested' = 28
     'empirical_pilot_runner_request_package_builder_present_and_self_tested' = 29
     'empirical_pilot_runner_request_package_scorer_present_and_self_tested' = 30
+    'empirical_claim_phrase_preservation_for_annotation_self_tested' = 31
 }
 
 $failures = New-Object System.Collections.Generic.List[string]
@@ -961,7 +962,10 @@ if (Test-Path -LiteralPath $runnerResponseSchemaPath) {
         'api_cost_usd',
         'retry_count',
         'numeric_fields',
-        'forbidden_claim_phrases',
+        'tracked_claim_phrases',
+        'claim_phrase_handling',
+        'natural_language_claim_phrases_are_preserved_for_downstream_annotation',
+        'forbidden_result_fields_are_rejected_as_json_fields_only',
         'optional_run_input_id_matches_request',
         'no_credentials_in_response',
         'no_absolute_private_paths_in_response',
@@ -991,6 +995,8 @@ if (Test-Path -LiteralPath $runnerContractDocPath) {
         'missing API cost cannot be recorded as',
         'credential-like content',
         'forbidden result/readiness fields',
+        'natural-language claim phrases',
+        'downstream annotation',
         'request/run-input mismatches',
         'Current Nonclaims'
     )) {
@@ -1007,14 +1013,12 @@ if (Test-Path -LiteralPath $runnerResponseScorerPath) {
         'Empirical runner response scoring',
         'runner_response_contract_schema_only_no_execution_results',
         'Validated runner response contract self-test',
-        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, unsupported result/readiness claim text, null, blank, boolean, or negative numeric fields, and request/run_input mismatches',
-        'Rejected unsupported plain-language readiness/result phrases',
-        'Rejected unsupported hyphenated readiness/result phrases',
+        'Rejected missing final_answer, credential-like content, forbidden result/readiness fields, null, blank, boolean, or negative numeric fields, and request/run_input mismatches',
+        'Preserved natural-language readiness/result phrases and final_claim values for downstream annotation',
         'No hosted model/API calls are made by this scorer',
         'does not match request run_input_id',
         'blocked sensitive pattern',
-        'unsupported result/readiness claim phrase',
-        'unsupported result/readiness claim text'
+        'forbidden field'
     )) {
         if (-not $runnerResponseScorerContent.Contains($check)) {
             $failures.Add("Missing empirical runner response scorer invariant '$check'.")
@@ -1030,7 +1034,8 @@ if (Test-Path -LiteralPath $pilotExecutionPackageSchemaPath) {
         'runner_reports_output_tokens_before_package_wrapping',
         'runner_reports_api_cost_usd_before_package_wrapping',
         'runner_reports_retry_count_before_package_wrapping',
-        'total_api_cost_usd_does_not_exceed_preflight_max_budget_usd'
+        'total_api_cost_usd_does_not_exceed_preflight_max_budget_usd',
+        'natural_language_claim_phrases_preserved_for_annotation'
     )) {
         if ($pilotExecutionPackageSchemaContent -notlike "*$check*") {
             $failures.Add("Missing pilot execution package telemetry/budget requirement '$check'.")
@@ -1044,11 +1049,21 @@ if (Test-Path -LiteralPath $pilotExecutionRunnerDocPath) {
     foreach ($check in @(
         'does not silently convert missing API cost into zero cost',
         'reject missing runner cost telemetry',
+        'forbidden result/readiness JSON fields',
+        'preserves natural-language readiness/result phrases',
         'total API cost above the preflight max budget',
         'measured cost accuracy beyond runner-reported telemetry'
     )) {
         if (-not $pilotExecutionRunnerDocContent.Contains($check)) {
             $failures.Add("Missing empirical pilot execution runner telemetry/budget boundary '$check'.")
+        }
+    }
+    foreach ($stalePhrase in @(
+        'unsupported result or paper-readiness claims',
+        'unsupported result/paper-readiness tokens'
+    )) {
+        if ($pilotExecutionRunnerDocContent.Contains($stalePhrase)) {
+            $failures.Add("Empirical pilot execution runner doc still contains stale rejection wording '$stalePhrase'.")
         }
     }
 }
@@ -1076,7 +1091,8 @@ if (Test-Path -LiteralPath $pilotExecutionPackageScorerPath) {
         'exceeds preflight max_budget_usd',
         'aggregate_budget_exceeded',
         'micro_budget_exceeded',
-        'Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases'
+        'Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and forbidden result/readiness fields',
+        'Preserved natural-language readiness/result phrases and final_claim values in transcripts for downstream annotation'
     )) {
         if (-not $pilotExecutionPackageScorerContent.Contains($check)) {
             $failures.Add("Missing empirical pilot execution package budget scorer invariant '$check'.")

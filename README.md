@@ -1,6 +1,6 @@
 # Agent Decision Gates
 
-<!-- claim_ceiling: empirical_pilot_runner_request_package_scorer_present_and_self_tested -->
+<!-- claim_ceiling: empirical_claim_phrase_preservation_for_annotation_self_tested -->
 
 Evidence-first decision gates for AI agents: independent challenge reviews,
 human checkpoints, and verification before high-risk actions.
@@ -70,7 +70,8 @@ This repo packages a simple alternative:
   joins without real model/API eval execution;
 - an [empirical runner response contract](docs/empirical-runner-contract.md),
   schema, and scorer for validating a private or local runner response before
-  it is wrapped into a pilot transcript/cost-latency package;
+  it is wrapped into a pilot transcript/cost-latency package while preserving
+  natural-language readiness/result phrases for downstream annotation;
 - an [empirical pilot execution runner guide](docs/empirical-pilot-execution-runner.md),
   schema, builder, and scorer for routing selected pilot inputs through an
   explicitly allowed local runner script and validating transcript/cost-latency
@@ -302,7 +303,7 @@ validator for future completed label records, plus an evidence-package builder
 that assembles future pilot transcripts, cost/latency records, and completed
 annotation records into a validation-ready package. The current
 ceiling is no higher than
-`empirical_pilot_runner_request_package_scorer_present_and_self_tested`. The
+`empirical_claim_phrase_preservation_for_annotation_self_tested`. The
 verifiers and scorers do not prove production safety, empirical effectiveness,
 paper readiness, executed model/API evals, real transcripts, real labels, real
 human/LLM-judge agreement, real aggregate metrics, or universal runtime
@@ -325,7 +326,8 @@ condition prompt pack freezes planned instructions only. The run-input builder
 materializes pre-execution inputs only. The execution preflight records a future
 pilot run gate only. The mock execution package is synthetic package-shape
 evidence only. The runner response contract validates response shape and
-boundaries only. The pilot execution runner self-test uses a local fixture runner
+boundaries only, while preserving natural-language readiness/result phrases for
+downstream annotation. The pilot execution runner self-test uses a local fixture runner
 and does not by itself establish real empirical results. The pilot run chain
 self-test uses a local fixture runner and does not by itself establish completed
 model/API eval results, completed labels, metrics, agreement, or paper

@@ -384,11 +384,6 @@ function Invoke-PackageValidation {
     }
     $packageText = $packageTextParts -join "`n"
     Assert-NoForbiddenJsonFields -Failures $failures -RawJson $packageText -ForbiddenFields $forbiddenFields -Label 'pilot execution package'
-    foreach ($claim in $forbiddenFields) {
-        if ([regex]::IsMatch($packageText, "(?i)(^|[^A-Za-z0-9_])$([regex]::Escape($claim))([^A-Za-z0-9_]|$)")) {
-            $failures.Add("Pilot execution package contains unsupported claim text '$claim'.")
-        }
-    }
 
     $preflight = Get-Content -LiteralPath $PreflightFile -Raw | ConvertFrom-Json
     $maxBudgetUsd = $null
@@ -774,6 +769,14 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
         & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
         $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
 
+        Assert-NegativeCase -Failures $failures -Name 'forbidden_result_field' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText "forbidden field 'paper_ready'" -SkipUpstreamScorers $true -Mutate {
+            $transcript = Get-Content -LiteralPath $pilotFiles.Transcript.FullName -Raw | ConvertFrom-Json
+            $transcript | Add-Member -NotePropertyName 'paper_ready' -NotePropertyValue $true -Force
+            Write-JsonFile -Path $pilotFiles.Transcript.FullName -Value $transcript
+        }
+        & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
+        $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
+
         Assert-NegativeCase -Failures $failures -Name 'manifest_preflight_hash_mismatch' -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText 'Pilot execution manifest source_preflight_sha256 does not match PreflightPath.' -SkipUpstreamScorers $true -Mutate {
             $manifestPath = Join-Path $packageRoot 'metadata/pilot-execution-manifest.json'
             $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
@@ -819,20 +822,22 @@ $response | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $ResponsePath -E
         & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
         $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
 
-        $schemaText = Get-Content -LiteralPath (Join-Path $RepoRoot 'evals/empirical/pilot-execution-package-schema.yaml') -Raw
-        $forbiddenValueTokens = Get-TopLevelList -Text $schemaText -Field 'forbidden_fields'
-        foreach ($forbiddenValueToken in $forbiddenValueTokens) {
-            Assert-NegativeCase -Failures $failures -Name "unsupported_value_$forbiddenValueToken" -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -ExpectedFailureText "unsupported claim text '$forbiddenValueToken'" -SkipUpstreamScorers $true -Mutate {
-                $transcript = Get-Content -LiteralPath $pilotFiles.Transcript.FullName -Raw | ConvertFrom-Json
-                $transcript.final_claim = $forbiddenValueToken
-                Write-JsonFile -Path $pilotFiles.Transcript.FullName -Value $transcript
-            }
-            & $pilotBuilder -RunInputRoot $runInputRoot -PreflightPath $preflightPath -OutputRoot $packageRoot -RunnerScriptPath $runnerPath -RunnerLabel 'fixture-runner-v0' -AllowRunnerScript -Force | Out-Null
-            $pilotFiles = Get-FirstPilotRecordFiles -Root $packageRoot
+        $transcript = Get-Content -LiteralPath $pilotFiles.Transcript.FullName -Raw | ConvertFrom-Json
+        $originalClaim = $transcript.final_claim
+        $transcript.final_claim = 'paper_ready'
+        $transcript.final_answer = 'The draft is not paper ready because labels, metrics, and limitations are missing.'
+        Write-JsonFile -Path $pilotFiles.Transcript.FullName -Value $transcript
+        $claimPhraseProbe = Invoke-PackageValidation -Root $packageRoot -InputRoot $runInputRoot -PreflightFile $preflightPath -RepositoryRoot $RepoRoot -SkipUpstreamScorers $true
+        if ($claimPhraseProbe.status -ne 'pass') {
+            $failures.Add("Expected pilot package scoring to preserve natural-language readiness/result phrases for annotation, but failed: $($claimPhraseProbe.failures -join '; ')")
         }
+        $transcript.final_claim = $originalClaim
+        $transcript.final_answer = 'Fixture pilot response for package scoring.'
+        Write-JsonFile -Path $pilotFiles.Transcript.FullName -Value $transcript
 
         $info.Add('Validated generated pilot execution package.')
-        $info.Add('Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and unsupported result/readiness claim cases.')
+        $info.Add('Rejected missing transcript, crossed cost-latency join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata hash tampering, non-JSON sensitive files, and forbidden result/readiness fields.')
+        $info.Add('Preserved natural-language readiness/result phrases and final_claim values in transcripts for downstream annotation instead of rejecting model behavior before measurement.')
     } finally {
         if (Test-Path -LiteralPath $tempBase) {
             Remove-Item -LiteralPath $tempBase -Recurse -Force

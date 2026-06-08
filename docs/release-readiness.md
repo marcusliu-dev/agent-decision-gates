@@ -1,6 +1,6 @@
 # Release Readiness
 
-<!-- claim_ceiling: empirical_pilot_runner_request_package_scorer_present_and_self_tested -->
+<!-- claim_ceiling: empirical_claim_phrase_preservation_for_annotation_self_tested -->
 
 Status: Current repository surface includes documentation, a design-pattern
 report, an empirical evaluation plan, experiment run-packet schemas, an
@@ -189,7 +189,7 @@ The current release claim is narrow and explicit:
   under `MIT`.
 
 The current claim ceiling is no higher than
-`empirical_pilot_runner_request_package_scorer_present_and_self_tested`.
+`empirical_claim_phrase_preservation_for_annotation_self_tested`.
 
 This repository does not claim to be a framework, package, SDK, or deployment
 system.
@@ -230,8 +230,10 @@ system.
   produced through a temporary local fixture runner, require
   `-AllowRunnerScript`, and reject missing transcript, crossed cost-latency
   join, budget overrun, credential-like content, provider/model/runtime mismatches, metadata
-  hash tampering, non-JSON sensitive files, unsupported result/readiness claim
-  cases, and `-Force` overwrite attempts over non-generated files;
+  hash tampering, non-JSON sensitive files, and forbidden result/readiness
+  fields, while preserving natural-language readiness/result phrases for
+  downstream annotation and rejecting `-Force` overwrite attempts over
+  non-generated files;
 - the deterministic empirical pilot execution readiness checker self-test
   validates generated run inputs, execution preflight, a temporary private
   runner path, runner label, and required environment variable presence, and
@@ -281,9 +283,9 @@ system.
   claim;
 - the deterministic empirical runner response scorer self-test validates fixture
   response JSON and rejects missing `final_answer`, credential-like content,
-  forbidden result/readiness fields, unsupported result/readiness claim text,
-  null, blank, boolean, or negative numeric fields, and request/run-input
-  mismatches;
+  forbidden result/readiness fields, null, blank, boolean, or negative numeric
+  fields, and request/run-input mismatches, while preserving natural-language
+  readiness/result phrases for downstream annotation;
 - the deterministic empirical run-packet scorer passes for the current
   manifest, transcript-schema, annotation-schema, and run-packet doc surface;
 - the empirical annotation guidelines are present and structurally checked as
